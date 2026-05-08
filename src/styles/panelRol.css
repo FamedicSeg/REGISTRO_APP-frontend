@@ -1,0 +1,417 @@
+/* ============================================
+   VARIABLES ERP (ESTILO CORPORATIVO)
+   ============================================ */
+
+:root {
+  --primary-color: #ffffff;
+  --secondary-color: #2563eb;
+
+  --success-color: #16a34a;
+  --warning-color: #f59e0b;
+  --danger-color: #dc2626;
+
+  --bg-main: #f5f7fb;
+  --bg-card: #ffffff;
+  --border-color: #e5e7eb;
+
+  --text-main: #111827;
+  --text-secondary: #6b7280;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+
+  --transition: all 0.2s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* ============================================
+   PANEL
+   ============================================ */
+
+.panel-container {
+  padding: 20px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 24px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.panel-header > div:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+
+.panel-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.panel-header h3 {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+.panel-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================================
+   BOTONES ERP
+   ============================================ */
+
+.panel-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.panel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.panel-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.panel-btn-view {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.panel-btn-success {
+  background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+  color: white;
+}
+
+.panel-btn-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.panel-btn-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+}
+
+.panel-btn-logout {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  padding: 10px 18px;
+}
+
+/* ============================================
+   CARDS RESUMEN (ESTILO ERP)
+   ============================================ */
+
+.panel-summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.panel-summary-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.panel-summary-card:hover {
+  border-color: var(--primary-color);
+}
+
+.panel-summary-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.panel-summary-value {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Indicadores laterales */
+.panel-summary-card-total {
+  border-left: 4px solid #6b7280;
+}
+
+.panel-summary-card-aprobados {
+  border-left: 4px solid var(--success-color);
+}
+
+.panel-summary-card-pendiente-supervisor {
+  border-left: 4px solid var(--warning-color);
+}
+
+.panel-summary-card-pendiente-analista {
+  border-left: 4px solid var(--primary-color);
+}
+
+/* ============================================
+   FILTROS
+   ============================================ */
+
+.panel-filtros-estado {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.panel-estado-filter-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.panel-estado-filter-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* ============================================
+   TABLA ERP
+   ============================================ */
+
+.panel-table-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 15px;
+}
+
+.panel-table-scroll {
+  overflow-x: auto;
+}
+
+.panel-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.panel-data-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.panel-data-table td {
+  padding: 14px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+.panel-data-table tbody tr {
+  transition: var(--transition);
+}
+
+.panel-data-table tbody tr:hover {
+  background: #f9fafb;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02);
+}
+
+.panel-data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ============================================
+   ESTADOS
+   ============================================ */
+
+.panel-estado {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.panel-estado.aprobado,
+.panel-estado.aprob {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.panel-estado.pendiente,
+.panel-estado.pendiente_supervisor {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.panel-estado.pendiente_analista_produccion,
+.panel-estado.analista {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.panel-estado.rechazado {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ============================================
+   INTERNAS (INSUMOS, MAQUINAS, ETC)
+   ============================================ */
+
+.panel-insumo-box,
+.panel-etiquetas-box,
+.panel-integrantes-box,
+.panel-maquinas-box {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #fafafa;
+  transition: var(--transition);
+}
+
+.panel-insumo-box:hover,
+.panel-etiquetas-box:hover,
+.panel-integrantes-box:hover,
+.panel-maquinas-box:hover {
+  border-color: var(--primary-color);
+  background: #ffffff;
+}
+
+/* HEADER INTERNO */
+.panel-insumo-header,
+.panel-etiquetas-header,
+.panel-integrantes-header,
+.panel-maquinas-header {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+}
+
+/* GRID INTERNO */
+.panel-insumo-grid,
+.panel-etiquetas-grid,
+.panel-integrantes-grid,
+.panel-maquinas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+  font-size: 12px;
+}
+
+/* ============================================
+   ACTIVIDADES
+   ============================================ */
+
+.panel-actividad-item {
+  background: #f9fafb;
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.panel-actividad-planif {
+  background: #dbeafe;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.panel-actividad-elab {
+  background: #dcfce7;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+/* ============================================
+   TOTALES
+   ============================================ */
+
+.panel-total-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  margin-bottom: 5px;
+}
+
+.panel-total-item .total-valor {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* ============================================
+   SCROLL
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 5px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .panel-summary-row {
+    grid-template-columns: 1fr;
+  }
+}
