@@ -1374,7 +1374,7 @@ const generarPDF = async() =>{
         </div>
         <h1>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
         <div className="logo-right">
-          <img src={logo2} alt="logo2" className="logo" />
+          <img src={logo3} alt="logo2" className="logo" />
         </div>
       </header>
 
