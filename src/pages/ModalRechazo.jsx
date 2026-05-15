@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from "../services/api";
-import '../styles/ModalRechazo.css';
+import '../styles/modalRechazo.css';
 
 const ModalRechazo = ({ isOpen, onClose, registroId, onRechazado, usuario }) => {
   const [motivo, setMotivo] = useState('');
