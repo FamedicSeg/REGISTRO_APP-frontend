@@ -9,7 +9,6 @@ export const api = axios.create({
 });
 
 // Interceptor para manejar errores
-
 api.interceptors.response.use(
     response => response,
     error => {
@@ -23,3 +22,85 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// ============================================
+// SERVICIOS PARA ONEDRIVE (AGREGAR ESTO)
+// ============================================
+
+// Leer cualquier archivo Excel
+export const readExcelFile = async (fileName, sheetName, hasHeaders = true) => {
+  try {
+    const response = await api.post('/onedrive/read', {
+      fileName,
+      sheetName,
+      hasHeaders,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error leyendo archivo:', error);
+    throw error;
+  }
+};
+
+// Buscar en cualquier archivo
+export const searchInExcel = async (fileName, sheetName, searchField, searchValue) => {
+  try {
+    const response = await api.post('/onedrive/search', {
+      fileName,
+      sheetName,
+      searchField,
+      searchValue,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error buscando:', error);
+    throw error;
+  }
+};
+
+// Buscar lote específico
+export const buscarLote = async (loteId) => {
+  try {
+    const response = await api.post('/onedrive/buscar-lote', { loteId });
+    return response.data;
+  } catch (error) {
+    console.error('Error buscando lote:', error);
+    throw error;
+  }
+};
+
+// Buscar insumo específico
+export const buscarInsumo = async (insumoId) => {
+  try {
+    const response = await api.post('/onedrive/buscar-insumo', { insumoId });
+    return response.data;
+  } catch (error) {
+    console.error('Error buscando insumo:', error);
+    throw error;
+  }
+};
+
+// Buscar producto específico
+export const buscarProducto = async (productoId) => {
+  try {
+    const response = await api.post('/onedrive/buscar-producto', { productoId });
+    return response.data;
+  } catch (error) {
+    console.error('Error buscando producto:', error);
+    throw error;
+  }
+};
+
+// Guardar registro aprobado
+export const guardarRegistroAprobado = async (sheetName, registroData) => {
+  try {
+    const response = await api.post('/onedrive/append-registro', {
+      sheetName,
+      registroData,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error guardando registro:', error);
+    throw error;
+  }
+};
