@@ -185,14 +185,16 @@ export default function Registro() {
       diferenciaMinutos += 24*60;
     }
 
-    // Excepción puntual: 8:00 - 16:30 debe devolver 8 horas exactas
-    if ((horaInicio === 8 && minInicio === 0 && horaFin === 16 && minFin === 30) ||
-        (horaInicio === 8 && minInicio === 0 && horaFin === 16 && minFin === 30)) {
-      return "8";
+    const horasDecimal = diferenciaMinutos / 60;
+    
+    // Excepción puntual: solo redondear hacia abajo para horas finales específicas (16:30, 17:30, 18:30, 19:30, 20:30)
+    const horasEspeciales = [14, 15, 16, 17, 18, 19, 20];
+    if (horasEspeciales.includes(horaFin) && minFin === 30) {
+      return Math.floor(horasDecimal).toString();
     }
-
-    const horasDecimal = (diferenciaMinutos/60).toFixed(2);
-    return horasDecimal;
+    
+    // Para todos los demás casos, devolver con decimales
+    return horasDecimal.toFixed(2);
   }
 
   // Fecha actual por defecto
@@ -532,11 +534,12 @@ export default function Registro() {
 
   const agregarDetalleActividad = () => {
     if (nuevoDetalleActividad.trim()) {
+      const actividadEnMayusculas = nuevoDetalleActividad.trim().toUpperCase();
       setForm(prev => ({
         ...prev,
         detalles_actividades: prev.detalles_actividades 
-          ? prev.detalles_actividades + '\n' + nuevoDetalleActividad.trim()
-          : nuevoDetalleActividad.trim()
+          ? prev.detalles_actividades + '\n' + actividadEnMayusculas
+          : actividadEnMayusculas
       }));
       setNuevoDetalleActividad('');
     }
@@ -1644,7 +1647,14 @@ const generarPDF = async() =>{
 
             <div>
               <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> RECEPCIÓN: </label>
-              <input className="input-uppercase" type="text" value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}} placeholder="INGRESA EL NOMBRE DE LA PERSONA QUE RECIBE"/>
+              <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}}>
+                <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
+                {integrantes.map((integrante, idx) => (
+                  <option key={idx} value={integrante.nombre}>
+                    {integrante.nombre}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -1798,13 +1808,18 @@ const generarPDF = async() =>{
                   {/* RECEPCIÓN */}
                   <div>
                     <label style={{fontSize:"11px", fontWeight:"500"}}>RECEPCIÓN:</label>
-                    <input 
-                      type="text" 
+                    <select 
                       value={item.recepcion} 
                       onChange={(e) => actualizarReposicionNoConforme(index, "recepcion", e.target.value)}
-                      placeholder="QUIÉN RECIBE"
                       style={{ width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" }}
-                    />
+                    >
+                      <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
+                      {integrantes.map((integrante, idx) => (
+                        <option key={idx} value={integrante.nombre}>
+                          {integrante.nombre}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   {/* BOTÓN ELIMINAR */}
                   <div>
