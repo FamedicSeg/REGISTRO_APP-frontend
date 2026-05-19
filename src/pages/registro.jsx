@@ -1595,7 +1595,7 @@ const generarPDF = async() =>{
             )}
             
             {insumos.map((item, index) => (
-              <div key={item.id || index} style={{ display: "grid", width: "950px", gridTemplateColumns: "2fr 4.5fr 1.4fr 1.2fr 2fr 2.8fr 2.8fr auto", gap: "20px", marginBottom: "25px",
+              <div key={item.id || index} style={{ display: "grid", width: "950px", gridTemplateColumns: "1.8fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px",
                                                    alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px",
                                                    border: "1px solid #dee2e6", boxSizing: "border-box", }}>
             <div>
@@ -1627,7 +1627,7 @@ const generarPDF = async() =>{
             <div>
               <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}>CANTIDAD: </label>
               <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000"
-                style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}} placeholder="EJ: 10"/>
+                style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"9.5px"}} placeholder="EJ: 10"/>
             </div>
 
             <div>
@@ -1637,7 +1637,7 @@ const generarPDF = async() =>{
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> LOTE: </label>
-              <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"11px"}} placeholder="N° DE LOTE"/>
+              <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}} placeholder="N° DE LOTE"/>
             </div>
 
             <div>
