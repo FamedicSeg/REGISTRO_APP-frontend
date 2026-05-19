@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import { toUpperCase, shouldUpperCase } from "../utils/textUtils";
 
 // Componente Campo - Versión controlada SIN errores
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
@@ -318,6 +317,10 @@ export default function AdminDetalleRegistro() {
     rol === "LÍDER",
   [rol]);
 
+  const puedeEliminar = useMemo(() => 
+    rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
+  [rol]);
+
   // Función para parsear arrays que vienen como JSON strings
   const parsearArrays = (datos) => {
     const datosLimpios = { ...datos };
@@ -419,6 +422,38 @@ export default function AdminDetalleRegistro() {
   const handleArrayChange = useCallback((campo, nuevoArray) => {
     setForm(prev => ({ ...prev, [campo]: nuevoArray }));
   }, []);
+
+  const eliminarRegistro = async () => {
+    const confirmar = window.confirm(
+      "⚠️ ¿Está seguro que desea eliminar este registro?\n\nEsta acción no se puede deshacer."
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setGuardando(true);
+      const response = await api.delete(`/registros/${id}`);
+      if (response.status === 200) {
+        alert("✅ Registro eliminado correctamente");
+        navigate(getPanelRoute());
+      } else {
+        throw new Error("Respuesta inesperada del servidor");
+      }
+    } catch (error) {
+      console.error("Error eliminando registro:", error);
+      let mensajeError = "Error al eliminar el registro";
+      if (error.response) {
+        mensajeError = error.response.data?.error || mensajeError;
+      } else if (error.request) {
+        mensajeError = "No se recibió respuesta del servidor";
+      } else {
+        mensajeError = error.message;
+      }
+      alert(mensajeError);
+    } finally {
+      setGuardando(false);
+    }
+  };
 
   const guardarCambios = async () => {
     try {
@@ -1107,6 +1142,16 @@ export default function AdminDetalleRegistro() {
               ❌ Cancelar
             </button>
           </>
+        )}
+        {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
+          <button style={{ padding: "12px 24px", background: "#dc2626", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
+            🗑️ Eliminar Registro
+          </button>
+        )}
+        {puedeEliminar && !modoEdicion && registro.estado !== "pendiente_SUPERVISOR" && (
+          <button style={{ padding: "12px 24px", background: "#9ca3af", color: "white", border: "none", borderRadius: 8, cursor: "not-allowed", fontWeight: 600, fontSize: 15, opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">
+            🗑️ Eliminar Registro
+          </button>
         )}
         <button style={{ padding: "12px 24px", background: "#6b7280", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
           ← Volver al Panel
