@@ -2731,28 +2731,6 @@ const generarPDF = async() =>{
             Actividades asignadas:
           </h4>
           
-          {/* ENCABEZADOS DE ACTIVIDADES */}
-          {/*
-          <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: "2.5fr 0.8fr 0.8fr 0.8fr auto", 
-            gap: "10px", 
-            marginBottom: "10px",
-            fontWeight: "bold",
-            fontSize: "12px",
-            color: "#495057",
-            backgroundColor: "#f8f9fa",
-            padding: "10px",
-            borderRadius: "4px"
-          }}>
-            <div>ACTIVIDAD</div>
-            <div>HORAS</div>
-            <div>PLANIF.</div>
-            <div>ELABOR.</div>
-            <div>OBSERVACIÓN</div>
-          </div>
-            */}
-
           {/* LISTA DE ACTIVIDADES DEL INTEGRANTE */}
           {(actividadesIntegrantes[`integrante_${integranteIndex}`]?.actividades || []).map((actividad, actividadIndex) => (
             <div key={actividadIndex} style={{ 
