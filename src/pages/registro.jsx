@@ -1560,7 +1560,7 @@ const generarPDF = async() =>{
               <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} style={{fontSize:"12px"}} />
             </div>
             <div className="form-group">
-              <label htmlFor="loteSecundario" >LOTE SECUNDARIO:</label>
+              <label htmlFor="loteSecundario" >N°:</label>
               <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} style={{fontSize:"12px"}}/>
             </div>
           </div>
