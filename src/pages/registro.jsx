@@ -429,7 +429,15 @@ export default function Registro() {
     }
   
     const codigoLimpio = codigo_insumo.trim();
+    const isCodigoNoAplica = /^(CF|RCTEL|BCD|TAB)/i.test(codigoLimpio);
+
     setCargandoDescripciones(prev => ({...prev, [index]: true}));
+
+    if (isCodigoNoAplica) {
+      actualizarInsumo(index, "lote_insumo", "NO APLICA");
+      setCargandoDescripciones(prev => ({...prev, [index]: false}));
+      return;
+    }
   
     try {
       const { data } = await api.get("/insumos/lote", {
