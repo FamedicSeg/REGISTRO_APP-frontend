@@ -290,7 +290,6 @@ export default function PanelRol() {
               <tr>
                 <th>Fecha</th>
                 <th>OP</th>
-                <th>Turno</th>
                 <th>Área</th>
                 <th>Módulo</th>
                 <th>Responsable</th>
@@ -308,15 +307,14 @@ export default function PanelRol() {
                 <tr key={r.id}>
                   <td>{r.fecha}</td>
                   <td>#{r.op}</td>
-                  <td>{r.turno}</td>
                   <td>{r.area}</td>
                   <td>{r.modulo}</td>
                   <td>{r.responsable}</td>
                   <td>{r.codigo_producto}</td>
-                  <td>{r.descripcion_producto}</td>
+                  <td>{r.descripcion}</td>
                   <td>{r.loteUnido}</td>
                   <td>{r.cantidad_planificada}</td>
-                  <td>{r.cantidad_elaborada}</td>
+                  <td>{r.cantidad_elaborado}</td>
                   <td>
                     <span className={`panel-estado ${r.estado}`}>
                       {r.estado}
