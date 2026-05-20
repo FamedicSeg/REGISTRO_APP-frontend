@@ -14,8 +14,9 @@ export default function AdminUsuarios({ onClose, onUserCreated, onUserUpdated, o
   const [cargando, setCargando] = useState(false);
   const [mostrarPassword, setMostrarPassword] = useState({});
   const [formData, setFormData] = useState({
+    username: '',
     nombre: '',
-    email: '',
+    cedula_identidad: '',
     password: '',
     rol: 'LÍDER',
     area: '',
@@ -132,6 +133,7 @@ export default function AdminUsuarios({ onClose, onUserCreated, onUserUpdated, o
 
   const resetForm = () => {
     setFormData({
+      username: '',
       nombre: '',
       cedula_identidad: '',
       password: '',
@@ -170,6 +172,7 @@ export default function AdminUsuarios({ onClose, onUserCreated, onUserUpdated, o
   const handleEdit = (usuario) => {
     setUsuarioEditando(usuario);
     setFormData({
+      username: usuario.username || '',
       nombre: usuario.nombre || '',
       cedula_identidad: usuario.cedula_identidad || '',
       password: '',
@@ -231,6 +234,17 @@ export default function AdminUsuarios({ onClose, onUserCreated, onUserUpdated, o
               <h3>{usuarioEditando ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</h3>
               <form onSubmit={handleSubmit} className="admin-form">
                 <div className="admin-form-group">
+                  <label>Usuario (Username):</label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+
+                <div className="admin-form-group">
                   <label>Nombre:</label>
                   <input
                     type="text"
@@ -242,7 +256,7 @@ export default function AdminUsuarios({ onClose, onUserCreated, onUserUpdated, o
                 </div>
 
                 <div className="admin-form-group">
-                  <label>Email:</label>
+                  <label>Cédula de Identidad:</label>
                   <input
                     type="text"
                     name="cedula_identidad"

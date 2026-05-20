@@ -19,15 +19,14 @@ export const UPPERCASE_FIELDS = [
   
   // Insumos
   'tipo_insumo', 'codigo_insumo', 'descripcion_insumo', 'descrip_cant_insumo',
-  'lote_insumo', 'entrega', 'recepcion',
+  'lote_insumo', 'entrega',
   
   // Reposición no conforme
   'codigo_insumo_no_conforme', 'descripcion_insumo_no_conforme',
   'descrip_cant_insumo_no_conforme', 'entrega_insumo_no_conforme',
-  'recepcion_insumo_no_conforme',
   
   // Etiquetas
-  'descripcion_etiqueta', 'entrega_etiqueta', 'recepcion_etiqueta',
+  'descripcion_etiqueta', 'entrega_etiqueta',
   
   // Confección
   'destino', 'n_cliente', 'esteril', 'talla', 'leyenda', 'leyenda_si', 'leyenda_otra',
