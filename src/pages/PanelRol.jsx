@@ -295,7 +295,10 @@ export default function PanelRol() {
                 <th>Módulo</th>
                 <th>Responsable</th>
                 <th>Código Producto</th>
+                <th>Descripción Producto</th>
+                <th>Lote</th>
                 <th>Cantidad Planificada</th>
+                <th>Cantidad Elaborada</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -310,7 +313,10 @@ export default function PanelRol() {
                   <td>{r.modulo}</td>
                   <td>{r.responsable}</td>
                   <td>{r.codigo_producto}</td>
+                  <td>{r.descripcion_producto}</td>
+                  <td>{r.loteUnido}</td>
                   <td>{r.cantidad_planificada}</td>
+                  <td>{r.cantidad_elaborada}</td>
                   <td>
                     <span className={`panel-estado ${r.estado}`}>
                       {r.estado}

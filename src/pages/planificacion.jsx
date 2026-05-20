@@ -16,7 +16,7 @@ export default function Planificacion() {
         setData(data.data || []);
         setMsg("");
       } catch {
-        setMsg("No se pudo cargar la planificación. Revisa planificacion.xlsx en el backend.");
+        setMsg("No se pudo cargar la planificación. Revisa Planificacion Semanal.xlsx en el backend.");
       }
     })();
   }, []);
