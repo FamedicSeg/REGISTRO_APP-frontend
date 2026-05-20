@@ -583,7 +583,7 @@ export default function AdminDetalleRegistro() {
         borderBottom: "2px solid #e5e7eb"
       }}>
         <div>
-          <h2 style={{ margin: 0, color: "#111827", fontSize: 28 }}>Registro #{registro.id}</h2>
+          <h2 style={{ margin: 0, color: "#111827", fontSize: 28 }}>Registro #{registro.op}</h2>
         </div>
         <div style={{ 
           padding: "8px 16px",
