@@ -429,7 +429,7 @@ export default function Registro() {
     }
   
     const codigoLimpio = codigo_insumo.trim();
-    const isCodigoNoAplica = /^(CF|RCTEL|BCD|TAB)/i.test(codigoLimpio);
+    const isCodigoNoAplica = /^(CF|RCTEL|BCD|TAB|FPQ)/i.test(codigoLimpio);
 
     setCargandoDescripciones(prev => ({...prev, [index]: true}));
 
