@@ -345,7 +345,7 @@ export default function PanelRol() {
                         className="panel-btn panel-btn-view"
                         onClick={() => verDetalle(r.id)}
                       >
-                        👁️ Ver
+                        Ver
                       </button>
                       
                       {/* ELIMINAR - Solo LÍDER/JEFE en estado pendiente_SUPERVISOR */}

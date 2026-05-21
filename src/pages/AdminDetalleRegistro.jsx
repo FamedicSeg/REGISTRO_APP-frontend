@@ -326,7 +326,7 @@ export default function AdminDetalleRegistro() {
   [rol]);
 
   const isSupervisor = rol === "SUPERVISOR";
-  const isAnalista = rol === "ANALISTA DE PRODUCCIÓN";
+  const _isAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const estadoPendienteAnalista = registro?.estado === "pendiente_ANALISTA_PRODUCCION";
   const estadoAprobado = registro?.estado?.includes("aprobado");
 
@@ -1265,7 +1265,7 @@ export default function AdminDetalleRegistro() {
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
         {estadoAprobado ? (
           <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
-            👁️ Ver
+            Ver
           </button>
         ) : (
           <>
@@ -1303,14 +1303,7 @@ export default function AdminDetalleRegistro() {
               </>
             )}
 
-            {isAnalista && !modoEdicion && (
-              <button className="btn" style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: !estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: !estadoPendienteAnalista || guardando ? 0.6 : 1 }}
-                onClick={() => actualizarEstadoRegistro("aprobado", "¿Estás seguro de que quieres aprobar este registro?")}
-                disabled={!estadoPendienteAnalista || guardando}
-              >
-                ✅ Aprobar
-              </button>
-            )}
+            
 
             {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
               <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
