@@ -124,6 +124,9 @@ export default function PanelRol() {
     return acc;
   }, [registros]);
 
+  const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
+  const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
+
   const verDetalle = (id) => {
     nav(`/admin/registros/${id}`);
   };
@@ -297,7 +300,7 @@ export default function PanelRol() {
                 <th>Descripción Producto</th>
                 <th>Lote</th>
                 <th>Cantidad Planificada</th>
-                <th>Cantidad Elaborada</th>
+                {esAnalista && <th>Cantidad Elaborada</th>}
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -314,7 +317,7 @@ export default function PanelRol() {
                   <td>{r.descripcion}</td>
                   <td>{r.loteUnido}</td>
                   <td>{r.cantidad_planificada}</td>
-                  <td>{r.cantidad_elaborado}</td>
+                  {esAnalista && <td>{r.cantidad_elaborado}</td>}
                   <td>
                     <span className={`panel-estado ${r.estado}`}>
                       {r.estado}
