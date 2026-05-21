@@ -126,6 +126,16 @@ export default function PanelRol() {
 
   const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
+  const esSupervisor = rol === "SUPERVISOR";
+
+  // Funciones para determinar estado
+  const esEstadoPendienteSupervisor = (estado) => {
+    return estado?.toLowerCase().includes("supervisor");
+  };
+
+  const esEstadoPendienteAnalista = (estado) => {
+    return estado?.toLowerCase().includes("analista");
+  };
 
   const verDetalle = (id) => {
     nav(`/admin/registros/${id}`);
@@ -325,6 +335,7 @@ export default function PanelRol() {
                   </td>
                   <td>
                     <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      {/* VER - Disponible para todos siempre */}
                       <button
                         className="panel-btn panel-btn-view"
                         onClick={() => verDetalle(r.id)}
@@ -332,7 +343,8 @@ export default function PanelRol() {
                         👁️ Ver
                       </button>
                       
-                      {puedeEliminar && r.estado === "pendiente_SUPERVISOR" && (
+                      {/* ELIMINAR - Solo LÍDER/JEFE en estado pendiente_SUPERVISOR */}
+                      {puedeEliminar && esEstadoPendienteSupervisor(r.estado) && (
                         <button 
                           style={{ 
                             padding: "6px 12px", 
@@ -352,55 +364,35 @@ export default function PanelRol() {
                           🗑️ Eliminar
                         </button>
                       )}
-                      
-                      {puedeEliminar && r.estado !== "pendiente_SUPERVISOR" && (
-                        <button 
-                          style={{ 
-                            padding: "6px 12px", 
-                            background: "#9ca3af", 
-                            color: "white", 
-                            border: "none", 
-                            borderRadius: 6, 
-                            cursor: "not-allowed", 
-                            fontWeight: 600, 
-                            fontSize: 13, 
-                            opacity: 0.6, 
-                            display: "flex", 
-                            alignItems: "center", 
-                            gap: 5 
-                          }} 
-                          disabled 
-                          title="Solo se pueden eliminar registros en estado Pendiente Supervisor"
-                        >
-                          🗑️ Eliminar
-                        </button>
-                      )}
 
-                      {user.rol === "SUPERVISOR" && (
+                      {/* VERIFICAR - Solo SUPERVISOR en estado pendiente_SUPERVISOR */}
+                      {esSupervisor && esEstadoPendienteSupervisor(r.estado) && (
                         <button
                           className="panel-btn panel-btn-warning"
                           onClick={() => verificar(r.id)}
-                          disabled={r.estado === "pendiente_ANALISTA DE PRODUCCIÓN" || r.estado?.toLowerCase().includes("analista")}
                         >
                           ✓ Verificar
                         </button>
                       )}
 
-                      {user.rol === "ANALISTA DE PRODUCCIÓN" && (
+                      {/* APROBAR - Solo ANALISTA en estado pendiente_ANALISTA */}
+                      {esAnalista && esEstadoPendienteAnalista(r.estado) && (
                         <button
                           className="panel-btn panel-btn-success"
                           onClick={() => aprobar(r.id)}
-                          disabled={r.estado?.toLowerCase().includes("aprob")}
                         >
                           ✓ Aprobar
                         </button>
                       )}
 
-                      {["ANALISTA DE PRODUCCIÓN", "SUPERVISOR"].includes(user.rol) && (
+                      {/* RECHAZAR - SUPERVISOR en pendiente_SUPERVISOR, ANALISTA en pendiente_ANALISTA */}
+                      {(
+                        (esSupervisor && esEstadoPendienteSupervisor(r.estado)) ||
+                        (esAnalista && esEstadoPendienteAnalista(r.estado))
+                      ) && (
                         <button
                           className="panel-btn panel-btn-danger"
                           onClick={() => handleRechazarClick(r)}
-                          disabled={r.estado?.toLowerCase().includes("aprob")}
                         >
                           ✕ Rechazar
                         </button>
