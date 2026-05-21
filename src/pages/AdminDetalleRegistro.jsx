@@ -323,6 +323,11 @@ export default function AdminDetalleRegistro() {
     rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
   [rol]);
 
+  const isSupervisor = rol === "SUPERVISOR";
+  const isAnalista = rol === "ANALISTA DE PRODUCCIÓN";
+  const estadoPendienteAnalista = registro?.estado === "pendiente_ANALISTA_PRODUCCION";
+  const estadoAprobado = registro?.estado?.includes("aprobado");
+
   // Función para parsear arrays que vienen como JSON strings
   const parsearArrays = (datos) => {
     const datosLimpios = { ...datos };
@@ -425,6 +430,89 @@ export default function AdminDetalleRegistro() {
     setForm(prev => ({ ...prev, [campo]: nuevoArray }));
   }, []);
 
+  const parseActividadesParaEnviar = useCallback((actividades) => {
+    if (typeof actividades === 'object' && !Array.isArray(actividades)) {
+      return JSON.stringify(actividades);
+    }
+    if (Array.isArray(actividades)) {
+      const obj = {};
+      actividades.forEach((item, idx) => {
+        obj[idx] = item;
+      });
+      return JSON.stringify(obj);
+    }
+    return actividades;
+  }, []);
+
+  const validarArray = useCallback((arr) => {
+    if (!arr) return [];
+    if (typeof arr === 'string') {
+      try {
+        const parsed = JSON.parse(arr);
+        return Array.isArray(parsed) ? parsed.map(item => ({
+          ...item,
+          id: item.id || Date.now() + Math.random()
+        })) : [];
+      } catch (e) {
+        console.error('Error parseando array:', e);
+        return [];
+      }
+    }
+    return Array.isArray(arr) ? arr.map(item => ({
+      ...item,
+      id: item.id || Date.now() + Math.random()
+    })) : [];
+  }, []);
+
+  const prepararDatosParaEnvio = useCallback((estadoFinal) => {
+    const estadoAEnviar = estadoFinal ?? (registro.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro.estado);
+    return {
+      ...registro,
+      ...form,
+      rol: user.rol,
+      nombre: user.nombre,
+      estado: estadoAEnviar,
+      insumos: validarArray(form.insumos),
+      etiquetas: validarArray(form.etiquetas),
+      integrantes: validarArray(form.integrantes),
+      reposicion_no_conforme: validarArray(form.reposicion_no_conforme),
+      maquinarias: validarArray(form.maquinarias),
+      detalles_actividades: validarArray(form.detalles_actividades),
+      actividades_por_integrante: parseActividadesParaEnviar(form.actividades_por_integrante)
+    };
+  }, [form, registro, user.rol, user.nombre, validarArray, parseActividadesParaEnviar]);
+
+  const actualizarEstadoRegistro = async (nuevoEstado, confirmMessage) => {
+    if (confirmMessage && !window.confirm(confirmMessage)) return;
+
+    try {
+      setGuardando(true);
+      const datosAEnviar = prepararDatosParaEnvio(nuevoEstado);
+      const response = await api.put(`/registros/${id}`, datosAEnviar);
+      if (response.status === 200) {
+        const datosActualizados = response.data.registro || response.data;
+        setRegistro(datosActualizados);
+        setForm({ ...datosActualizados });
+        alert(`Registro actualizado a ${nuevoEstado}`);
+      } else {
+        throw new Error("Respuesta inesperada del servidor");
+      }
+    } catch (error) {
+      console.error("Error actualizando estado:", error);
+      let mensajeError = "Error al actualizar el estado";
+      if (error.response) {
+        mensajeError = error.response.data?.error || mensajeError;
+      } else if (error.request) {
+        mensajeError = "No se recibió respuesta del servidor";
+      } else {
+        mensajeError = error.message;
+      }
+      alert(mensajeError);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   const eliminarRegistro = async () => {
     const confirmar = window.confirm(
       "⚠️ ¿Está seguro que desea eliminar este registro?\n\nEsta acción no se puede deshacer."
@@ -474,44 +562,7 @@ export default function AdminDetalleRegistro() {
         actividadesParaEnviar = JSON.stringify(obj);
       }
 
-      // Validar y limpiar arrays - PRESERVANDO TODOS LOS CAMPOS
-      const validarArray = (arr) => {
-        if (!arr) return [];
-        if (typeof arr === 'string') {
-          try {
-            const parsed = JSON.parse(arr);
-            // Asegurar que cada item sea un objeto con todos sus campos
-            return Array.isArray(parsed) ? parsed.map(item => ({
-              ...item, // PRESERVAR TODO
-              id: item.id || Date.now() + Math.random()
-            })) : [];
-          } catch (e) {
-            console.error("Error parseando array:", e);
-            return [];
-          }
-        }
-        // Si ya es array, preservar campos
-        return Array.isArray(arr) ? arr.map(item => ({
-          ...item, // PRESERVAR TODO
-          id: item.id || Date.now() + Math.random()
-        })) : [];
-      };
-
-      const datosAEnviar = {
-        ...registro,
-        ...form,
-        rol: user.rol,
-        nombre: user.nombre,
-        estado: registro.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro.estado,
-        // Asegurar que los arrays estén correctamente estructurados
-        insumos: validarArray(form.insumos),
-        etiquetas: validarArray(form.etiquetas),
-        integrantes: validarArray(form.integrantes),
-        reposicion_no_conforme: validarArray(form.reposicion_no_conforme),
-        maquinarias: validarArray(form.maquinarias),
-        detalles_actividades: validarArray(form.detalles_actividades),
-        actividades_por_integrante: actividadesParaEnviar
-      };
+      const datosAEnviar = prepararDatosParaEnvio();
 
       console.log("Lotes a guardar:", {
         lotePrincipal: form.lotePrincipal,
@@ -1132,34 +1183,70 @@ export default function AdminDetalleRegistro() {
       
       {/* BOTONES DE ACCIÓN */}
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
-        {puedeEditar && !modoEdicion && (
-          <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
-            ✏️ Editar Registro
+        {estadoAprobado ? (
+          <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
+            👁️ Ver
           </button>
-        )}
-        {modoEdicion && puedeEditar && (
+        ) : (
           <>
-            <button className="btn-guardar" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
-              {guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}
-            </button>
-            <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(registro); }}>
-              ❌ Cancelar
+            {puedeEditar && !modoEdicion && (
+              <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
+                ✏️ Editar Registro
+              </button>
+            )}
+
+            {modoEdicion && puedeEditar && (
+              <>
+                <button className="btn-guardar" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
+                  {guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}
+                </button>
+                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(registro); }}>
+                  ❌ Cancelar
+                </button>
+              </>
+            )}
+
+            {isSupervisor && !modoEdicion && (
+              <>
+                <button className="btn" style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }}
+                  onClick={() => actualizarEstadoRegistro("pendiente_ANALISTA_PRODUCCION")}
+                  disabled={estadoPendienteAnalista || guardando}
+                >
+                  ✅ Verificar
+                </button>
+                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }}
+                  onClick={() => actualizarEstadoRegistro("rechazado")}
+                  disabled={estadoPendienteAnalista || guardando}
+                >
+                  ❌ Rechazar
+                </button>
+              </>
+            )}
+
+            {isAnalista && !modoEdicion && (
+              <button className="btn" style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: !estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: !estadoPendienteAnalista || guardando ? 0.6 : 1 }}
+                onClick={() => actualizarEstadoRegistro("aprobado", "¿Estás seguro de que quieres aprobar este registro?")}
+                disabled={!estadoPendienteAnalista || guardando}
+              >
+                ✅ Aprobar
+              </button>
+            )}
+
+            {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
+              <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
+                🗑️ Eliminar Registro
+              </button>
+            )}
+            {puedeEliminar && !modoEdicion && registro.estado !== "pendiente_SUPERVISOR" && (
+              <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">
+                🗑️ Eliminar Registro
+              </button>
+            )}
+            <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
+              ← Volver al Panel
             </button>
           </>
         )}
-        {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
-          <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
-            🗑️ Eliminar Registro
-          </button>
-        )}
-        {puedeEliminar && !modoEdicion && registro.estado !== "pendiente_SUPERVISOR" && (
-          <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">
-            🗑️ Eliminar Registro
-          </button>
-        )}
-        <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
-          ← Volver al Panel
-        </button>
       </div>
     </div>
   );
