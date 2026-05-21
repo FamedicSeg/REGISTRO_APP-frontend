@@ -316,7 +316,7 @@ export default function PanelRol() {
                   <td>{r.codigo_producto}</td>
                   {esAnalista && <td>{r.descripcion}</td>}
                   <td>{r.loteUnido}</td>
-                  <td>{r.cantidad_planificada}</td>
+                  {esAnalista && <td>{r.cantidad_planificada}</td>}
                   {esAnalista && <td>{r.cantidad_elaborado}</td>}
                   <td>
                     <span className={`panel-estado ${r.estado}`}>
