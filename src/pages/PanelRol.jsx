@@ -81,6 +81,11 @@ export default function PanelRol() {
   const registrosFiltrados =
     ["ADMINISTRADOR","JEFE DE PRODUCCIÓN","ANALISTA DE PRODUCCIÓN","SUPERVISOR","LÍDER"].includes(rol)
       ? registros.filter((r) => {
+          // ANALISTA DE PRODUCCIÓN no ve registros Aprobados
+          if (esAnalista && r.estado?.toLowerCase().includes("aprob")) {
+            return false;
+          }
+
           const texto = filtroTexto.toLowerCase();
           if (Array.isArray(r.maquinasSeleccionadas)) {
             const encontrado = r.maquinasSeleccionadas.some((m) =>
