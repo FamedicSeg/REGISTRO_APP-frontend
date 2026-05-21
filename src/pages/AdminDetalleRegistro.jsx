@@ -1197,7 +1197,7 @@ export default function AdminDetalleRegistro() {
 
             {modoEdicion && puedeEditar && (
               <>
-                <button className="btn-guardar" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
+                <button className="btn-guardar2" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
                   {guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}
                 </button>
                 <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(registro); }}>

@@ -275,7 +275,7 @@ textarea:focus {
   background: #219653;
 }
 
-.btn-guardar {
+.btn-guardar2 {
   background: linear-gradient(135deg, #27ae60, #2ecc71);
   width: 20%;
   height: 45px;
@@ -291,14 +291,14 @@ textarea:focus {
 }
 
 /* Hover cuando está activo */
-.btn-guardar:hover:not(:disabled) {
+.btn-guardar2:hover:not(:disabled) {
   background: linear-gradient(135deg, #219653, #27ae60);
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* Estado deshabilitado */
-.btn-guardar:disabled {
+.btn-guardar2:disabled {
   background: #bdbdbd;
   cursor: not-allowed;
   box-shadow: none;
