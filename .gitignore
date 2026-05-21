@@ -1,7 +1,10 @@
 # .gitignore de frontend
 .env
 .env.local
+.env.production
 .env.*.local
-.env.docker  
+.env.docker
+.env.development
+.env.test
 dist/
 node_modules/
