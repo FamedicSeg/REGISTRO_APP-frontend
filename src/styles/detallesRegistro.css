@@ -89,7 +89,7 @@ h3 {
 }
 
 .subtitle2 {
-  background: #f56f3b;
+  background: #eb5409;
   border-radius: 5px;
   padding: 10px;
   margin-bottom: 10px;
@@ -310,6 +310,33 @@ textarea:focus {
 }
 
 .grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+  background: #1790d1;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  background: #1790d1;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  background: #1790d1;
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  background: #1790d1;
+}
+
+.grid6 {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 20px;

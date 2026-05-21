@@ -4,7 +4,7 @@ import "../styles/registro.css";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import logo_safemed from "../assets/logo_safemed.jpg";
-import logo3 from "../assets/logo3.png"; {/* aqui realizar el cambio del logo al logo 3*/}
+import logo3 from "../assets/logo3.png";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toUpperCase, shouldUpperCase } from "../utils/textUtils";

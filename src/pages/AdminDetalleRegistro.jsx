@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import logo_safemed from "../assets/logo_safemed.jpg";
+import logo3 from "../assets/logo3.png";
 import "../styles/detallesRegistro.css";
 
 // Componente Campo - Versión controlada SIN errores
@@ -625,16 +627,27 @@ export default function AdminDetalleRegistro() {
   return (
     <div className="registro-container" style={{ padding: 30, maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
-      <header className="subtitle2" style={{ 
+      <header>
+              <div className="logo-left">
+                <img src={logo_safemed} alt="logo" className="logo" />
+              </div>
+              <h1>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
+              <div className="logo-right">
+                <img src={logo3} alt="logo2" className="logo" />
+              </div>
+            </header>
+      <header style={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center", 
         marginBottom: 30,
         paddingBottom: 20,
-        borderBottom: "2px solid #e5e7eb"
+        borderBottom: "2px solid #e5e7eb",
+        backgroundColor: "#e9ecf2"
       }}>
+      
         <div>
-          <h2 style={{ margin: 0, color: "#111827", fontSize: 28 }}>Registro #{registro.op}</h2>
+          <h2 style={{ margin: 0, color: "black", fontSize: 28 }}>Registro #{registro.op}</h2>
         </div>
         <div style={{ 
           padding: "8px 16px",
@@ -650,47 +663,59 @@ export default function AdminDetalleRegistro() {
 
       {/* INFO GENERAL */}
       <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>Información General</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 15 }}>
+        <div className="grid4">
           <Campo label="Fecha" campo="fecha" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha} onChange={handleChange} />
           <Campo label="OP" campo="op" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.op} onChange={handleChange} />
           <SelectField label="Turno" campo="turno" options={turnoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.turno} onChange={handleChange} />
           <SelectField label="Área" campo="area" options={areaOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.area} onChange={handleChange} />
           <SelectField label="Módulo" campo="modulo" options={moduloOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.modulo} onChange={handleChange} />
-          <Campo label="Responsable" campo="responsable" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.responsable} onChange={handleChange} />
-          <Campo label="Supervisor" campo="supervisor" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.supervisor} onChange={handleChange} />
-          <Campo label="Personal Asignado" campo="personal_asignado" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.personal_asignado} onChange={handleChange} />
-          <Campo label="Personal Otro" campo="personal_otro" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.personal_otro} onChange={handleChange} />
-          <Campo label="Personal Presente" campo="personal_presente" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.personal_presente} onChange={handleChange} />
-          <Campo label="Referencia" campo="codigo_producto" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.codigo_producto} onChange={handleChange} />
-          <Campo label="Descripción" campo="descripcion" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.descripcion} onChange={handleChange} />
-          <Campo label="Hora Planificada" campo="hora_planificada" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_planificada} onChange={handleChange} />
-          <Campo label="Cantidad Planificada" campo="cantidad_planificada" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_planificada} onChange={handleChange} />
-          <Campo label="Lote Primario" campo="lotePrincipal" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.lotePrincipal} onChange={handleChange} />
-          <Campo label="N°" campo="loteSecundario" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.loteSecundario} onChange={handleChange} />
-          <Campo label="Lote Unido" campo="loteUnido" modoEdicion={false} puedeEditar={false} value={form.loteUnido} onChange={handleChange} />
+        </div>
+        <div className="cabecera2">
+          <div className="grid2">
+            <Campo label="Responsable" campo="responsable" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.responsable} onChange={handleChange} />
+            <Campo label="Supervisor" campo="supervisor" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.supervisor} onChange={handleChange} />
+          </div>
+        </div>  
+        <div className="cabecera2">
+          <div className="grid3">
+            <Campo label="Personal Asignado" campo="personal_asignado" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.personal_asignado} onChange={handleChange} />
+            <Campo label="Personal Otro" campo="personal_otro" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.personal_otro} onChange={handleChange} />
+            <Campo label="Personal Presente" campo="personal_presente" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.personal_presente} onChange={handleChange} />
+          </div>
+        </div>
+        <div className="cabecera2">
+          <div className="grid6">
+            <Campo label="Referencia" campo="codigo_producto" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.codigo_producto} onChange={handleChange} />
+            <Campo label="Descripción" campo="descripcion" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.descripcion} onChange={handleChange} />
+            <Campo label="Hora Planificada" campo="hora_planificada" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_planificada} onChange={handleChange} />
+            <Campo label="Cantidad Planificada" campo="cantidad_planificada" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_planificada} onChange={handleChange} />
+            <Campo label="Lote Primario" campo="lotePrincipal" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.lotePrincipal} onChange={handleChange} />
+            <Campo label="N°" campo="loteSecundario" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.loteSecundario} onChange={handleChange} />
+          </div>
         </div>
         {!modoEdicion && (
           <div style={{ marginTop: 15, padding: 10, background: "#e9ecef", borderRadius: 8, display: "inline-block" }}>
-            <strong>Lotes:</strong> Lote: {registro.loteUnido || "-"}
+            <strong>Lote:</strong> {registro.loteUnido || "-"}
           </div>
         )}
       </div>
 
       {/* INSUMOS */}
+      <div className="subtitle2">
+          <h3 >ENTREGA Y RECEPCIÓN DE MATERIA PRIMA E INSUMOS</h3>
+      </div>
       <ArrayDisplay
-        titulo="Insumos"
         datos="insumos"
         modoEdicion={modoEdicion}
         puedeEditar={puedeEditar}
         items={modoEdicion ? (form.insumos || []) : (registro.insumos || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["tipo_insumo", "descripcion_insumo", "cantidad_insumo", "lote_insumo", "entrega", "recepcion"]}
-        backgroundColor="#f56f3b"
+        backgroundColor="#3498db"
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
-            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               <span>Cantidad: {i.cantidad_insumo} {i.descrip_cant_insumo}</span>
               <span>Lote: {i.lote_insumo}</span>
               <span>Entrega: {i.entrega}</span>
@@ -701,11 +726,14 @@ export default function AdminDetalleRegistro() {
       />
 
       {/* REPOSICIÓN NO CONFORME */}
+      <div className="subtitle2">
+          <h3 >REPOSICIÓN NO CONFORME</h3>
+      </div>
       <ArrayDisplay
-        titulo="REPOSICIÓN NO CONFORME"
+        titulo=""
         datos="reposicion_no_conforme"
-        modoEdicion={modoEdicion}
-        puedeEditar={puedeEditar}
+          modoEdicion={modoEdicion}
+          puedeEditar={puedeEditar}
         items={modoEdicion ? (form.reposicion_no_conforme || []) : (registro.reposicion_no_conforme || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["codigo_insumo", "descripcion_insumo", "cantidad", "descrip_cant_insumo", "lote", "entrega", "recepcion"]}
@@ -713,7 +741,7 @@ export default function AdminDetalleRegistro() {
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.codigo_insumo} — {i.descripcion_insumo}</div>
-            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               <span>Cantidad: {i.cantidad} {i.descrip_cant_insumo}</span>
               <span>Lote: {i.lote}</span>
               <span>Entrega: {i.entrega}</span>
@@ -724,15 +752,18 @@ export default function AdminDetalleRegistro() {
       />
 
       {/* ETIQUETAS */}
+      <div className="subtitle2">
+          <h3 >ENTREGA Y RECEPCIÓN DE ETIQUETAS EN MESA</h3>
+      </div>
       <ArrayDisplay
-        titulo="ETIQUETAS"
+        titulo=""
         datos="etiquetas"
         modoEdicion={modoEdicion}
         puedeEditar={puedeEditar}
         items={modoEdicion ? (form.etiquetas || []) : (registro.etiquetas || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["descripcion_etiqueta", "cantidad_etiqueta", "observacion_etiqueta", "entrega_etiqueta", "recepcion_etiqueta"]}
-        backgroundColor="#f56f3b"
+        backgroundColor="#3498db"
         renderItem={(e) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{e.descripcion_etiqueta}</div>
@@ -745,41 +776,81 @@ export default function AdminDetalleRegistro() {
         )}
       />
 
-      {/* CANTIDADES */}
-      <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>CANTIDADES</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 15 }}>
-          <Campo label="Cantidad Elaborada" campo="cantidad_elaborado" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_elaborado} onChange={handleChange} />
-          <Campo label="Cantidad en Proceso" campo="cantidad_proceso" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_proceso} onChange={handleChange} />
-          <Campo label="Cantidad Merma" campo="cantidad_merma" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_merma} onChange={handleChange} />
-          <Campo label="Fecha Final Producto" campo="fecha_final_producto" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha_final_producto} onChange={handleChange} />
-        </div>
-      </div>
+      {/* DOS COLUMNAS: CANTIDAD PRODUCTO Y CONFECCIÓN Y AUTOMÁTICAS */}
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "1fr 1fr", 
+        gap: "20px",
+        marginBottom: "20px"
+      }}>
+        
+        {/* COLUMNA DERECHA - CONFECCIÓN Y AUTOMÁTICAS */}
+        <div>
+          <div className="subtitle2" style={{ marginBottom: "10px" }}>
+            <h3>CONFECCIÓN Y AUTOMÁTICAS</h3>
+          </div>
+          <div className="card" style={{ padding: "15px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <Campo label="H. INICIO" campo="hora_inicio" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_inicio} onChange={handleChange} />
+                <Campo label="H. FIN" campo="hora_fin" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_fin} onChange={handleChange} />
+              </div>
 
-      {/* TIEMPOS Y CONFECCIÓN */}
-      <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>CONFECCIÓN Y AUTOMÁTICAS</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 15 }}>
-          <Campo label="Hora Inicio" campo="hora_inicio" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_inicio} onChange={handleChange} />
-          <Campo label="Hora Fin" campo="hora_fin" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_fin} onChange={handleChange} />
-          <SelectField label="Destino" campo="destino" options={destinoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.destino} onChange={handleChange} />
-          {form.destino === "CLIENTE" && (
-            <Campo label="Nombre Cliente" campo="cliente" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cliente} onChange={handleChange} />
-          )}
-          <SelectField label="Estéril" campo="esteril" options={siNoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.esteril} onChange={handleChange} />
-          <SelectField label="Leyenda" campo="leyenda" options={siNoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.leyenda} onChange={handleChange} />
-          {form.leyenda === "SÍ" && (
-            <SelectField label="Tipo Leyenda" campo="leyenda_si" options={leyendaOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.leyenda_si} onChange={handleChange} />
-          )}
-          {form.leyenda_si === "OTRA" && (
-            <Campo label="Descripción Leyenda" campo="leyenda_otra" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.leyenda_otra} onChange={handleChange} />
-          )}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <SelectField label="PARA" campo="destino" options={destinoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.destino} onChange={handleChange} />
+                {form.destino === "CLIENTE" && (
+                  <Campo label="N. CLIENTE" campo="cliente" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cliente} onChange={handleChange} />
+                )}
+                {form.destino !== "CLIENTE" && <div></div>}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <SelectField label="ESTÉRIL" campo="esteril" options={siNoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.esteril} onChange={handleChange} />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <SelectField label="LEYENDA" campo="leyenda" options={siNoOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.leyenda} onChange={handleChange} />
+                {form.leyenda === "SÍ" && (
+                  <SelectField label="TIPO LEYENDA" campo="leyenda_si" options={leyendaOptions} modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.leyenda_si} onChange={handleChange} />
+                )}
+                {form.leyenda !== "SÍ" && <div></div>}
+              </div>
+
+              {form.leyenda_si === "OTRA" && (
+                <Campo label="DESCRIPCIÓN LEYENDA" campo="leyenda_otra" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.leyenda_otra} onChange={handleChange} />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* COLUMNA IZQUIERDA - CANTIDAD PRODUCTO */}
+        <div>
+          <div className="subtitle2" style={{ marginBottom: "10px"}}>
+            <h3>CANTIDAD PRODUCTO</h3>
+          </div>
+          <div className="card" style={{ padding: "15px" }}>
+            <div style={{ 
+              display: "flex", 
+              flexDirection: "column", 
+              gap: "15px" 
+            }}>
+              <Campo label="ELABORADO" campo="cantidad_elaborado" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_elaborado} onChange={handleChange} />
+              
+              <Campo label="PROCESO" campo="cantidad_proceso" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_proceso} onChange={handleChange} />
+              
+              <Campo label="MERMA" campo="cantidad_merma" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_merma} onChange={handleChange} />
+              
+              <Campo label="FECHA FINAL DE PRODUCTO TERMINADO" campo="fecha_final_producto" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha_final_producto} onChange={handleChange} />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* MAQUINARIA */}
-      <div className="card4" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>MAQUINARIAS</h3>
+      <div className="subtitle2">
+        <h3>MAQUINARIAS</h3>
+      </div>
+      <div className="card" style={cardStyle}>
         {(() => {
           const maqList = modoEdicion ? (form.maquinarias || []) : (registro.maquinarias || []);
           
@@ -877,8 +948,10 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* DETALLES DE ACTIVIDADES */}
+      <div className="subtitle2" style={{ marginTop: 30 }}>
+        <h3 >DETALLES DE ACTIVIDADES</h3>
+      </div>
       <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>📋 DETALLES DE ACTIVIDADES</h3>
         {(() => {
           let detalles = modoEdicion ? form.detalles_actividades : registro.detalles_actividades;
 
@@ -1017,8 +1090,10 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* ACTIVIDADES POR INTEGRANTE */}
-      <div style={cardStyle}>
-        <h3 style={sectionTitleStyle}>DETALLES DE ACTIVIDADES POR INTEGRANTE</h3>
+      <div className="subtitle2" style={{ marginBottom: "10px" }}>
+        <h3>DETALLES DE ACTIVIDADES POR INTEGRANTE</h3>
+      </div>
+      <div className="card" style={cardStyle}>
         {(() => {
           let rawData = modoEdicion ? form.actividades_por_integrante : registro.actividades_por_integrante;
 
@@ -1143,15 +1218,18 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* INTEGRANTES */}
+      <div className="subtitle2" style={{ marginTop: 30 }}>
+        <h3 >INTEGRANTES</h3>
+      </div>
       <ArrayDisplay
-        titulo="INTEGRANTES"
+        titulo=""
         datos="integrantes"
         modoEdicion={modoEdicion}
         puedeEditar={puedeEditar}
         items={modoEdicion ? (form.integrantes || []) : (registro.integrantes || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["nombre", "cargo"]}
-        backgroundColor="#f56f3b"
+        backgroundColor="#1790d1"
         renderItem={(n) => (
           <div style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>{n.nombre}</span>
@@ -1162,8 +1240,10 @@ export default function AdminDetalleRegistro() {
       />
 
       {/* OBSERVACIONES */}
+      <div className="subtitle2" style={{ marginTop: 30 }}>
+        <h3 >OBSERVACIONES</h3>
+      </div>
       <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>OBSERVACIONES</h3>
         <Campo label="" campo="observaciones" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.observaciones} onChange={handleChange} />
       </div>
 
