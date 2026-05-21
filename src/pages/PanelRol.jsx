@@ -24,6 +24,10 @@ export default function PanelRol() {
 
   const rol = user?.rol || "";
 
+  const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
+  const esSupervisor = rol === "SUPERVISOR";
+  const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
+
   const puedeEliminar = useMemo(() => 
     rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
   [rol]);
@@ -128,10 +132,6 @@ export default function PanelRol() {
     acc.total = registros.length;
     return acc;
   }, [registros]);
-
-  const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
-  const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
-  const esSupervisor = rol === "SUPERVISOR";
 
   // Funciones para determinar estado
   const esEstadoPendienteSupervisor = (estado) => {
