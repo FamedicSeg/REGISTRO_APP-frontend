@@ -297,7 +297,7 @@ export default function PanelRol() {
                 <th>Módulo</th>
                 <th>Responsable</th>
                 <th>Código Producto</th>
-                <th>Descripción Producto</th>
+                {esAnalista && <th>Descripción Producto</th>}
                 <th>Lote</th>
                 <th>Cantidad Planificada</th>
                 {esAnalista && <th>Cantidad Elaborada</th>}
