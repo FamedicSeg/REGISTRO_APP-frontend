@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import "../styles/registro.css";
 
 // Componente Campo - Versión controlada SIN errores
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
@@ -543,11 +544,9 @@ export default function AdminDetalleRegistro() {
   };
 
   const cardStyle = useMemo(() => ({
-    border: "1px solid #e5e7eb",
     padding: 24,
     borderRadius: 12,
     marginBottom: 25,
-    background: "#ffffff",
     boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
   }), []);
 
@@ -572,9 +571,9 @@ export default function AdminDetalleRegistro() {
   );
 
   return (
-    <div style={{ padding: 30, maxWidth: 1400, margin: "0 auto" }}>
+    <div className="registro-container" style={{ padding: 30, maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ 
+      <header className="card" style={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center", 
@@ -595,10 +594,10 @@ export default function AdminDetalleRegistro() {
         }}>
           {registro.estado || "Pendiente"}
         </div>
-      </div>
+      </header>
 
       {/* INFO GENERAL */}
-      <div style={cardStyle}>
+      <div className="card" style={cardStyle}>
         <h3 style={sectionTitleStyle}>Información General</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 15 }}>
           <Campo label="Fecha" campo="fecha" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha} onChange={handleChange} />
@@ -692,7 +691,7 @@ export default function AdminDetalleRegistro() {
       />
 
       {/* CANTIDADES */}
-      <div style={cardStyle}>
+      <div className="card" style={cardStyle}>
         <h3 style={sectionTitleStyle}>Cantidades</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 15 }}>
           <Campo label="Cantidad Elaborada" campo="cantidad_elaborado" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_elaborado} onChange={handleChange} />
@@ -703,7 +702,7 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* TIEMPOS Y CONFECCIÓN */}
-      <div style={cardStyle}>
+      <div className="card" style={cardStyle}>
         <h3 style={sectionTitleStyle}>Confección y Automáticas</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 15 }}>
           <Campo label="Hora Inicio" campo="hora_inicio" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_inicio} onChange={handleChange} />
@@ -724,7 +723,7 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* MAQUINARIA */}
-      <div style={cardStyle}>
+      <div className="card" style={cardStyle}>
         <h3 style={sectionTitleStyle}>MAQUINARIAS</h3>
         {(() => {
           const maqList = modoEdicion ? (form.maquinarias || []) : (registro.maquinarias || []);
@@ -823,7 +822,7 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* DETALLES DE ACTIVIDADES */}
-      <div style={cardStyle}>
+      <div className="card" style={cardStyle}>
         <h3 style={sectionTitleStyle}>📋 DETALLES DE ACTIVIDADES</h3>
         {(() => {
           let detalles = modoEdicion ? form.detalles_actividades : registro.detalles_actividades;
@@ -1107,7 +1106,7 @@ export default function AdminDetalleRegistro() {
       />
 
       {/* OBSERVACIONES */}
-      <div style={cardStyle}>
+      <div className="card" style={cardStyle}>
         <h3 style={sectionTitleStyle}>OBSERVACIONES</h3>
         <Campo label="" campo="observaciones" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.observaciones} onChange={handleChange} />
       </div>
@@ -1129,31 +1128,31 @@ export default function AdminDetalleRegistro() {
       {/* BOTONES DE ACCIÓN */}
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
         {puedeEditar && !modoEdicion && (
-          <button style={{ padding: "12px 24px", background: "#2563eb", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
+          <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
             ✏️ Editar Registro
           </button>
         )}
         {modoEdicion && puedeEditar && (
           <>
-            <button style={{ padding: "12px 24px", background: "#16a34a", color: "white", border: "none", borderRadius: 8, cursor: guardando ? "not-allowed" : "pointer", fontWeight: 600, fontSize: 15, opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
+            <button className="btn-guardar" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
               {guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}
             </button>
-            <button style={{ padding: "12px 24px", background: "#ef4444", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 15 }} onClick={() => { setModoEdicion(false); setForm(registro); }}>
+            <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(registro); }}>
               ❌ Cancelar
             </button>
           </>
         )}
         {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
-          <button style={{ padding: "12px 24px", background: "#dc2626", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
+          <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
             🗑️ Eliminar Registro
           </button>
         )}
         {puedeEliminar && !modoEdicion && registro.estado !== "pendiente_SUPERVISOR" && (
-          <button style={{ padding: "12px 24px", background: "#9ca3af", color: "white", border: "none", borderRadius: 8, cursor: "not-allowed", fontWeight: 600, fontSize: 15, opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">
+          <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">
             🗑️ Eliminar Registro
           </button>
         )}
-        <button style={{ padding: "12px 24px", background: "#6b7280", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
+        <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
           ← Volver al Panel
         </button>
       </div>
