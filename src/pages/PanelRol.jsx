@@ -314,7 +314,7 @@ export default function PanelRol() {
                   <td>{r.modulo}</td>
                   <td>{r.responsable}</td>
                   <td>{r.codigo_producto}</td>
-                  <td>{r.descripcion}</td>
+                  {esAnalista && <td>{r.descripcion}</td>}
                   <td>{r.loteUnido}</td>
                   <td>{r.cantidad_planificada}</td>
                   {esAnalista && <td>{r.cantidad_elaborado}</td>}
