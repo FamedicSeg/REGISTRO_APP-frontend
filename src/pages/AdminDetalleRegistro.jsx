@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import "../styles/registro.css";
+import "../styles/detallesRegistro.css";
 
 // Componente Campo - Versión controlada SIN errores
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
@@ -11,7 +11,7 @@ const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, o
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 15 }}>
-      <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>{label}</span>
       {modoEdicion && puedeEditar ? (
         <input
           type={type}
@@ -42,7 +42,7 @@ const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, o
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 15 }}>
-      <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>{label}</span>
       {modoEdicion && puedeEditar ? (
         <select
           value={value || ""}
@@ -110,7 +110,7 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: `repeat(auto-fit, minmax(180px, 1fr))` }}>
         {camposEditables.map(campo => (
           <div key={campo}>
-            <label style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", marginBottom: 4, display: "block" }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: "#000000", marginBottom: 4, display: "block" }}>
               {campo.replace(/_/g, ' ').toUpperCase()}
             </label>
             {modoEdicion && puedeEditar ? (
@@ -153,7 +153,8 @@ const ArrayDisplay = ({
   items = [], 
   onItemsChange,
   camposEditables = [],
-  renderItem 
+  renderItem,
+  backgroundColor = "#ffffff"
 }) => {
   const agregarItem = useCallback(() => {
     const nuevoItem = {
@@ -180,7 +181,7 @@ const ArrayDisplay = ({
     padding: 20,
     borderRadius: 12,
     marginBottom: 25,
-    background: "#ffffff",
+    background: backgroundColor,
     boxShadow: "0 4px 10px rgba(0,0,0,0.05)"
   };
 
@@ -200,7 +201,7 @@ const ArrayDisplay = ({
             onClick={agregarItem}
             style={{
               padding: "8px 16px",
-              background: "#3b82f6",
+              background: "#4B5563",
               color: "white",
               border: "none",
               borderRadius: 6,
@@ -573,7 +574,7 @@ export default function AdminDetalleRegistro() {
   return (
     <div className="registro-container" style={{ padding: 30, maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
-      <header className="card" style={{ 
+      <header className="subtitle2" style={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center", 
@@ -634,10 +635,11 @@ export default function AdminDetalleRegistro() {
         items={modoEdicion ? (form.insumos || []) : (registro.insumos || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["tipo_insumo", "descripcion_insumo", "cantidad_insumo", "lote_insumo", "entrega", "recepcion"]}
+        backgroundColor="#f56f3b"
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
-            <div style={{ fontSize: 12, color: "#666", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               <span>Cantidad: {i.cantidad_insumo} {i.descrip_cant_insumo}</span>
               <span>Lote: {i.lote_insumo}</span>
               <span>Entrega: {i.entrega}</span>
@@ -656,10 +658,11 @@ export default function AdminDetalleRegistro() {
         items={modoEdicion ? (form.reposicion_no_conforme || []) : (registro.reposicion_no_conforme || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["codigo_insumo", "descripcion_insumo", "cantidad", "descrip_cant_insumo", "lote", "entrega", "recepcion"]}
+        backgroundColor="#3498db"
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.codigo_insumo} — {i.descripcion_insumo}</div>
-            <div style={{ fontSize: 12, color: "#666", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               <span>Cantidad: {i.cantidad} {i.descrip_cant_insumo}</span>
               <span>Lote: {i.lote}</span>
               <span>Entrega: {i.entrega}</span>
@@ -678,10 +681,11 @@ export default function AdminDetalleRegistro() {
         items={modoEdicion ? (form.etiquetas || []) : (registro.etiquetas || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["descripcion_etiqueta", "cantidad_etiqueta", "observacion_etiqueta", "entrega_etiqueta", "recepcion_etiqueta"]}
+        backgroundColor="#f56f3b"
         renderItem={(e) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{e.descripcion_etiqueta}</div>
-            <div style={{ fontSize: 12, color: "#666", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               <span>Cantidad: {e.cantidad_etiqueta}</span>
               <span>Entrega: {e.entrega_etiqueta}</span>
               <span>Recepción: {e.recepcion_etiqueta}</span>
@@ -692,7 +696,7 @@ export default function AdminDetalleRegistro() {
 
       {/* CANTIDADES */}
       <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>Cantidades</h3>
+        <h3 style={sectionTitleStyle}>CANTIDADES</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 15 }}>
           <Campo label="Cantidad Elaborada" campo="cantidad_elaborado" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_elaborado} onChange={handleChange} />
           <Campo label="Cantidad en Proceso" campo="cantidad_proceso" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_proceso} onChange={handleChange} />
@@ -703,7 +707,7 @@ export default function AdminDetalleRegistro() {
 
       {/* TIEMPOS Y CONFECCIÓN */}
       <div className="card" style={cardStyle}>
-        <h3 style={sectionTitleStyle}>Confección y Automáticas</h3>
+        <h3 style={sectionTitleStyle}>CONFECCIÓN Y AUTOMÁTICAS</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 15 }}>
           <Campo label="Hora Inicio" campo="hora_inicio" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_inicio} onChange={handleChange} />
           <Campo label="Hora Fin" campo="hora_fin" type="time" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_fin} onChange={handleChange} />
@@ -723,7 +727,7 @@ export default function AdminDetalleRegistro() {
       </div>
 
       {/* MAQUINARIA */}
-      <div className="card" style={cardStyle}>
+      <div className="card4" style={cardStyle}>
         <h3 style={sectionTitleStyle}>MAQUINARIAS</h3>
         {(() => {
           const maqList = modoEdicion ? (form.maquinarias || []) : (registro.maquinarias || []);
@@ -761,7 +765,7 @@ export default function AdminDetalleRegistro() {
               <div style={{ textAlign: "center", padding: 20, background: "#f9fafb", borderRadius: 8 }}>
                 <p style={{ color: "#6b7280", margin: 0 }}>No hay maquinaria registrada</p>
                 {modoEdicion && puedeEditar && (
-                  <button onClick={agregarMaquinaria} style={{ marginTop: 12, padding: "6px 12px", background: "#3b82f6", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+                  <button onClick={agregarMaquinaria} style={{ marginTop: 12, padding: "6px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
                     + Agregar Maquinaria
                   </button>
                 )}
@@ -773,7 +777,7 @@ export default function AdminDetalleRegistro() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {modoEdicion && puedeEditar && (
                 <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-                  <button onClick={agregarMaquinaria} style={{ padding: "8px 16px", background: "#3b82f6", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", gap: 5 }}>
+                  <button onClick={agregarMaquinaria} style={{ padding: "8px 16px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", gap: 5 }}>
                     <span style={{ fontSize: 18 }}>+</span> Agregar Maquinaria
                   </button>
                 </div>
@@ -788,7 +792,7 @@ export default function AdminDetalleRegistro() {
                   )}
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 15 }}>
                     <div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>MAQUINARIA</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>MAQUINARIA</span>
                       {modoEdicion && puedeEditar ? (
                         <input type="text" value={m.maquinaria || ""} onChange={(e) => actualizarMaquinaria(i, "maquinaria", e.target.value)} style={{ marginTop: 4, padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 14 }} placeholder="Ej: Máquina de coser" />
                       ) : (
@@ -796,7 +800,7 @@ export default function AdminDetalleRegistro() {
                       )}
                     </div>
                     <div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>CANTIDAD</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>CANTIDAD</span>
                       {modoEdicion && puedeEditar ? (
                         <input type="number" min="0" value={m.cantidad_maquinaria || ""} onChange={(e) => actualizarMaquinaria(i, "cantidad_maquinaria", e.target.value)} style={{ marginTop: 4, padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 14 }} placeholder="Ej: 5" />
                       ) : (
@@ -804,7 +808,7 @@ export default function AdminDetalleRegistro() {
                       )}
                     </div>
                     <div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>N° MÁQUINAS</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>N° MÁQUINAS</span>
                       {modoEdicion && puedeEditar ? (
                         <input type="text" value={Array.isArray(m.numero_maquinaria) ? m.numero_maquinaria.join(", ") : (m.numero_maquinaria || "")} onChange={(e) => actualizarNumerosMaquina(i, e.target.value)} style={{ marginTop: 4, padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 14 }} placeholder="Ej: 1, 2, 3 (separados por coma)" />
                       ) : (
@@ -1096,6 +1100,7 @@ export default function AdminDetalleRegistro() {
         items={modoEdicion ? (form.integrantes || []) : (registro.integrantes || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["nombre", "cargo"]}
+        backgroundColor="#f56f3b"
         renderItem={(n) => (
           <div style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontWeight: 600 }}>{n.nombre}</span>
@@ -1128,7 +1133,7 @@ export default function AdminDetalleRegistro() {
       {/* BOTONES DE ACCIÓN */}
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
         {puedeEditar && !modoEdicion && (
-          <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
+          <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
             ✏️ Editar Registro
           </button>
         )}
@@ -1152,7 +1157,7 @@ export default function AdminDetalleRegistro() {
             🗑️ Eliminar Registro
           </button>
         )}
-        <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
+        <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
           ← Volver al Panel
         </button>
       </div>
