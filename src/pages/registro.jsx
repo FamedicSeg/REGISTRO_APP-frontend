@@ -1990,7 +1990,7 @@ const generarPDF = async() =>{
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
-                    <option value="SHIRLEY NICOLE CAIZA MOROCHO">SHIRLEY NICOLE CAIZA MOROCHO</option>
+                    <option value="NATALY SILVANA TIPAN GUALOTUÑA">NATALY SILVANA TIPAN GUALOTUÑA</option>
                     <option value="ANA LUCIA GUAMAN PILATUÑA">ANA LUCIA GUAMAN PILATUÑA</option>
                   </select>
                 </div>
