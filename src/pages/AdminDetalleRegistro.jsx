@@ -330,6 +330,12 @@ export default function AdminDetalleRegistro() {
   const estadoPendienteAnalista = registro?.estado === "pendiente_ANALISTA_PRODUCCION";
   const estadoAprobado = registro?.estado?.includes("aprobado");
 
+  // Función para formatear texto a mayúsculas manteniendo espacios
+  const formatearMayusculas = (texto) => {
+    if (!texto) return texto;
+    return texto.toUpperCase();
+  };
+
   // Función para parsear arrays que vienen como JSON strings
   const parsearArrays = (datos) => {
     const datosLimpios = { ...datos };
@@ -340,38 +346,111 @@ export default function AdminDetalleRegistro() {
       'etiquetas',
       'integrantes',
       'reposicion_no_conforme',
-      'maquinarias',
-      'actividades_por_integrante',
-      'detalles_actividades'
+      'maquinarias'
     ];
 
     camposArray.forEach(campo => {
       if (datosLimpios[campo]) {
         if (typeof datosLimpios[campo] === 'string') {
-          // ✅ detalles_actividades es TEXT plano con \n, NO JSON - dejarlo como string
-          if (campo !== 'detalles_actividades') {
-            try {
-              datosLimpios[campo] = JSON.parse(datosLimpios[campo]);
-              // ✅ Si es maquinarias y no tiene la estructura esperada, normalizarla
-              if (campo === 'maquinarias' && Array.isArray(datosLimpios[campo])) {
-                datosLimpios[campo] = datosLimpios[campo].map(item => ({
-                  ...item,
-                  numero_maquinaria: Array.isArray(item.numero_maquinaria) 
-                    ? item.numero_maquinaria 
-                    : (item.numero_maquinaria ? [item.numero_maquinaria] : [])
-                }));
-              }
-            } catch (e) {
-              console.error(`Error parseando ${campo}:`, e);
-              datosLimpios[campo] = campo === 'actividades_por_integrante' ? {} : [];
+          try {
+            datosLimpios[campo] = JSON.parse(datosLimpios[campo]);
+            if (campo === 'maquinarias' && Array.isArray(datosLimpios[campo])) {
+              datosLimpios[campo] = datosLimpios[campo].map(item => ({
+                ...item,
+                numero_maquinaria: Array.isArray(item.numero_maquinaria) 
+                  ? item.numero_maquinaria 
+                  : (item.numero_maquinaria ? [item.numero_maquinaria] : [])
+              }));
             }
+          } catch (e) {
+            console.error(`Error parseando ${campo}:`, e);
+            datosLimpios[campo] = [];
           }
         }
       } else {
-        // Si el campo no existe, asignar valor por defecto
-        datosLimpios[campo] = campo === 'actividades_por_integrante' ? {} : [];
+        datosLimpios[campo] = [];
       }
     });
+
+    // Manejar detalles_actividades - Mantener como array de strings
+    if (datosLimpios.detalles_actividades) {
+      if (typeof datosLimpios.detalles_actividades === 'string') {
+        // Si es un string JSON válido
+        if (datosLimpios.detalles_actividades.startsWith('[') || datosLimpios.detalles_actividades.startsWith('{')) {
+          try {
+            const parsed = JSON.parse(datosLimpios.detalles_actividades);
+            datosLimpios.detalles_actividades = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (error) {
+            // Si no es JSON, dividir por líneas y convertir a mayúsculas
+            datosLimpios.detalles_actividades = datosLimpios.detalles_actividades
+              .split('\n')
+              .map(d => formatearMayusculas(d.trim()))
+              .filter(d => d);
+              console.error('Error parseando detalles_actividades, se tratará como texto plano:', error);
+          }
+        } else {
+          // Texto plano con saltos de línea - convertir a mayúsculas
+          datosLimpios.detalles_actividades = datosLimpios.detalles_actividades
+            .split('\n')
+            .map(d => formatearMayusculas(d.trim()))
+            .filter(d => d);
+        }
+      } else if (Array.isArray(datosLimpios.detalles_actividades)) {
+        // Convertir cada elemento a mayúsculas
+        datosLimpios.detalles_actividades = datosLimpios.detalles_actividades.map(d => 
+          typeof d === 'string' ? formatearMayusculas(d.trim()) : d
+        );
+      }
+    } else {
+      datosLimpios.detalles_actividades = [];
+    }
+
+    // Manejar actividades_por_integrante
+    if (datosLimpios.actividades_por_integrante) {
+      if (typeof datosLimpios.actividades_por_integrante === 'string') {
+        try {
+          const parsed = JSON.parse(datosLimpios.actividades_por_integrante);
+          datosLimpios.actividades_por_integrante = parsed;
+        } catch (e) {
+          console.error('Error parseando actividades_por_integrante:', e);
+          datosLimpios.actividades_por_integrante = {};
+        }
+      }
+      // Si es array, convertir a objeto
+      if (Array.isArray(datosLimpios.actividades_por_integrante)) {
+        const obj = {};
+        datosLimpios.actividades_por_integrante.forEach((item, idx) => {
+          obj[idx] = item;
+        });
+        datosLimpios.actividades_por_integrante = obj;
+      }
+      // Asegurar que cada integrante tenga su array de actividades y convertir nombres a mayúsculas
+      if (typeof datosLimpios.actividades_por_integrante === 'object') {
+        Object.keys(datosLimpios.actividades_por_integrante).forEach(key => {
+          const integrante = datosLimpios.actividades_por_integrante[key];
+          if (integrante) {
+            // Convertir nombre a mayúsculas
+            if (integrante.nombre) {
+              integrante.nombre = formatearMayusculas(integrante.nombre);
+            }
+            // Convertir cargo a mayúsculas
+            if (integrante.cargo) {
+              integrante.cargo = formatearMayusculas(integrante.cargo);
+            }
+            if (!integrante.actividades) {
+              integrante.actividades = [];
+            }
+            // Convertir nombres de actividades a mayúsculas
+            integrante.actividades = integrante.actividades.map(act => ({
+              ...act,
+              actividad: act.actividad ? formatearMayusculas(act.actividad) : act.actividad
+            }));
+          }
+        });
+      }
+    } else {
+      datosLimpios.actividades_por_integrante = {};
+    }
 
     return datosLimpios;
   };
@@ -386,20 +465,8 @@ export default function AdminDetalleRegistro() {
         // Parsear todos los arrays que vienen como JSON strings
         const datosParsados = parsearArrays(datosRegistro);
 
-        // Convertir actividades_por_integrante de array a objeto si es necesario
-        if (datosParsados.actividades_por_integrante &&
-            Array.isArray(datosParsados.actividades_por_integrante)) {
-          const obj = {};
-          datosParsados.actividades_por_integrante.forEach((item, idx) => {
-            obj[idx] = item;
-          });
-          datosParsados.actividades_por_integrante = obj;
-        }
-
         setRegistro(datosParsados);
-        setForm({
-          ...datosParsados
-        });
+        setForm(JSON.parse(JSON.stringify(datosParsados))); // Deep copy para evitar referencias
       } catch(error) {
         console.error("Error cargando registro:", error);
         alert("Error al cargar el registro");
@@ -432,18 +499,8 @@ export default function AdminDetalleRegistro() {
     setForm(prev => ({ ...prev, [campo]: nuevoArray }));
   }, []);
 
-  const parseActividadesParaEnviar = useCallback((actividades) => {
-    if (typeof actividades === 'object' && !Array.isArray(actividades)) {
-      return JSON.stringify(actividades);
-    }
-    if (Array.isArray(actividades)) {
-      const obj = {};
-      actividades.forEach((item, idx) => {
-        obj[idx] = item;
-      });
-      return JSON.stringify(obj);
-    }
-    return actividades;
+  const handleActividadesPorIntegranteChange = useCallback((nuevoValor) => {
+    setForm(prev => ({ ...prev, actividades_por_integrante: nuevoValor }));
   }, []);
 
   const validarArray = useCallback((arr) => {
@@ -468,6 +525,32 @@ export default function AdminDetalleRegistro() {
 
   const prepararDatosParaEnvio = useCallback((estadoFinal) => {
     const estadoAEnviar = estadoFinal ?? (registro.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro.estado);
+    
+    // Preparar detalles_actividades - asegurar que sea un array
+    let detallesParaEnviar = form.detalles_actividades;
+    if (!detallesParaEnviar) {
+      detallesParaEnviar = [];
+    }
+    if (!Array.isArray(detallesParaEnviar)) {
+      if (typeof detallesParaEnviar === 'string') {
+        try {
+          detallesParaEnviar = JSON.parse(detallesParaEnviar);
+        } catch {
+          detallesParaEnviar = [detallesParaEnviar];
+        }
+      } else {
+        detallesParaEnviar = [];
+      }
+    }
+    // Convertir a JSON string para enviar
+    detallesParaEnviar = JSON.stringify(detallesParaEnviar);
+    
+    // Preparar actividades_por_integrante para enviar como JSON string
+    let actividadesParaEnviar = form.actividades_por_integrante;
+    if (typeof actividadesParaEnviar === 'object') {
+      actividadesParaEnviar = JSON.stringify(actividadesParaEnviar);
+    }
+
     return {
       ...registro,
       ...form,
@@ -479,10 +562,10 @@ export default function AdminDetalleRegistro() {
       integrantes: validarArray(form.integrantes),
       reposicion_no_conforme: validarArray(form.reposicion_no_conforme),
       maquinarias: validarArray(form.maquinarias),
-      detalles_actividades: validarArray(form.detalles_actividades),
-      actividades_por_integrante: parseActividadesParaEnviar(form.actividades_por_integrante)
+      detalles_actividades: detallesParaEnviar,
+      actividades_por_integrante: actividadesParaEnviar
     };
-  }, [form, registro, user.rol, user.nombre, validarArray, parseActividadesParaEnviar]);
+  }, [form, registro, user.rol, user.nombre, validarArray]);
 
   const actualizarEstadoRegistro = async (nuevoEstado, confirmMessage) => {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
@@ -493,8 +576,9 @@ export default function AdminDetalleRegistro() {
       const response = await api.put(`/registros/${id}`, datosAEnviar);
       if (response.status === 200) {
         const datosActualizados = response.data.registro || response.data;
-        setRegistro(datosActualizados);
-        setForm({ ...datosActualizados });
+        const datosParsados = parsearArrays(datosActualizados);
+        setRegistro(datosParsados);
+        setForm(JSON.parse(JSON.stringify(datosParsados)));
         alert(`Registro actualizado a ${nuevoEstado}`);
       } else {
         throw new Error("Respuesta inesperada del servidor");
@@ -550,34 +634,18 @@ export default function AdminDetalleRegistro() {
   const guardarCambios = async () => {
     try {
       setGuardando(true);
-
-      // Convertir actividades_por_integrante a JSON string si es necesario
-      let actividadesParaEnviar = form.actividades_por_integrante;
-      if (typeof actividadesParaEnviar === 'object' && !Array.isArray(actividadesParaEnviar)) {
-        actividadesParaEnviar = JSON.stringify(actividadesParaEnviar);
-      } else if (Array.isArray(actividadesParaEnviar)) {
-        // Convertir array a objeto
-        const obj = {};
-        actividadesParaEnviar.forEach((item, idx) => {
-          obj[idx] = item;
-        });
-        actividadesParaEnviar = JSON.stringify(obj);
-      }
-
       const datosAEnviar = prepararDatosParaEnvio();
 
-      console.log("Lotes a guardar:", {
-        lotePrincipal: form.lotePrincipal,
-        loteSecundario: form.loteSecundario,
-        loteUnido: form.loteUnido
-      });
-      console.log(" MAQUINARIAS A ENVIAR:", datosAEnviar.maquinarias);
-      console.log(" Datos a guardar:", datosAEnviar);
+      console.log("Datos a guardar:", datosAEnviar);
 
       const response = await api.put(`/registros/${id}`, datosAEnviar);
       if (response.status === 200) {
+        const datosActualizados = response.data.registro || response.data;
+        const datosParsados = parsearArrays(datosActualizados);
+        setRegistro(datosParsados);
+        setForm(JSON.parse(JSON.stringify(datosParsados)));
+        setModoEdicion(false);
         alert("Registro actualizado correctamente");
-        navigate(getPanelRoute());
       } else {
         throw new Error("Respuesta inesperada del servidor");
       }
@@ -595,6 +663,26 @@ export default function AdminDetalleRegistro() {
     } finally {
       setGuardando(false);
     }
+  };
+
+  // Función para actualizar un detalle de actividad manteniendo mayúsculas
+  const actualizarDetalleActividad = (index, nuevoValor) => {
+    const nuevosDetalles = [...(form.detalles_actividades || [])];
+    // Convertir a mayúsculas automáticamente
+    nuevosDetalles[index] = nuevoValor.toUpperCase();
+    handleArrayChange("detalles_actividades", nuevosDetalles);
+  };
+
+  // Función para agregar una nueva actividad en mayúsculas
+  const agregarNuevaActividad = () => {
+    const nuevosDetalles = [...(form.detalles_actividades || []), "NUEVA ACTIVIDAD"];
+    handleArrayChange("detalles_actividades", nuevosDetalles);
+  };
+
+  // Función para eliminar una actividad
+  const eliminarDetalleActividad = (index) => {
+    const nuevosDetalles = (form.detalles_actividades || []).filter((_, i) => i !== index);
+    handleArrayChange("detalles_actividades", nuevosDetalles);
   };
 
   const cardStyle = useMemo(() => ({
@@ -628,14 +716,14 @@ export default function AdminDetalleRegistro() {
     <div className="registro-container" style={{ padding: 30, maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
       <header>
-              <div className="logo-left">
-                <img src={logo_safemed} alt="logo" className="logo" />
-              </div>
-              <h1>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
-              <div className="logo-right">
-                <img src={logo3} alt="logo2" className="logo" />
-              </div>
-            </header>
+        <div className="logo-left">
+          <img src={logo_safemed} alt="logo" className="logo" />
+        </div>
+        <h1>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
+        <div className="logo-right">
+          <img src={logo3} alt="logo2" className="logo" />
+        </div>
+      </header>
       <header style={{ 
         display: "flex", 
         justifyContent: "space-between", 
@@ -645,7 +733,6 @@ export default function AdminDetalleRegistro() {
         borderBottom: "2px solid #e5e7eb",
         backgroundColor: "#e9ecf2"
       }}>
-      
         <div>
           <h2 style={{ margin: 0, color: "black", fontSize: 28 }}>Registro #{registro.op}</h2>
         </div>
@@ -702,9 +789,10 @@ export default function AdminDetalleRegistro() {
 
       {/* INSUMOS */}
       <div className="subtitle2">
-          <h3 >ENTREGA Y RECEPCIÓN DE MATERIA PRIMA E INSUMOS</h3>
+        <h3>ENTREGA Y RECEPCIÓN DE MATERIA PRIMA E INSUMOS</h3>
       </div>
       <ArrayDisplay
+        titulo="Insumos"
         datos="insumos"
         modoEdicion={modoEdicion}
         puedeEditar={puedeEditar}
@@ -716,7 +804,7 @@ export default function AdminDetalleRegistro() {
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
             <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-              <span>Cantidad: {i.cantidad_insumo} {i.descrip_cant_insumo}</span>
+              <span>Cantidad: {i.cantidad_insumo}</span>
               <span>Lote: {i.lote_insumo}</span>
               <span>Entrega: {i.entrega}</span>
               <span>Recepción: {i.recepcion}</span>
@@ -727,13 +815,13 @@ export default function AdminDetalleRegistro() {
 
       {/* REPOSICIÓN NO CONFORME */}
       <div className="subtitle2">
-          <h3 >REPOSICIÓN NO CONFORME</h3>
+        <h3>REPOSICIÓN NO CONFORME</h3>
       </div>
       <ArrayDisplay
-        titulo=""
+        titulo="Reposiciones"
         datos="reposicion_no_conforme"
-          modoEdicion={modoEdicion}
-          puedeEditar={puedeEditar}
+        modoEdicion={modoEdicion}
+        puedeEditar={puedeEditar}
         items={modoEdicion ? (form.reposicion_no_conforme || []) : (registro.reposicion_no_conforme || [])}
         onItemsChange={handleArrayChange}
         camposEditables={["codigo_insumo", "descripcion_insumo", "cantidad", "descrip_cant_insumo", "lote", "entrega", "recepcion"]}
@@ -753,10 +841,10 @@ export default function AdminDetalleRegistro() {
 
       {/* ETIQUETAS */}
       <div className="subtitle2">
-          <h3 >ENTREGA Y RECEPCIÓN DE ETIQUETAS EN MESA</h3>
+        <h3>ENTREGA Y RECEPCIÓN DE ETIQUETAS EN MESA</h3>
       </div>
       <ArrayDisplay
-        titulo=""
+        titulo="Etiquetas"
         datos="etiquetas"
         modoEdicion={modoEdicion}
         puedeEditar={puedeEditar}
@@ -947,92 +1035,77 @@ export default function AdminDetalleRegistro() {
         })()}
       </div>
 
-      {/* DETALLES DE ACTIVIDADES */}
+      {/* DETALLES DE ACTIVIDADES - VERSIÓN CORREGIDA CON MAYÚSCULAS Y ESPACIOS */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
-        <h3 >DETALLES DE ACTIVIDADES</h3>
+        <h3>DETALLES DE ACTIVIDADES</h3>
       </div>
       <div className="card" style={cardStyle}>
         {(() => {
           let detalles = modoEdicion ? form.detalles_actividades : registro.detalles_actividades;
-
-          console.log("Detalles raw:", detalles, "Type:", typeof detalles);
-
-          // Si es string JSON, intentar parsearlo
-          if (typeof detalles === 'string' && detalles) {
-            // Evitar convertir "[object Object]" literal
-            if (detalles === "[object Object]") {
-              detalles = [];
-            } else if (detalles.startsWith('[') || detalles.startsWith('{')) {
-              // Intentar parsear como JSON
-              try {
-                const parsed = JSON.parse(detalles);
-                detalles = Array.isArray(parsed) ? parsed : [parsed];
-              } catch (error) {
-                console.log('Error parseando detalles_actividades:', error);
-                // Si falla, dividir por líneas
-                detalles = detalles.split('\n')
-                  .map(d => String(d).trim())
-                  .filter(d => d && d.length > 0);
-              }
-            } else {
-              // Es plain text con saltos de línea
-              detalles = detalles.split('\n')
-                .map(d => String(d).trim())
-                .filter(d => d && d.length > 0);
-            }
-          }
-          // Si es array, convertir a strings
-          else if (Array.isArray(detalles)) {
-            detalles = detalles.map(d => String(d).trim()).filter(d => d);
-          }
-          // Si es objeto (no array), intentar convertir a array
-          else if (typeof detalles === 'object' && detalles !== null) {
-            detalles = Object.values(detalles).map(d => String(d).trim()).filter(d => d);
-          } else {
+          
+          if (!detalles || (typeof detalles === 'object' && Object.keys(detalles).length === 0)) {
             detalles = [];
           }
+          
+          if (!Array.isArray(detalles)) {
+            if (typeof detalles === 'object') {
+              detalles = Object.values(detalles);
+            } else {
+              detalles = [];
+            }
+          }
 
-          // Limpiar detalles vacíos
-          detalles = detalles.filter(d => d && String(d).trim());
-
-          console.log("Detalles procesados:", detalles);
+          // Asegurar que cada detalle sea un string
+          detalles = detalles.map(d => typeof d === 'string' ? d : String(d || ''));
 
           if (detalles.length === 0) {
             return (
               <div style={{ marginTop: 12, textAlign: "center", padding: 20, background: "#f9fafb", borderRadius: 8 }}>
                 <p style={{ color: "#6b7280", margin: 0 }}>No hay detalles de actividades registrados</p>
+                {modoEdicion && puedeEditar && (
+                  <button onClick={agregarNuevaActividad} style={{ marginTop: 12, padding: "6px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>
+                    + Agregar Actividad
+                  </button>
+                )}
               </div>
             );
           }
 
           return (
             <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12 }}>
+              {modoEdicion && puedeEditar && (
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                  <button onClick={agregarNuevaActividad} style={{ padding: "8px 16px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontSize: 18 }}>+</span> Agregar Actividad
+                  </button>
+                </div>
+              )}
               {detalles.map((detalle, idx) => {
-                // Obtener actividades_por_integrante
-                let actividades = modoEdicion ? form.actividades_por_integrante : registro.actividades_por_integrante;
+                const actividadesPorIntegrante = modoEdicion ? form.actividades_por_integrante : registro.actividades_por_integrante;
+                let actividades = {};
                 
-                // Parsear si es string
-                if (typeof actividades === 'string') {
+                if (typeof actividadesPorIntegrante === 'string') {
                   try {
-                    actividades = JSON.parse(actividades);
+                    actividades = JSON.parse(actividadesPorIntegrante);
                   } catch {
                     actividades = {};
                   }
+                } else if (typeof actividadesPorIntegrante === 'object') {
+                  actividades = actividadesPorIntegrante;
                 }
 
-                // Filtrar integrantes con esta actividad
+                const textoDetalle = String(detalle).trim();
                 const integrantesConActividad = Object.values(actividades || {}).filter(integrante => 
-                  integrante.actividades?.some(act => act.actividad === detalle.trim())
+                  integrante?.actividades?.some(act => String(act.actividad || '').trim() === textoDetalle)
                 );
 
-                // Calcular totales
                 const totalPlanificado = integrantesConActividad.reduce((sum, integrante) => {
-                  const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === detalle.trim());
+                  const actividadEnIntegrante = integrante.actividades.find(act => String(act.actividad || '').trim() === textoDetalle);
                   return sum + (parseInt(actividadEnIntegrante?.cantidad_planificada) || 0);
                 }, 0);
 
                 const totalElaborado = integrantesConActividad.reduce((sum, integrante) => {
-                  const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === detalle.trim());
+                  const actividadEnIntegrante = integrante.actividades.find(act => String(act.actividad || '').trim() === textoDetalle);
                   return sum + (parseInt(actividadEnIntegrante?.cantidad_elaborada) || 0);
                 }, 0);
 
@@ -1044,9 +1117,34 @@ export default function AdminDetalleRegistro() {
                       background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
                       border: "1px solid #7dd3fc",
                       borderRadius: 8,
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.04)"
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+                      position: "relative"
                     }}
                   >
+                    {modoEdicion && puedeEditar && (
+                      <button
+                        onClick={() => eliminarDetalleActividad(idx)}
+                        style={{
+                          position: "absolute",
+                          top: 10,
+                          right: 10,
+                          background: "#ef4444",
+                          border: "none",
+                          color: "white",
+                          cursor: "pointer",
+                          width: 24,
+                          height: 24,
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 10
+                        }}
+                        title="Eliminar actividad"
+                      >
+                        ✕
+                      </button>
+                    )}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
                       <div style={{ 
                         minWidth: 28, 
@@ -1065,17 +1163,28 @@ export default function AdminDetalleRegistro() {
                       </div>
                       <div style={{ flex: 1 }}>
                         {modoEdicion && puedeEditar ? (
-                          <input type="text" value={String(detalle).trim()} onChange={(e) => { const nuevosDetalles = [...detalles];
-                            nuevosDetalles[idx] = e.target.value;
-                            handleArrayChange("detalles_actividades", nuevosDetalles);
-                          }}
-                          style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 15, fontWeight: 600, color: "#0c4a6e"}}/>
+                          <input 
+                            type="text" 
+                            value={detalle} 
+                            onChange={(e) => actualizarDetalleActividad(idx, e.target.value)}
+                            style={{ 
+                              width: "100%", 
+                              padding: "8px 12px", 
+                              borderRadius: 6, 
+                              border: "1px solid #d1d5db", 
+                              fontSize: 15, 
+                              fontWeight: 600, 
+                              color: "#0c4a6e",
+                              textTransform: "uppercase"
+                            }}
+                            placeholder="EJ: CORTADO DE MANGAS"
+                          />
                         ) : (
-                        <div style={{fontSize: 15, color: "#0c4a6e",fontWeight: 600, wordBreak: "break-word" }}> 
-                          {String(detalle).trim()}
-                        </div>
-                      )}
-                    </div>
+                          <div style={{ fontSize: 15, color: "#0c4a6e", fontWeight: 600, wordBreak: "break-word", textTransform: "uppercase" }}> 
+                            {detalle}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div style={{ 
                       display: "grid", 
@@ -1105,9 +1214,10 @@ export default function AdminDetalleRegistro() {
       </div>
       <div className="card" style={cardStyle}>
         {(() => {
+          // Obtener los datos actuales
           let rawData = modoEdicion ? form.actividades_por_integrante : registro.actividades_por_integrante;
-
-          // Parsear si viene como string
+          
+          // Parsear si es string
           if (typeof rawData === 'string') {
             try {
               rawData = JSON.parse(rawData);
@@ -1116,123 +1226,325 @@ export default function AdminDetalleRegistro() {
               rawData = {};
             }
           }
-
-          // Convertir array a objeto si es necesario
-          if (Array.isArray(rawData)) {
-            const obj = {};
-            rawData.forEach((item, idx) => {
-              if (item && item.nombre) {
-                obj[idx] = item;
-              }
-            });
-            rawData = obj;
+          
+          // Asegurar que es un objeto
+          if (!rawData || typeof rawData !== 'object' || Array.isArray(rawData)) {
+            rawData = {};
           }
-
-          const integrantes = rawData && typeof rawData === 'object' ? Object.values(rawData).filter(i => i && i.nombre) : [];
-
-          const actualizarActividadIntegrante = (integranteIdx, actividadIdx, campo, valor) => {
+          
+          // Obtener lista de integrantes con sus actividades
+          const listaIntegrantes = Object.values(rawData).filter(i => i && i.nombre);
+          
+          // Función para actualizar una actividad específica
+          const actualizarActividad = (integranteKey, actividadIndex, campo, valor) => {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
-            const keys = Object.keys(nuevaData);
-            const key = keys[integranteIdx];
-            if (nuevaData[key]?.actividades?.[actividadIdx]) {
-              nuevaData[key].actividades[actividadIdx][campo] = valor;
-              handleArrayChange('actividades_por_integrante', nuevaData);
+            const integrante = nuevaData[integranteKey];
+            if (integrante && integrante.actividades && integrante.actividades[actividadIndex]) {
+              integrante.actividades[actividadIndex][campo] = valor;
+              handleActividadesPorIntegranteChange(nuevaData);
             }
           };
-
-          if (integrantes.length === 0) {
-            return <div style={{ marginTop: 25, textAlign: "center", padding: 20, background: "#f9fafb", borderRadius: 8 }}><p style={{ color: "#6b7280", margin: 0 }}>No hay actividades registradas por integrante</p></div>;
+          
+          // Función para agregar una nueva actividad a un integrante
+          const agregarActividadAIntegrante = (integranteKey) => {
+            const nuevaData = JSON.parse(JSON.stringify(rawData));
+            if (!nuevaData[integranteKey].actividades) {
+              nuevaData[integranteKey].actividades = [];
+            }
+            nuevaData[integranteKey].actividades.push({
+              actividad: "NUEVA ACTIVIDAD",
+              horas_persona: 0,
+              cantidad_planificada: 0,
+              cantidad_elaborada: 0,
+              observaciones_integrante: ""
+            });
+            handleActividadesPorIntegranteChange(nuevaData);
+          };
+          
+          // Función para eliminar una actividad
+          const eliminarActividad = (integranteKey, actividadIndex) => {
+            const nuevaData = JSON.parse(JSON.stringify(rawData));
+            nuevaData[integranteKey].actividades = nuevaData[integranteKey].actividades.filter((_, i) => i !== actividadIndex);
+            handleActividadesPorIntegranteChange(nuevaData);
+          };
+          
+          // Función para actualizar el nombre de la actividad
+          const actualizarNombreActividad = (integranteKey, actividadIndex, nuevoNombre) => {
+            const nuevaData = JSON.parse(JSON.stringify(rawData));
+            if (nuevaData[integranteKey]?.actividades?.[actividadIndex]) {
+              nuevaData[integranteKey].actividades[actividadIndex].actividad = nuevoNombre.toUpperCase();
+              handleActividadesPorIntegranteChange(nuevaData);
+            }
+          };
+          
+          if (listaIntegrantes.length === 0) {
+            return (
+              <div style={{ marginTop: 25, textAlign: "center", padding: 20, background: "#f9fafb", borderRadius: 8 }}>
+                <p style={{ color: "#6b7280", margin: 0 }}>No hay actividades registradas por integrante</p>
+                {modoEdicion && puedeEditar && (
+                  <button 
+                    onClick={() => {
+                      const nuevasActividades = { ...rawData };
+                      const nuevoKey = Date.now();
+                      nuevasActividades[nuevoKey] = {
+                        nombre: "NUEVO INTEGRANTE",
+                        cargo: "",
+                        actividades: []
+                      };
+                      handleActividadesPorIntegranteChange(nuevasActividades);
+                    }}
+                    style={{ marginTop: 12, padding: "6px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}
+                  >
+                    + Agregar Integrante
+                  </button>
+                )}
+              </div>
+            );
           }
+          
           return (
             <div style={{ marginTop: 25, display: "flex", flexDirection: "column", gap: 16 }}>
-              {integrantes.map((integrante, idx) => (
-                <div key={idx} style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                  <div style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)", padding: "12px 20px", color: "white" }}>
-                    <h4 style={{ margin: 0, fontSize: 16 }}>{integrante.nombre}</h4>
-                    <p style={{ margin: "4px 0 0", opacity: 0.8, fontSize: 13 }}>{integrante.cargo}</p>
-                  </div>
-                  <div style={{ padding: 16, overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr style={{ background: "#f3f4f6", borderBottom: "1px solid #e5e7eb" }}>
-                          <th style={{ padding: 10, textAlign: "left", fontSize: 12 }}>ACTIVIDAD</th>
-                          <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>HORAS</th>
-                          <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>PLANIF.</th>
-                          <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>ELABOR.</th>
-                          <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>OBSERVACIONES</th>
-                          {modoEdicion && puedeEditar && <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>ACCIÓN</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {integrante.actividades?.map((act, i) => (
-                          <tr key={i} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                            <td style={{ padding: 10, fontSize: 13 }}>{act.actividad || "-"}</td>
-                            <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                              {modoEdicion && puedeEditar ? (
-                                <input
-                                  type="number"
-                                  value={act.horas_persona || 0}
-                                  onChange={(e) => actualizarActividadIntegrante(idx, i, 'horas_persona', e.target.value)}
-                                  style={{ width: 50, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
-                                />
-                              ) : (
-                                (act.horas_persona || 0) + "h"
-                              )}
-                            </td>
-                            <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                              {modoEdicion && puedeEditar ? (
-                                <input
-                                  type="number"
-                                  value={act.cantidad_planificada || 0}
-                                  onChange={(e) => actualizarActividadIntegrante(idx, i, 'cantidad_planificada', e.target.value)}
-                                  style={{ width: 50, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
-                                />
-                              ) : (
-                                act.cantidad_planificada || 0
-                              )}
-                            </td>
-                            <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                              {modoEdicion && puedeEditar ? (
-                                <input
-                                  type="number"
-                                  value={act.cantidad_elaborada || 0}
-                                  onChange={(e) => actualizarActividadIntegrante(idx, i, 'cantidad_elaborada', e.target.value)}
-                                  style={{ width: 50, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
-                                />
-                              ) : (
-                                act.cantidad_elaborada || 0
-                              )}
-                            </td>
-                            <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                              {modoEdicion && puedeEditar ? (
-                                <input
-                                  type="text"
-                                  value={act.observaciones_integrante || ''}
-                                  onChange={(e) => actualizarActividadIntegrante(idx, i, 'observaciones_integrante', e.target.value)}
-                                  style={{ width: 150, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
-                                />
-                              ) : (
-                                act.observaciones_integrante || '-'
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+              {/* Botón para agregar nuevo integrante */}
+              {modoEdicion && puedeEditar && (
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                  <button 
+                    onClick={() => {
+                      const nuevasActividades = { ...rawData };
+                      const nuevoKey = Date.now();
+                      nuevasActividades[nuevoKey] = {
+                        nombre: "NUEVO INTEGRANTE",
+                        cargo: "",
+                        actividades: []
+                      };
+                      handleActividadesPorIntegranteChange(nuevasActividades);
+                    }}
+                    style={{ padding: "8px 16px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", gap: 5 }}
+                  >
+                    <span style={{ fontSize: 18 }}>+</span> Agregar Integrante
+                  </button>
                 </div>
-              ))}
+              )}
+              
+              {listaIntegrantes.map((integrante) => {
+                // Encontrar la key original del integrante
+                const integranteKey = Object.keys(rawData).find(key => rawData[key] === integrante);
+                
+                // Actualizar nombre del integrante
+                const actualizarNombreIntegrante = (nuevoNombre) => {
+                  const nuevaData = JSON.parse(JSON.stringify(rawData));
+                  nuevaData[integranteKey].nombre = nuevoNombre.toUpperCase();
+                  handleActividadesPorIntegranteChange(nuevaData);
+                };
+                
+                // Actualizar cargo del integrante
+                const actualizarCargoIntegrante = (nuevoCargo) => {
+                  const nuevaData = JSON.parse(JSON.stringify(rawData));
+                  nuevaData[integranteKey].cargo = nuevoCargo.toUpperCase();
+                  handleActividadesPorIntegranteChange(nuevaData);
+                };
+                
+                // Eliminar integrante
+                const eliminarIntegrante = () => {
+                  const nuevaData = JSON.parse(JSON.stringify(rawData));
+                  delete nuevaData[integranteKey];
+                  handleActividadesPorIntegranteChange(nuevaData);
+                };
+                
+                return (
+                  <div key={integranteKey} style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", position: "relative" }}>
+                    {modoEdicion && puedeEditar && (
+                      <button
+                        onClick={eliminarIntegrante}
+                        style={{
+                          position: "absolute",
+                          top: 10,
+                          right: 10,
+                          background: "#ef4444",
+                          border: "none",
+                          color: "white",
+                          cursor: "pointer",
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 10,
+                          fontSize: 12
+                        }}
+                        title="Eliminar integrante"
+                      >
+                        ✕
+                      </button>
+                    )}
+                    <div style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)", padding: "12px 20px", color: "white" }}>
+                      {modoEdicion && puedeEditar ? (
+                        <>
+                          <input
+                            type="text"
+                            value={integrante.nombre || ""}
+                            onChange={(e) => actualizarNombreIntegrante(e.target.value)}
+                            style={{
+                              width: "100%",
+                              padding: "6px 10px",
+                              borderRadius: 6,
+                              border: "none",
+                              fontSize: 16,
+                              fontWeight: 600,
+                              marginBottom: 8,
+                              backgroundColor: "rgba(255,255,255,0.9)",
+                              color: "#1e3a5f",
+                              textTransform: "uppercase"
+                            }}
+                            placeholder="NOMBRE DEL INTEGRANTE"
+                          />
+                          <input
+                            type="text"
+                            value={integrante.cargo || ""}
+                            onChange={(e) => actualizarCargoIntegrante(e.target.value)}
+                            style={{
+                              width: "100%",
+                              padding: "4px 8px",
+                              borderRadius: 6,
+                              border: "none",
+                              fontSize: 13,
+                              backgroundColor: "rgba(255,255,255,0.7)",
+                              color: "#1e3a5f",
+                              textTransform: "uppercase"
+                            }}
+                            placeholder="CARGO"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <h4 style={{ margin: 0, fontSize: 16, textTransform: "uppercase" }}>{integrante.nombre}</h4>
+                          <p style={{ margin: "4px 0 0", opacity: 0.8, fontSize: 13, textTransform: "uppercase" }}>{integrante.cargo}</p>
+                        </>
+                      )}
+                    </div>
+                    <div style={{ padding: 16, overflowX: "auto" }}>
+                      {modoEdicion && puedeEditar && (
+                        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+                          <button
+                            onClick={() => agregarActividadAIntegrante(integranteKey)}
+                            style={{ padding: "4px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}
+                          >
+                            <span style={{ fontSize: 14 }}>+</span> Agregar Actividad
+                          </button>
+                        </div>
+                      )}
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr style={{ background: "#f3f4f6", borderBottom: "1px solid #e5e7eb" }}>
+                            <th style={{ padding: 10, textAlign: "left", fontSize: 12 }}>ACTIVIDAD</th>
+                            <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>HORAS</th>
+                            <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>PLANIF.</th>
+                            <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>ELABOR.</th>
+                            <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>OBSERVACIONES</th>
+                            {modoEdicion && puedeEditar && <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>ACCIÓN</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {integrante.actividades?.map((act, actIdx) => (
+                            <tr key={actIdx} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                              <td style={{ padding: 10, fontSize: 13 }}>
+                                {modoEdicion && puedeEditar ? (
+                                  <input
+                                    type="text"
+                                    value={act.actividad || ""}
+                                    onChange={(e) => actualizarNombreActividad(integranteKey, actIdx, e.target.value)}
+                                    style={{ width: "100%", padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textTransform: "uppercase" }}
+                                    placeholder="ACTIVIDAD"
+                                  />
+                                ) : (
+                                  <span style={{ textTransform: "uppercase" }}>{act.actividad || "-"}</span>
+                                )}
+                              </td>
+                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                {modoEdicion && puedeEditar ? (
+                                  <input
+                                    type="number"
+                                    value={act.horas_persona || 0}
+                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'horas_persona', e.target.value)}
+                                    style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
+                                  />
+                                ) : (
+                                  (act.horas_persona || 0) + "h"
+                                )}
+                              </td>
+                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                {modoEdicion && puedeEditar ? (
+                                  <input
+                                    type="number"
+                                    value={act.cantidad_planificada || 0}
+                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_planificada', e.target.value)}
+                                    style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
+                                  />
+                                ) : (
+                                  act.cantidad_planificada || 0
+                                )}
+                              </td>
+                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                {modoEdicion && puedeEditar ? (
+                                  <input
+                                    type="number"
+                                    value={act.cantidad_elaborada || 0}
+                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', e.target.value)}
+                                    style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
+                                  />
+                                ) : (
+                                  act.cantidad_elaborada || 0
+                                )}
+                              </td>
+                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                {modoEdicion && puedeEditar ? (
+                                  <input
+                                    type="text"
+                                    value={act.observaciones_integrante || ''}
+                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'observaciones_integrante', e.target.value)}
+                                    style={{ width: 150, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
+                                  />
+                                ) : (
+                                  act.observaciones_integrante || '-'
+                                )}
+                              </td>
+                              {modoEdicion && puedeEditar && (
+                                <td style={{ padding: 10, textAlign: "center" }}>
+                                  <button
+                                    onClick={() => eliminarActividad(integranteKey, actIdx)}
+                                    style={{ background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", fontSize: 12 }}
+                                    title="Eliminar actividad"
+                                  >
+                                    ✕
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                          {(!integrante.actividades || integrante.actividades.length === 0) && (
+                            <tr>
+                              <td colSpan={modoEdicion && puedeEditar ? 6 : 5} style={{ padding: 20, textAlign: "center", color: "#6b7280" }}>
+                                No hay actividades asignadas
+                              </td>
+                             </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           );
         })()}
       </div>
 
-      {/* INTEGRANTES */}
+      {/* INTEGRANTES (lista simple) */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
-        <h3 >INTEGRANTES</h3>
+        <h3>INTEGRANTES</h3>
       </div>
       <ArrayDisplay
-        titulo=""
+        titulo="Lista de Integrantes"
         datos="integrantes"
         modoEdicion={modoEdicion}
         puedeEditar={puedeEditar}
@@ -1242,16 +1554,16 @@ export default function AdminDetalleRegistro() {
         backgroundColor="#1790d1"
         renderItem={(n) => (
           <div style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 600 }}>{n.nombre}</span>
+            <span style={{ fontWeight: 600, textTransform: "uppercase" }}>{n.nombre}</span>
             <span style={{ color: "#6b7280" }}>—</span>
-            <span style={{ color: "#4b5563" }}>{n.cargo}</span>
+            <span style={{ color: "#4b5563", textTransform: "uppercase" }}>{n.cargo}</span>
           </div>
         )}
       />
 
       {/* OBSERVACIONES */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
-        <h3 >OBSERVACIONES</h3>
+        <h3>OBSERVACIONES</h3>
       </div>
       <div className="card" style={cardStyle}>
         <Campo label="" campo="observaciones" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.observaciones} onChange={handleChange} />
@@ -1290,7 +1602,7 @@ export default function AdminDetalleRegistro() {
                 <button className="btn-guardar2" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
                   {guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}
                 </button>
-                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(registro); }}>
+                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(JSON.parse(JSON.stringify(registro))); }}>
                   ❌ Cancelar
                 </button>
               </>
@@ -1312,8 +1624,6 @@ export default function AdminDetalleRegistro() {
                 </button>
               </>
             )}
-
-            
 
             {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
               <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
