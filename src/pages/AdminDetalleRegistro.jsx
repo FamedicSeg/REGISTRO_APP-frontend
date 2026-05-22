@@ -1591,11 +1591,30 @@ export default function AdminDetalleRegistro() {
           </button>
         ) : (
           <>
-            {puedeEditar && !modoEdicion && (
+            {puedeEditar && !modoEdicion && registro?.estado === "pendiente_SUPERVISOR" && (
               <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
                 ✏️ Editar Registro
-              </button>
-            )}
+                </button>
+              )}
+              
+              {/* Mostrar el botón deshabilitado si el estado no es pendiente_SUPERVISOR */}
+              {puedeEditar && !modoEdicion && registro?.estado !== "pendiente_SUPERVISOR" && (
+                <button 
+                className="btn2" 
+                style={{ 
+                  padding: "12px 24px", 
+                  fontWeight: 600, 
+                  fontSize: 15, 
+                  background: "#9ca3af", 
+                  cursor: "not-allowed",
+                  opacity: 0.6
+                }} 
+                disabled 
+                title="Solo se pueden editar registros en estado Pendiente Supervisor"
+                >
+                  ✏️ Editar Registro (Solo disponible en estado Pendiente)
+                  </button>
+                )}
 
             {modoEdicion && puedeEditar && (
               <>
