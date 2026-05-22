@@ -1612,7 +1612,7 @@ export default function AdminDetalleRegistro() {
                 disabled 
                 title="Solo se pueden editar registros en estado Pendiente Supervisor"
                 >
-                  ✏️ Editar Registro (Solo disponible en estado Pendiente)
+                  ✏️ Editar Registro
                   </button>
                 )}
 
