@@ -1063,9 +1063,19 @@ export default function AdminDetalleRegistro() {
                       }}>
                         {idx + 1}
                       </div>
-                      <div style={{ flex: 1, fontSize: 15, color: "#0c4a6e", fontWeight: 600, wordBreak: "break-word" }}>
-                        {String(detalle).trim()}
-                      </div>
+                      <div style={{ flex: 1 }}>
+                        {modoEdicion && puedeEditar ? (
+                          <input type="text" value={String(detalle).trim()} onChange={(e) => { const nuevosDetalles = [...detalles];
+                            nuevosDetalles[idx] = e.target.value;
+                            handleArrayChange("detalles_actividades", nuevosDetalles);
+                          }}
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 15, fontWeight: 600, color: "#0c4a6e"}}/>
+                        ) : (
+                        <div style={{fontSize: 15, color: "#0c4a6e",fontWeight: 600, wordBreak: "break-word" }}> 
+                          {String(detalle).trim()}
+                        </div>
+                      )}
+                    </div>
                     </div>
                     <div style={{ 
                       display: "grid", 
