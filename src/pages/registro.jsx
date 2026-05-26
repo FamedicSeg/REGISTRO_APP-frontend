@@ -1479,7 +1479,7 @@ export default function Registro() {
         {/* CABECERA */}
         <div className="card">
           <div style={getResponsiveStyle(
-            { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" },
+            { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "20px" },
             { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" },
             { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }
           )}>
