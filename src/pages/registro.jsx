@@ -164,6 +164,47 @@ export default function Registro() {
   const [actividadesGlobalesEQE, setActividadesGlobalesEQE] = useState([]);
   const [_productosEQECargados, setProductosEQECargados] = useState(new Set());
 
+  // ESTADOS PARA RESPONSIVE EN GALAXY TAB A
+  const [isGalaxyTabA, setIsGalaxyTabA] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(true);
+
+  // Detectar Galaxy Tab A y orientación
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
+      // Detectar Galaxy Tab A 8.0" 2019 (1200x1920 o 1920x1200)
+      const isTabADimensions = (width >= 800 && width <= 1200 && height >= 1200 && height <= 1920) ||
+                              (width >= 1200 && width <= 1920 && height >= 800 && height <= 1200);
+      
+      setIsGalaxyTabA(isTabADimensions);
+      setIsPortrait(height > width);
+    };
+    
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    window.addEventListener('orientationchange', checkDevice);
+    
+    return () => {
+      window.removeEventListener('resize', checkDevice);
+      window.removeEventListener('orientationchange', checkDevice);
+    };
+  }, []);
+
+  // Función para obtener estilos responsivos
+  const getResponsiveStyle = (baseStyle, tabletStyle, portraitStyle = null) => {
+    if (!isGalaxyTabA) return baseStyle;
+    if (!isPortrait && portraitStyle) return portraitStyle;
+    return tabletStyle;
+  };
+
+  // Función para obtener clases responsivas
+  const _getResponsiveClass = (baseClass, tabletClass) => {
+    if (!isGalaxyTabA) return baseClass;
+    return `${baseClass} ${tabletClass}`;
+  };
+
   // Función para calcular cantidad_proceso automáticamente
   const calcularProceso = useCallback((planificada, elaborada) => {
     const plan = Number(planificada) || 0;
@@ -928,7 +969,7 @@ export default function Registro() {
           ...integranteActual,
           actividades: [
             ...actividadesPrevias, 
-            { actividad: "", cantidad_planificada: "", cantidad_elaborada: "" }
+            { actividad: "", cantidad_planificada: "", cantidad_elaborada: "", observaciones_integrante: "" }
           ]
         }
       };
@@ -1400,33 +1441,51 @@ export default function Registro() {
   }
 
   return (
-    <div id="formulario" className="registro-container">
+    <div 
+      id="formulario" 
+      className="registro-container"
+      style={isGalaxyTabA ? { 
+        padding: isPortrait ? "12px" : "16px",
+        overflowX: "hidden",
+        width: "100%",
+        maxWidth: "100%"
+      } : {}}
+    >
       {msg && (
         <div className={`toast ${msg.toLowerCase().includes("error") ? "error" : "success"}`}>
           {msg}
         </div>
       )}
-      <header>
+      <header style={isGalaxyTabA ? { flexDirection: isPortrait ? "column" : "row", gap: "12px" } : {}}>
         <div className="logo-left">
           <img src={logo_safemed} alt="logo" className="logo" />
         </div>
-        <h1>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
+        <h1 style={isGalaxyTabA ? { fontSize: isPortrait ? "1.2rem" : "1rem", margin: isPortrait ? "0" : "0 15px" } : {}}>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
         <div className="logo-right">
           <img src={logo3} alt="logo2" className="logo" />
         </div>
       </header>
 
-      <button className="btn" type="button" onClick={() => nav("/")}>
+      <button 
+        className="btn" 
+        type="button" 
+        onClick={() => nav("/")}
+        style={isGalaxyTabA ? { padding: "12px 20px", fontSize: "14px", minHeight: "44px" } : {}}
+      >
         ⬅ Volver
       </button>
 
       <form onSubmit={onSubmit}>
         {/* CABECERA */}
         <div className="card">
-          <div className="grid4">
+          <div style={getResponsiveStyle(
+            { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" },
+            { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" },
+            { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }
+          )}>
             <div className="form-group">
               <label htmlFor="fecha">FECHA:</label>
-              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} style={{fontSize:"14px"}} />
+              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} style={getResponsiveStyle({fontSize:"14px"}, {fontSize:"16px", padding:"12px"})} />
             </div>
             
             {/* OP MODIFICADO - CON DATALIST PARA ESCRIBIR MANUALMENTE */}
@@ -1439,13 +1498,10 @@ export default function Registro() {
                 value={form.op}
                 onChange={onChange}
                 placeholder="SELECCIONA O ESCRIBE LA ORDEN DE PRODUCCIÓN..."
-                style={{
-                  fontSize: "12px", 
-                  width: "100%", 
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ced4da"
-                }}
+                style={getResponsiveStyle(
+                  { fontSize: "12px", width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
+                  { fontSize: "14px", width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da" }
+                )}
                 autoComplete="off"
               />
               <datalist id="op-list">
@@ -1458,7 +1514,7 @@ export default function Registro() {
             
             <div className="form-group">
               <label htmlFor="turno" style={{fontSize:"12px"}}>TURNO:</label>
-              <select id="turno" name="turno" value={form.turno} onChange={onChange} style={{fontSize:"12px"}}>
+              <select id="turno" name="turno" value={form.turno} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
                 <option value="">SELECCIONA EL TURNO...</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -1467,7 +1523,7 @@ export default function Registro() {
 
             <div className="form-group">
               <label htmlFor="area">ÁREA:</label>
-              <select id="area" name="area" value={form.area} onChange={onChange} style={{fontSize:"12px"}}>
+              <select id="area" name="area" value={form.area} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
                 <option value="">SELECCIONA EL ÁREA...</option>
                 <option value="CONFECCIÓN">CONFECCIÓN</option>
                 <option value="AUTOMÁTICAS">AUTOMÁTICAS</option>
@@ -1476,7 +1532,7 @@ export default function Registro() {
 
             <div className="form-group">
               <label htmlFor="modulo">MÓDULO:</label>
-              <select id="modulo" name="modulo" value={form.modulo} onChange={onChange} style={{fontSize:"12px"}}>
+              <select id="modulo" name="modulo" value={form.modulo} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
                 <option value="">SELECCIONE...</option>
                 <option value="MODULO 1">MÓDULO 1</option>
                 <option value="MODULO 2">MÓDULO 2</option>
@@ -1507,7 +1563,11 @@ export default function Registro() {
           </div>
 
           <div className="cabecera2">
-            <div className="grid2">
+            <div style={getResponsiveStyle(
+              { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" },
+              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" },
+              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" }
+            )}>
               <div className="form-group">
                 <label htmlFor="responsable">RESPONSABLE:</label>
                 <input
@@ -1517,15 +1577,10 @@ export default function Registro() {
                   name="responsable"
                   value={form.responsable || ""}
                   disabled={!form.modulo}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    border: "1px solid #d1d5db",
-                    width: "100%",
-                    backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef",
-                    cursor: "not-allowed",
-                    fontSize: "12px"
-                  }}
+                  style={getResponsiveStyle(
+                    { padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "12px" },
+                    { padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "14px" }
+                  )}
                 />
               </div>
 
@@ -1538,25 +1593,24 @@ export default function Registro() {
                   name="supervisor"
                   value={form.supervisor || ""}
                   disabled={!form.modulo}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    border: "1px solid #d1d5db",
-                    width: "100%",
-                    backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef",
-                    cursor: "not-allowed",
-                    fontSize:"12px"
-                  }}
+                  style={getResponsiveStyle(
+                    { padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize:"12px" },
+                    { padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize:"14px" }
+                  )}
                 />
               </div>
             </div>
           </div>
         
           <div className="cabecera2">
-            <div className="grid2">
+            <div style={getResponsiveStyle(
+              { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" },
+              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" },
+              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" }
+            )}>
               <div className="form-group">
                 <label htmlFor="personal_asignado">PERSONAL ASIGNADO: </label>
-                <select id="personal_asignado" name="personal_asignado" value={form.personal_asignado} onChange={onChange} style={{fontSize:"12px"}}>
+                <select id="personal_asignado" name="personal_asignado" value={form.personal_asignado} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
                   <option value="">SELECCIONA EL PERSONAL ASIGNADO...</option>
                   <option value="8">8</option>
                   <option value="10">10</option>
@@ -1567,18 +1621,22 @@ export default function Registro() {
               {form.personal_asignado === "OTRO" && (
                 <div className="form-group">
                   <label htmlFor="personal_otro">INGRESE CANTIDAD:</label>
-                  <input type="number" id="personal_otro" name="personal_otro" min="1" max="20" placeholder="INGRESA LA CANTIDAD DEL PERSONAL. EJ: 15" value={form.personal_otro} onChange={onChange} style={{fontSize:"12px"}}/>
+                  <input type="number" id="personal_otro" name="personal_otro" min="1" max="20" placeholder="INGRESA LA CANTIDAD DEL PERSONAL. EJ: 15" value={form.personal_otro} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
                 </div>
               )}
               <div className="form-group">
                 <label>PERSONAL PRESENTE: </label>
-                <input placeholder="INGRESA LA CANTIDAD DEL PERSONAL PRESENTE..." type="number" id="personal_presente" name="personal_presente" min="0" max="20" value={form.personal_presente} onChange={onChange} style={{fontSize:"12px"}}/>
+                <input placeholder="INGRESA LA CANTIDAD DEL PERSONAL PRESENTE..." type="number" id="personal_presente" name="personal_presente" min="0" max="20" value={form.personal_presente} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
               </div>
             </div>
           </div>
 
           <div className="cabecera3">
-            <div className="grid">
+            <div style={getResponsiveStyle(
+              { display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "20px" },
+              { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" },
+              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" }
+            )}>
               <div className="form-group">
                 <label htmlFor="codigo_producto">REFERENCIA:</label>
                 <input
@@ -1586,28 +1644,28 @@ export default function Registro() {
                   name="codigo_producto"
                   value={form.codigo_producto}
                   onChange={onChange}
-                  style={{fontSize:"12px"}}
+                  style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="descripcion">DESCRIPCIÓN:</label>
-                <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={onChange} className="input-disabled" style={{fontSize:"12px"}}/>
+                <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={onChange} className="input-disabled" style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
               </div>
               <div className="form-group">
                 <label htmlFor="hora_planificada">TIEMPO: </label>
-                <input htmlFor="number" id="hora_planificada" name="hora_planificada" value={form.hora_planificada} onChange={onChange} className="input-disabled" placeholder="Se calculará automaticamente" readOnly style={{fontSize: "16px"}}/>
+                <input htmlFor="number" id="hora_planificada" name="hora_planificada" value={form.hora_planificada} onChange={onChange} className="input-disabled" placeholder="Se calculará automaticamente" readOnly style={getResponsiveStyle({fontSize: "16px"}, {fontSize: "18px", padding:"12px"})}/>
               </div>
               <div className="form-group">
                 <label htmlFor="cantidad_planificada">CANTIDAD PLANIFICADA:</label>
-                <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" style={{fontSize:"12px"}} />
+                <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
               </div>
               <div className="form-group">
                 <label htmlFor="lotePrincipal">LOTE PRIMARIO:</label>
-                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} style={{fontSize:"12px"}} />
+                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
               </div>
               <div className="form-group">
                 <label htmlFor="loteSecundario" >N°:</label>
-                <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} style={{fontSize:"12px"}}/>
+                <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
               </div>
             </div>
           </div>
@@ -1641,9 +1699,11 @@ export default function Registro() {
             )}
             
             {insumos.map((item, index) => (
-              <div key={item.id || index} style={{ display: "grid", width: "950px", gridTemplateColumns: "1.8fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px",
-                                                   alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px",
-                                                   border: "1px solid #dee2e6", boxSizing: "border-box", }}>
+              <div key={item.id || index} style={getResponsiveStyle(
+                { display: "grid", width: "950px", gridTemplateColumns: "1.8fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px", alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", boxSizing: "border-box" },
+                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "20px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" },
+                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "20px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" }
+              )}>
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> CÓDIGO DEL INSUMO: </label>
                   <input className="input-uppercase"
@@ -1661,38 +1721,59 @@ export default function Registro() {
                           buscarDescripcionInsumo(item.tipo_insumo, index);
                           cargarDescripcionLoteInsumo(index, item.tipo_insumo);
                          }}
-                         style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef",fontSize:"10px"}}/>
+                         style={getResponsiveStyle(
+                           { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize:"10px" },
+                           { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize:"14px" }
+                         )}/>
                 </div>
 
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> DESCRIPCIÓN: </label>
-                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", color: "#495057", fontSize:"10px"}}/>
+                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={getResponsiveStyle(
+                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", color: "#495057", fontSize:"10px" },
+                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", color: "#495057", fontSize:"14px" }
+                  )}/>
                 </div>
 
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}>CANTIDAD: </label>
                   <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000"
-                    style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"9.5px"}} placeholder="EJ: 10"/>
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"9.5px" },
+                      { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
+                    )} placeholder="EJ: 10"/>
                 </div>
 
                 <div>
                   <label style={{display: "block", marginBottom: "5px", fontSize: "10px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
                   <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)}
-                  style={{width: "100%", padding: "8px", border:"1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}} />
+                  style={getResponsiveStyle(
+                    { width: "100%", padding: "8px", border:"1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
+                    { width: "100%", padding: "12px", border:"1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
+                  )} />
                 </div>
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> LOTE: </label>
-                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}} placeholder="N° DE LOTE"/>
+                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} style={getResponsiveStyle(
+                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
+                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
+                  )} placeholder="N° DE LOTE"/>
                 </div>
 
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> ENTREGA: </label>
-                  <input className="input-uppercase" type="text" value={item.entrega || ""} onChange={(e) => actualizarInsumo(index, "entrega", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}} placeholder="INGRESA EL NOMBRE DE LA PERSONA QUE ENTREGA"/>
+                  <input className="input-uppercase" type="text" value={item.entrega || ""} onChange={(e) => actualizarInsumo(index, "entrega", e.target.value)} style={getResponsiveStyle(
+                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
+                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
+                  )} placeholder="INGRESA EL NOMBRE DE LA PERSONA QUE ENTREGA"/>
                 </div>
 
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> RECEPCIÓN: </label>
-                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{ width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px"}}>
+                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={getResponsiveStyle(
+                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
+                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
+                  )}>
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     {integrantes.map((integrante, idx) => (
                       <option key={idx} value={integrante.nombre}>
@@ -1704,7 +1785,10 @@ export default function Registro() {
 
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", color: "transparent" }}> ACCIÓN: </label>
-                  <button type="button" onClick={() => eliminarInsumo(index)} style={{ padding: "8px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "10px",}}>
+                  <button type="button" onClick={() => eliminarInsumo(index)} style={getResponsiveStyle(
+                    { padding: "8px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "10px" },
+                    { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", minHeight: "44px" }
+                  )}>
                     ❌
                   </button>
                 </div>
@@ -1716,16 +1800,10 @@ export default function Registro() {
                 type="button"
                 className="btn"
                 onClick={agregarInsumo}
-                style={{
-                  padding: "12px 20px",
-                  backgroundColor: "#ff7675",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  fontWeight: "bold"
-                }}
+                style={getResponsiveStyle(
+                  { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold" },
+                  { padding: "14px 24px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "18px", fontWeight: "bold", minHeight: "48px" }
+                )}
               >
                 ➕ Agregar Nuevo Insumo
               </button>
@@ -1757,24 +1835,20 @@ export default function Registro() {
             )}
             
             {reposicionNoConforme.map((item, index) => (
-              <div key={item.id || index} style={{ 
-                display: "grid", 
-                width: "950px", 
-                gridTemplateColumns: "2.4fr 4.5fr 1.4fr 1.2fr 2fr 2.8fr 2.8fr auto", 
-                gap: "10px", 
-                marginBottom: "15px",
-                alignItems: "center", 
-                padding: "15px", 
-                backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", 
-                borderRadius: "8px",
-                border: "1px solid #dee2e6"
-              }}>
+              <div key={item.id || index} style={getResponsiveStyle(
+                { display: "grid", width: "950px", gridTemplateColumns: "2.4fr 4.5fr 1.4fr 1.2fr 2fr 2.8fr 2.8fr auto", gap: "10px", marginBottom: "15px", alignItems: "center", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6" },
+                { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "15px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" },
+                { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "15px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" }
+              )}>
                 <div>
                   <label style={{fontSize:"11px", fontWeight:"500"}}>CÓDIGO DEL INSUMO:</label>
                   <select
                     value={item.codigo_insumo || ""}
                     onChange={(e) => actualizarReposicionNoConforme(index, "codigo_insumo", e.target.value)}
-                    style={{ width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
+                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
+                    )}
                   >
                     <option value="">SELECCIONE...</option>
                     {_listaNoConforme.map((insumo, idx) => (
@@ -1791,7 +1865,10 @@ export default function Registro() {
                     type="text" 
                     value={item.descripcion_insumo || ""} 
                     readOnly
-                    style={{ width: "100%", padding: "6px", fontSize: "11px", backgroundColor: "#e9ecef" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize: "11px", backgroundColor: "#e9ecef" },
+                      { width: "100%", padding: "12px", fontSize: "14px", backgroundColor: "#e9ecef" }
+                    )}
                   />
                 </div>
                 
@@ -1802,7 +1879,10 @@ export default function Registro() {
                     value={item.cantidad} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "cantidad", e.target.value)}
                     placeholder="EJ: 10"
-                    style={{ width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
+                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
+                    )}
                   />
                 </div>
                 
@@ -1813,7 +1893,10 @@ export default function Registro() {
                     value={item.descrip_cant_insumo}
                     onChange={(e)=> actualizarReposicionNoConforme(index, "descrip_cant_insumo", e.target.value)}
                     placeholder="EJ: UDS"
-                    style={{width: "100%", padding: "6px", fontSize:"11px", borderRadius:"4px"}}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize:"11px", borderRadius:"4px" },
+                      { width: "100%", padding: "12px", fontSize:"14px", borderRadius:"4px" }
+                    )}
                   />
                 </div>
                 
@@ -1824,7 +1907,10 @@ export default function Registro() {
                     value={item.lote} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "lote", e.target.value)}
                     placeholder="N° LOTE"
-                    style={{ width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
+                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
+                    )}
                   />
                 </div>
                 
@@ -1835,7 +1921,10 @@ export default function Registro() {
                     value={item.entrega} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "entrega", e.target.value)}
                     placeholder="QUIÉN ENTREGA"
-                    style={{ width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
+                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
+                    )}
                   />
                 </div>
                 
@@ -1844,7 +1933,10 @@ export default function Registro() {
                   <select 
                     value={item.recepcion} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "recepcion", e.target.value)}
-                    style={{ width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
+                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
+                    )}
                   >
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     {integrantes.map((integrante, idx) => (
@@ -1859,15 +1951,10 @@ export default function Registro() {
                   <button 
                     type="button" 
                     onClick={() => eliminarNoConforme(index)}
-                    style={{ 
-                      padding: "6px 10px", 
-                      backgroundColor: "#dc3545", 
-                      color: "white", 
-                      border: "none", 
-                      borderRadius: "4px", 
-                      cursor: "pointer",
-                      fontSize: "11px"
-                    }}
+                    style={getResponsiveStyle(
+                      { padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "11px" },
+                      { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", minHeight: "44px" }
+                    )}
                   >
                     ❌
                   </button>
@@ -1878,16 +1965,10 @@ export default function Registro() {
             <button 
               type="button" 
               onClick={agregarNoConforme}
-              style={{ 
-                padding: "8px 15px", 
-                backgroundColor: "#ff7675", 
-                color: "white", 
-                border: "none", 
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "12px",
-                marginTop: "10px"
-              }}
+              style={getResponsiveStyle(
+                { padding: "8px 15px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", marginTop: "10px" },
+                { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", marginTop: "10px", minHeight: "44px" }
+              )}
             >
               ➕ AGREGAR INSUMO NO CONFORME
             </button>
@@ -1912,7 +1993,6 @@ export default function Registro() {
                 background: #f8fafc;
                 border-radius: 10px;
                 border: 1px solid #e2e8f0;
-                width:950px
               }
               .etiqueta-field {
                 flex: 1;
@@ -1974,15 +2054,27 @@ export default function Registro() {
               .btn-add:hover {
                 background: #28a745;
               }
+              @media (max-width: 1200px) {
+                .etiqueta-grid {
+                  flex-direction: column;
+                  align-items: stretch;
+                  width: 100%;
+                }
+                .btn-delete {
+                  margin-top: 10px;
+                  width: 100%;
+                }
+              }
             `}</style>
 
             {etiquetas.map((item, index) => (
-              <div key={index} className="etiqueta-grid">
+              <div key={index} className="etiqueta-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
                 <div className="etiqueta-field" style={{ flex: 1.2 }}>
                   <label>ETIQUETA</label>
                   <select 
                     value={item.descripcion_etiqueta} 
                     onChange={(e) => actualizarEtiqueta(index, "descripcion_etiqueta", e.target.value)}
+                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="ETIQUETA ADHESIVA PARA CAJA MASTER">ETIQUETA ADHESIVA PARA CAJA MASTER</option>
@@ -2002,6 +2094,7 @@ export default function Registro() {
                     step="any"
                     value={item.cantidad_etiqueta ?? ""} 
                     onChange={(e) => actualizarEtiqueta(index, "cantidad_etiqueta", e.target.value)}
+                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   />
                 </div>
 
@@ -2010,6 +2103,7 @@ export default function Registro() {
                   <select
                     value={item.entrega_etiqueta}
                     onChange={(e)=> actualizarEntregaEtiqueta(index,"entrega_etiqueta", e.target.value)}
+                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
@@ -2024,6 +2118,7 @@ export default function Registro() {
                     value={item.recepcion_etiqueta ?? ""} 
                     onChange={(e) => actualizarEtiqueta(index, "recepcion_etiqueta", e.target.value)} 
                     placeholder="INGRESA EL NOMBRE QUE RECIBE..."
+                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   />
                 </div>
 
@@ -2032,25 +2127,25 @@ export default function Registro() {
                   className="btn-delete"
                   onClick={() => eliminarEtiqueta(index)} 
                   title="Eliminar etiqueta"
+                  style={isGalaxyTabA ? { width: "100%", marginTop: "10px", minHeight: "44px" } : {}}
                 >
                   🗑️
                 </button>
               </div>
             ))}
 
-            <button type="button" className="btn-add" onClick={agregarEtiqueta}>
+            <button type="button" className="btn-add" onClick={agregarEtiqueta} style={isGalaxyTabA ? { fontSize: "14px", padding: "14px 20px", minHeight: "48px" } : {}}>
               <span style={{ fontSize: "18px" }}>➕</span> AGREGAR ETIQUETA
             </button>
           </div> 
         </div>
         
         {/* SECCIÓN DE DOS COLUMNAS: CANTIDADES IZQUIERDA | CONFECCIÓN DERECHA */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "1fr 1fr", 
-          gap: "20px",
-          marginBottom: "20px"
-        }}>
+        <div style={getResponsiveStyle(
+          { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" },
+          { display: "grid", gridTemplateColumns: "1fr", gap: "20px", marginBottom: "20px" },
+          { display: "grid", gridTemplateColumns: "1fr", gap: "20px", marginBottom: "20px" }
+        )}>
         
           {/* COLUMNA DERECHA - CONFECCIÓN Y AUTOMÁTICAS */}
           <div>
@@ -2059,7 +2154,11 @@ export default function Registro() {
             </div>
             <div className="card" style={{ padding: "15px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={getResponsiveStyle(
+                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
+                )}>
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="hora_inicio" style={{ fontWeight: "bold", marginBottom: "5px", display: "block" }}>H. INICIO:</label>
                     <input 
@@ -2068,7 +2167,10 @@ export default function Registro() {
                       name="hora_inicio" 
                       value={form.hora_inicio} 
                       onChange={onChange} 
-                      style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" }}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
+                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "14px" }
+                      )}
                     />
                   </div>
 
@@ -2080,12 +2182,19 @@ export default function Registro() {
                       name="hora_fin" 
                       value={form.hora_fin} 
                       onChange={onChange} 
-                      style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" }}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
+                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "14px" }
+                      )}
                     />
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={getResponsiveStyle(
+                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
+                )}>
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="destino" style={{ fontWeight: "bold", marginBottom: "5px", display: "block" }}>PARA:</label>
                     <select 
@@ -2093,7 +2202,10 @@ export default function Registro() {
                       name="destino" 
                       value={form.destino} 
                       onChange={onChange} 
-                      style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px"}}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                      )}
                     >
                       <option value="">SELECCIONE EL DESTINATARIO...</option>
                       <option value="CLIENTE">CLIENTE</option>
@@ -2110,7 +2222,10 @@ export default function Registro() {
                         name="n_cliente" 
                         value={form.n_cliente} 
                         onChange={onChange} 
-                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" }}
+                        style={getResponsiveStyle(
+                          { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                          { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                        )}
                         placeholder="INGRESA EL NOMBRE DEL CLIENTE..."
                       />
                     </div>
@@ -2118,7 +2233,11 @@ export default function Registro() {
                   {form.destino !== "CLIENTE" && <div></div>}
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={getResponsiveStyle(
+                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
+                )}>
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="esteril" style={{ fontWeight: "bold", marginBottom: "5px", display: "block"}}>ESTÉRIL:</label>
                     <select 
@@ -2126,7 +2245,10 @@ export default function Registro() {
                       name="esteril" 
                       value={form.esteril} 
                       onChange={onChange} 
-                      style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"11px" }}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"11px" },
+                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                      )}
                     >
                       <option value="">SELECCIONE...</option>
                       <option value="SÍ">SÍ</option>
@@ -2135,7 +2257,11 @@ export default function Registro() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={getResponsiveStyle(
+                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
+                )}>
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="leyenda" style={{ fontWeight: "bold", marginBottom: "5px", display: "block" }}>LEYENDA:</label>
                     <select 
@@ -2143,7 +2269,10 @@ export default function Registro() {
                       name="leyenda" 
                       value={form.leyenda} 
                       onChange={onChange} 
-                      style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px"}}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                      )}
                     >
                       <option value="">SELECCIONE...</option>
                       <option value="SÍ">SÍ</option>
@@ -2158,7 +2287,10 @@ export default function Registro() {
                         name="leyenda_si" 
                         value={form.leyenda_si} 
                         onChange={onChange} 
-                        style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" }}
+                        style={getResponsiveStyle(
+                          { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                          { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                        )}
                       >
                         <option value="">SELECCIONE EL TIPO DE LEYENDA...</option>
                         <option value="IESS">IESS</option>
@@ -2179,7 +2311,10 @@ export default function Registro() {
                       name="leyenda_otra" 
                       value={form.leyenda_otra} 
                       onChange={onChange} 
-                      style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" }}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                      )}
                       placeholder="INGRESA LA LEYENDA..."
                     />
                   </div>
@@ -2203,7 +2338,10 @@ export default function Registro() {
                     name="cantidad_elaborado" 
                     value={form.cantidad_elaborado} 
                     onChange={onChange} 
-                    style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "12px"}}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "12px" },
+                      { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "14px" }
+                    )}
                     placeholder="INGRESA LA CANTIDAD ELABORADA DEL PRODUCTO..."
                   />
                 </div>
@@ -2216,7 +2354,10 @@ export default function Registro() {
                     name="cantidad_proceso" 
                     value={form.cantidad_proceso} 
                     onChange={onChange} 
-                    style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px"}}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                      { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                    )}
                     placeholder="SE CALCULA AUTOMÁTICAMENTE..."
                     readOnly
                   />
@@ -2230,13 +2371,16 @@ export default function Registro() {
                     name="cantidad_merma" 
                     value={form.cantidad_merma} 
                     onChange={onChange} 
-                    style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" }}
+                    style={getResponsiveStyle(
+                      { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
+                      { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
+                    )}
                     placeholder="INGRESA LA CANTIDAD DE LA MERMA..."
                   />
                 </div>
                 <div className="form-group">
                   <label htmlFor="fecha_final_producto" >FECHA FINAL DE PRODUCTO TERMINADO:</label>
-                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={{fontSize:"14px"}}/>
+                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={getResponsiveStyle({fontSize:"14px"}, {fontSize:"16px", padding:"12px"})}/>
                 </div>
               </div>
             </div>
@@ -2260,7 +2404,6 @@ export default function Registro() {
                 background: #f8fafc;
                 border-radius: 10px;
                 border: 1px solid #e2e8f0;
-                width: 950px;
                 flex-wrap: wrap;
               }
               .maquinaria-field {
@@ -2332,13 +2475,24 @@ export default function Registro() {
               .btn-add:hover {
                 background: #28a745;
               }
+              @media (max-width: 1200px) {
+                .maquinaria-grid {
+                  flex-direction: column;
+                  align-items: stretch;
+                }
+                .btn-delete {
+                  width: 100%;
+                  margin-top: 10px;
+                }
+              }
             `}</style>
             {maquinarias.map((item, index)=>(
-              <div key={index} className="maquinaria-grid">
-                <div className="maquinaria-field" style={{flex: 1.2}}>
+              <div key={index} className="maquinaria-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
+                <div className="maquinaria-field" style={{ flex: 1.2 }}>
                   <label>NOMBRE DE LA MAQUINARÍA:</label>
                   <select value={item.maquinaria}
                           onChange={(e)=> actualizarMaquinaria(index, "maquinaria", e.target.value)}
+                          style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="RECTA">RECTA</option>
@@ -2372,9 +2526,9 @@ export default function Registro() {
                     <option value="M. VERTICALES MANUALES">M. VERTICALES MANUALES</option>
                   </select>
                 </div>
-                <div className="maquinaria-field" style={{maxWidth: "180px"}}>
+                <div className="maquinaria-field" style={{ maxWidth: isGalaxyTabA ? "100%" : "180px" }}>
                   <label>CANTIDAD DE MAQUINARIA:</label>
-                  <input type="text" min="1" value={item.cantidad_maquinaria} onChange={(e)=> actualizarMaquinaria(index, "cantidad_maquinaria", e.target.value)}/>
+                  <input type="text" min="1" value={item.cantidad_maquinaria} onChange={(e)=> actualizarMaquinaria(index, "cantidad_maquinaria", e.target.value)} style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}/>
                 </div>
                 
                 {item.numero_maquinaria?.length > 0 &&(
@@ -2387,6 +2541,7 @@ export default function Registro() {
                           value={numero}
                           onChange={(e) => actualizarNumeroMaquinaria(index, idxNumero, e.target.value)}
                           placeholder="INGRESA EL NÚMERO DE LA MAQUINARIA"
+                          style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                         />
                       </div>
                     ))}  
@@ -2396,12 +2551,13 @@ export default function Registro() {
                   className="btn-delete"
                   onClick={()=> eliminarMaquinaria(index)}
                   title="Eliminar Maquinaria"
+                  style={isGalaxyTabA ? { width: "100%", marginTop: "10px", minHeight: "44px" } : {}}
                 >
                   🗑️
                 </button>
               </div>
             ))}
-            <button type="button" className="btn-add" onClick={agregarMaquinaria}>
+            <button type="button" className="btn-add" onClick={agregarMaquinaria} style={isGalaxyTabA ? { fontSize: "14px", padding: "14px 20px", minHeight: "48px" } : {}}>
               <span style={{fontSize: "18px"}}>➕</span> AGREGAR MAQUINARIA
             </button>
           </div>
@@ -2416,24 +2572,20 @@ export default function Registro() {
           {/* Mostrar checkboxes si el código empieza con EQE */}
           {mostrarCheckboxes && listaActividadesEQE.length > 0 && (
             <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: "14px" }}>
+              <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px" }}>
                 SELECCIONE LAS ACTIVIDADES QUE SE VAN A REALIZAR:
               </label>
-              <div style={{ 
-                display: "grid", 
-                gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
-                gap: "12px",
-                padding: "15px",
-                backgroundColor: "#f8f9fa",
-                borderRadius: "8px",
-                border: "1px solid #dee2e6"
-              }}>
+              <div style={getResponsiveStyle(
+                { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6" },
+                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6" },
+                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6" }
+              )}>
                 {listaActividadesEQE.map((actividad, index) => (
                   <label key={index} style={{ 
                     display: "flex", 
                     alignItems: "center", 
                     gap: "10px",
-                    padding: "8px",
+                    padding: isGalaxyTabA ? "12px" : "8px",
                     cursor: "pointer",
                     backgroundColor: actividadesSeleccionadas[actividad] ? "#e3f2fd" : "transparent",
                     borderRadius: "4px",
@@ -2443,15 +2595,15 @@ export default function Registro() {
                       type="checkbox"
                       checked={actividadesSeleccionadas[actividad] || false}
                       onChange={() => toggleActividad(actividad)}
-                      style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                      style={{ width: isGalaxyTabA ? "22px" : "18px", height: isGalaxyTabA ? "22px" : "18px", cursor: "pointer" }}
                     />
-                    <span style={{ fontSize: "14px", fontWeight: actividadesSeleccionadas[actividad] ? "500" : "normal" }}>
+                    <span style={{ fontSize: isGalaxyTabA ? "16px" : "14px", fontWeight: actividadesSeleccionadas[actividad] ? "500" : "normal" }}>
                       {actividad}
                     </span>
                   </label>
                 ))}
               </div>
-              <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: "12px" }}>
+              <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: isGalaxyTabA ? "14px" : "12px" }}>
                 <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
               </div>
             </div>
@@ -2483,35 +2635,24 @@ export default function Registro() {
                   type="button"
                   onClick={() => eliminarDetalleActividad(index)}
                   title="Eliminar actividad"
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    right: "10px",
-                    padding: "6px 10px",
-                    backgroundColor: "#dc3545",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: "bold"
-                  }}
+                  style={getResponsiveStyle(
+                    { position: "absolute", top: "10px", right: "10px", padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" },
+                    { position: "absolute", top: "10px", right: "10px", padding: "10px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold", minHeight: "44px" }
+                  )}
                 >
                   ❌ Eliminar
                 </button>
-                <div style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "2fr 1fr 1fr 1fr", 
-                  gap: "20px",
-                  alignItems: "center",
-                  paddingRight: "80px"
-                }}>
-                  <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+                <div style={getResponsiveStyle(
+                  { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" }
+                )}>
+                  <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "18px" : "16px" }}>
                     {actividad.trim()}
                     {integrantesConActividad.length > 0 && (
                       <span style={{ 
                         marginLeft: "10px", 
-                        fontSize: "12px", 
+                        fontSize: isGalaxyTabA ? "14px" : "12px", 
                         color: "#28a745",
                         backgroundColor: "#d4edda",
                         padding: "2px 8px",
@@ -2523,44 +2664,32 @@ export default function Registro() {
                   </div>
           
                   <div>
-                    <label style={{ fontSize: "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
+                    <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
                       PLANIFICADA TOTAL:
                     </label>
                     <input
                       type="number"
                       value={totalPlanificado}
                       readOnly
-                      style={{ 
-                        width: "100%", 
-                        padding: "10px", 
-                        border: "1px solid #28a745", 
-                        borderRadius: "4px",
-                        backgroundColor: "#e9ecef",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        color: "#0f5132"
-                      }}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" },
+                        { width: "100%", padding: "12px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "14px", fontWeight: "bold", color: "#0f5132" }
+                      )}
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
+                    <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
                       ELABORADA TOTAL:
                     </label>
                     <input
                       type="number"
                       value={totalElaborado}
                       readOnly
-                      style={{ 
-                        width: "100%", 
-                        padding: "10px", 
-                        border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, 
-                        borderRadius: "4px",
-                        backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef',
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'
-                      }}
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' },
+                        { width: "100%", padding: "12px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "14px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }
+                      )}
                     />
                   </div>
                 </div>
@@ -2572,7 +2701,7 @@ export default function Registro() {
                     backgroundColor: "#e9ecef",
                     border: "1px solid #ced4da",
                     borderRadius: "4px",
-                    fontSize: "12px"
+                    fontSize: isGalaxyTabA ? "14px" : "12px"
                   }}>
                     <strong>DISTRIBUCIÓN:</strong> {integrantesConActividad.length} integrantes × horas variables
                     {totalPlanificado > 0 && (
@@ -2586,18 +2715,13 @@ export default function Registro() {
       
           {/* INPUT Y BOTÓN PARA AGREGAR NUEVO DETALLE (solo para productos normales) */}
           {!mostrarCheckboxes && (
-            <div style={{
-              marginTop: "20px",
-              padding: "15px",
-              backgroundColor: "#f8fafc",
-              border: "1px dashed #0284c7",
-              borderRadius: "8px",
-              display: "flex",
-              gap: "10px",
-              alignItems: "flex-end"
-            }}>
+            <div style={getResponsiveStyle(
+              { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", gap: "10px", alignItems: "flex-end" },
+              { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
+              { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
+            )}>
               <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: "600", marginBottom: "5px", color: "#1f2937" }}>
+                <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1f2937" }}>
                   NUEVA ACTIVIDAD:
                 </label>
                 <input
@@ -2606,33 +2730,19 @@ export default function Registro() {
                   onChange={(e) => setNuevoDetalleActividad(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && agregarDetalleActividad()}
                   placeholder="Escribe una nueva actividad y presiona Enter o haz clic en Agregar..."
-                  style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    borderRadius: "6px",
-                    border: "1px solid #d1d5db",
-                    fontSize: "12px",
-                    fontWeight: "500"
-                  }}
+                  style={getResponsiveStyle(
+                    { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "12px", fontWeight: "500" },
+                    { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "14px", fontWeight: "500" }
+                  )}
                 />
               </div>
               <button
                 type="button"
                 onClick={agregarDetalleActividad}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#0284c7",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  whiteSpace: "nowrap",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px"
-                }}
+                style={getResponsiveStyle(
+                  { padding: "10px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
+                  { padding: "12px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "48px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
+                )}
               >
                 <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
               </button>
@@ -2647,7 +2757,8 @@ export default function Registro() {
               backgroundColor: "#fff3cd",
               border: "1px solid #ffeeba",
               borderRadius: "8px",
-              color: "#856404"
+              color: "#856404",
+              fontSize: isGalaxyTabA ? "14px" : "12px"
             }}>
               No se encontraron actividades para el producto {form.codigo_producto}
             </div>
@@ -2672,17 +2783,12 @@ export default function Registro() {
                 backgroundColor: integranteIndex % 2 === 0 ? "#f8f9fa" : "#ffffff",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
               }}>
-                <div style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "auto 2fr 1fr auto", 
-                  gap: 10, 
-                  marginBottom: 20,
-                  alignItems: "center",
-                  backgroundColor: "#e9ecef",
-                  padding: "10px",
-                  borderRadius: "6px"
-                }}>
-                  <span style={{ fontSize: "16px" }}>👤</span>
+                <div style={getResponsiveStyle(
+                  { display: "grid", gridTemplateColumns: "auto 2fr 1fr auto", gap: 10, marginBottom: 20, alignItems: "center", backgroundColor: "#e9ecef", padding: "10px", borderRadius: "6px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 20, backgroundColor: "#e9ecef", padding: "10px", borderRadius: "6px" },
+                  { display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 20, backgroundColor: "#e9ecef", padding: "10px", borderRadius: "6px" }
+                )}>
+                  <span style={{ fontSize: isGalaxyTabA ? "20px" : "16px", textAlign: "center" }}>👤</span>
           
                   <input 
                     type="text" 
@@ -2711,26 +2817,19 @@ export default function Registro() {
                       });
                     }}
                     placeholder="ESCRIBE EL NOMBRE DEL INTEGRANTE..."
-                    style={{ 
-                      padding: "8px", 
-                      border: "1px solid #ced4da", 
-                      borderRadius: "4px", 
-                      backgroundColor: "#ffffff",
-                      fontWeight: "bold",
-                      fontSize: "16px"
-                    }}
+                    style={getResponsiveStyle(
+                      { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "16px" },
+                      { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "18px" }
+                    )}
                   />
             
                   <select
                     value={integrante.cargo}
                     onChange={(e) => actualizarCargoIntegrante(integranteIndex, e.target.value)}
-                    style={{ 
-                      padding: "8px", 
-                      border: "1px solid #ced4da", 
-                      borderRadius: "4px", 
-                      backgroundColor: "#ffffff",
-                      cursor: "pointer"
-                    }}
+                    style={getResponsiveStyle(
+                      { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", cursor: "pointer" },
+                      { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", cursor: "pointer", fontSize: "14px" }
+                    )}
                   >
                     <option value="LÍDER">LÍDER</option>
                     <option value="COSTURERA/O">COSTURERA/O</option>
@@ -2743,14 +2842,10 @@ export default function Registro() {
                     type="button" 
                     onClick={() => eliminarIntegrante(integranteIndex)} 
                     title="Eliminar integrante"
-                    style={{ 
-                      padding: "8px 12px", 
-                      backgroundColor: "#dc3545", 
-                      color: "white", 
-                      border: "none", 
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
+                    style={getResponsiveStyle(
+                      { padding: "8px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" },
+                      { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", minHeight: "44px", fontSize: "14px" }
+                    )}
                   >
                     ❌ ELIMINAR
                   </button>
@@ -2759,7 +2854,7 @@ export default function Registro() {
                 {integrante.cargo === "OTRO" && (
                   <div style={{
                     padding:"10px",
-                    marginLeft: "30px",
+                    marginLeft: isGalaxyTabA ? "0" : "30px",
                     marginBottom: "15px",
                     backgroundColor: "#fff3cd",
                     border: "1px solid #ffeeba",
@@ -2778,22 +2873,19 @@ export default function Registro() {
                         setIntegrantes(nuevosIntegrantes);
                       }}
                       placeholder="ESCRIBA EL CARGO CORRESPONDIENTE"
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        border: "1px solid #007bff",
-                        borderRadius: "4px",
-                        fontSize: "14px"
-                      }}  
+                      style={getResponsiveStyle(
+                        { width: "100%", padding: "8px", border: "1px solid #007bff", borderRadius: "4px", fontSize: "14px" },
+                        { width: "100%", padding: "12px", border: "1px solid #007bff", borderRadius: "4px", fontSize: "16px" }
+                      )}  
                       autoFocus
                     />
                   </div>
                 )}
 
-                <div style={{ marginLeft: "20px" }}>
+                <div style={{ marginLeft: isGalaxyTabA ? "0" : "20px" }}>
                   <h4 style={{ 
                     marginBottom: "15px", 
-                    fontSize: "16px", 
+                    fontSize: isGalaxyTabA ? "18px" : "16px", 
                     color: "#495057",
                     borderBottom: "2px solid #28a745",
                     paddingBottom: "5px",
@@ -2803,17 +2895,11 @@ export default function Registro() {
                   </h4>
           
                   {(actividadesIntegrantes[`integrante_${integranteIndex}`]?.actividades || []).map((actividad, actividadIndex) => (
-                    <div key={actividadIndex} style={{ 
-                      display: "grid", 
-                      gridTemplateColumns: "1.2fr 0.6fr 0.8fr 0.8fr 1.6fr auto", 
-                      gap: "10px", 
-                      marginBottom: "10px",
-                      alignItems: "center",
-                      backgroundColor: "#f5f5f5",
-                      padding: "10px",
-                      borderRadius: "4px",
-                      border: "1px solid #dee2e6",
-                    }}>
+                    <div key={actividadIndex} style={getResponsiveStyle(
+                      { display: "grid", gridTemplateColumns: "1.2fr 0.6fr 0.8fr 0.8fr 1.6fr auto", gap: "10px", marginBottom: "10px", alignItems: "center", backgroundColor: "#f5f5f5", padding: "10px", borderRadius: "4px", border: "1px solid #dee2e6" },
+                      { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "10px", backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "4px", border: "1px solid #dee2e6" },
+                      { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "10px", backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "4px", border: "1px solid #dee2e6" }
+                    )}>
                       <select
                         value={actividad.actividad}
                         onChange={async (e) => {
@@ -2846,7 +2932,10 @@ export default function Registro() {
                             }
                           }
                         }}
-                        style={{ padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize: "11px" }}
+                        style={getResponsiveStyle(
+                          { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize: "11px" },
+                          { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize: "14px" }
+                        )}
                       >
                         <option value="">SELECCIONE ACTIVIDAD...</option>
                         {mostrarCheckboxes 
@@ -2874,15 +2963,10 @@ export default function Registro() {
                             [`${integranteIndex}_${actividadIndex}`]: true
                           }));
                         }}
-                        style={{ 
-                          padding: "8px", 
-                          border: "1px solid #007bff", 
-                          borderRadius: "4px", 
-                          width: "100%", 
-                          fontSize: "11px",
-                          fontWeight: "bold",
-                          backgroundColor: "#e9ecef"
-                        }}
+                        style={getResponsiveStyle(
+                          { padding: "8px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "11px", fontWeight: "bold", backgroundColor: "#e9ecef" },
+                          { padding: "12px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "14px", fontWeight: "bold", backgroundColor: "#e9ecef" }
+                        )}
                       />
 
                       <input
@@ -2906,14 +2990,10 @@ export default function Registro() {
                           }
                         }}
                         placeholder="CANT. PLANIF."
-                        style={{ 
-                          padding: "8px", 
-                          border: "1px solid #28a745", 
-                          borderRadius: "4px", 
-                          width: "100%", 
-                          fontSize: "11px",
-                          fontWeight: "bold"
-                        }}
+                        style={getResponsiveStyle(
+                          { padding: "8px", border: "1px solid #28a745", borderRadius: "4px", width: "100%", fontSize: "11px", fontWeight: "bold" },
+                          { padding: "12px", border: "1px solid #28a745", borderRadius: "4px", width: "100%", fontSize: "14px", fontWeight: "bold" }
+                        )}
                       />
 
                       <input
@@ -2924,13 +3004,10 @@ export default function Registro() {
                           actualizarActividadIntegrante(integranteIndex, actividadIndex, "cantidad_elaborada", e.target.value);
                         }}
                         placeholder="CANT. ELABOR."
-                        style={{ 
-                          padding: "8px", 
-                          border: "1px solid #ced4da", 
-                          borderRadius: "4px", 
-                          width: "100%", 
-                          fontSize: "11px" 
-                        }}
+                        style={getResponsiveStyle(
+                          { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", width: "100%", fontSize: "11px" },
+                          { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", width: "100%", fontSize: "14px" }
+                        )}
                       />
 
                       <textarea 
@@ -2940,28 +3017,19 @@ export default function Registro() {
                         onChange={(e) => {
                           actualizarActividadIntegrante(integranteIndex, actividadIndex, "observaciones_integrante", e.target.value);
                         }}
-                        style={{ 
-                          padding: "8px", 
-                          border: "1px solid #ced4da", 
-                          borderRadius: "4px", 
-                          backgroundColor: "#ffffff",
-                          fontWeight: "bold",
-                          fontSize: "11px"
-                        }}
+                        style={getResponsiveStyle(
+                          { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "11px" },
+                          { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "14px" }
+                        )}
                       />
 
                       <button
                         type="button"
                         onClick={() => eliminarActividadDeIntegrante(integranteIndex, actividadIndex)}
-                        style={{ 
-                          padding: "8px", 
-                          backgroundColor: "#dc3545", 
-                          color: "white", 
-                          border: "none", 
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "12px"
-                        }}
+                        style={getResponsiveStyle(
+                          { padding: "8px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px" },
+                          { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", minHeight: "44px" }
+                        )}
                       >
                         🗑️
                       </button>
@@ -2971,17 +3039,10 @@ export default function Registro() {
                   <button
                     type="button"
                     onClick={() => agregarActividadAIntegrante(integranteIndex)}
-                    style={{ 
-                      marginTop: "15px",
-                      padding: "10px 15px", 
-                      backgroundColor: "#28a745", 
-                      color: "white", 
-                      border: "none", 
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "bold"
-                    }}
+                    style={getResponsiveStyle(
+                      { marginTop: "15px", padding: "10px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold" },
+                      { marginTop: "15px", padding: "12px 20px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold", minHeight: "48px", width: "100%" }
+                    )}
                   >
                     ➕ AGREGAR ACTIVIDAD A {integrante.nombre ? integrante.nombre.split(' ')[0] : 'INTEGRANTE'}
                   </button>
@@ -2994,16 +3055,10 @@ export default function Registro() {
                 type="button" 
                 className="btn" 
                 onClick={agregarIntegrante}
-                style={{ 
-                  padding: "12px 20px", 
-                  backgroundColor: "#ff7675", 
-                  color: "white", 
-                  border: "none", 
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  fontWeight: "bold"
-                }}
+                style={getResponsiveStyle(
+                  { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold" },
+                  { padding: "14px 24px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "18px", fontWeight: "bold", minHeight: "48px" }
+                )}
               >
                 ➕ Agregar Nuevo Integrante
               </button>
@@ -3016,11 +3071,11 @@ export default function Registro() {
         </div>
         <div className="cabecera4">
           <div className="form-group">
-            <textarea placeholder="INGRESA LAS OBSERVACIONES QUE TENGAS PARA EL REGISTRO... (OPCIONAL)" className="textObs" id="observaciones" name="observaciones" rows={4} value={form.observaciones} onChange={onChange}/>
+            <textarea placeholder="INGRESA LAS OBSERVACIONES QUE TENGAS PARA EL REGISTRO... (OPCIONAL)" className="textObs" id="observaciones" name="observaciones" rows={4} value={form.observaciones} onChange={onChange} style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}/>
           </div>
         </div>
         
-        <button type="submit" className="btn-guardar">
+        <button type="submit" className="btn-guardar" style={isGalaxyTabA ? { padding: "16px", fontSize: "16px", minHeight: "56px" } : {}}>
           GUARDAR REGISTRO DE PRODUCCIÓN
         </button>
       </form>

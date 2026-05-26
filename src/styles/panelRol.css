@@ -415,3 +415,239 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================
+   DISEÑO ESPECÍFICO PARA SAMSUNG GALAXY TAB A (8.0", 2019)
+   Resolución: 1200x1920 (portrait) / 1920x1200 (landscape)
+   DPI: ~283 ppi
+   ============================================ */
+
+/* Modo Portrait (vertical) - 1200x1920 */
+@media only screen and (min-width: 800px) and (max-width: 1200px) and (min-height: 1200px) and (max-height: 1920px) {
+  
+  .panel-container {
+    padding: 16px;
+  }
+
+  .panel-header {
+    padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel-header > div:first-child {
+    text-align: center;
+  }
+
+  .panel-header h2 {
+    font-size: 22px;
+  }
+
+  .panel-header h3 {
+    font-size: 11px;
+  }
+
+  .panel-header-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .panel-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  /* Cards resumen en grid de 2 columnas */
+  .panel-summary-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .panel-summary-card {
+    padding: 14px;
+  }
+
+  .panel-summary-value {
+    font-size: 24px;
+  }
+
+  /* Filtros horizontales scrollables */
+  .panel-filtros-estado {
+    overflow-x: auto;
+    padding-bottom: 8px;
+    gap: 8px;
+  }
+
+  .panel-estado-filter-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  /* Tabla con fuente más grande para mejor legibilidad */
+  .panel-data-table th,
+  .panel-data-table td {
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+
+  .panel-data-table th {
+    font-size: 12px;
+  }
+
+  /* Aumentar tamaño de celdas de estado */
+  .panel-estado {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+
+  /* Grids internos a 2 columnas */
+  .panel-insumo-grid,
+  .panel-etiquetas-grid,
+  .panel-integrantes-grid,
+  .panel-maquinas-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* Modo Landscape (horizontal) - 1920x1200 */
+@media only screen and (min-width: 1201px) and (max-width: 1920px) and (min-height: 800px) and (max-height: 1200px) {
+  
+  .panel-container {
+    padding: 24px;
+  }
+
+  .panel-header {
+    padding: 18px 24px;
+    flex-direction: row;
+  }
+
+  .panel-header h2 {
+    font-size: 20px;
+  }
+
+  .panel-header h3 {
+    font-size: 12px;
+  }
+
+  /* 4 cards horizontales */
+  .panel-summary-row {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .panel-summary-card {
+    padding: 14px;
+  }
+
+  .panel-summary-value {
+    font-size: 28px;
+  }
+
+  /* Tabla más compacta pero legible */
+  .panel-data-table th,
+  .panel-data-table td {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  /* Grids internos a 3 columnas */
+  .panel-insumo-grid,
+  .panel-etiquetas-grid,
+  .panel-integrantes-grid,
+  .panel-maquinas-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  /* Botones más pequeños en landscape */
+  .panel-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Ajustes específicos para navegadores Samsung Internet */
+@media only screen and (min-device-width: 800px) and (max-device-width: 1200px) and (-webkit-min-device-pixel-ratio: 2) {
+  
+  /* Mejorar legibilidad de textos */
+  body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Aumentar contraste en botones táctiles */
+  .panel-btn {
+    min-height: 44px; /* Tamaño mínimo táctil recomendado */
+  }
+
+  .panel-estado-filter-btn {
+    min-height: 36px;
+  }
+
+  /* Mejorar hover states para pantallas táctiles */
+  .panel-summary-card:active,
+  .panel-data-table tbody tr:active {
+    background: #f3f4f6;
+    transform: scale(0.99);
+  }
+
+  /* Eliminar hover que puede ser molesto en táctil */
+  .panel-btn:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .panel-summary-card:hover {
+    border-color: var(--border-color);
+  }
+
+  /* Scroll más suave para tablas */
+  .panel-table-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Espaciado para elementos clickeables */
+  .panel-insumo-box,
+  .panel-etiquetas-box,
+  .panel-integrantes-box,
+  .panel-maquinas-box {
+    cursor: pointer;
+  }
+}
+
+/* Ajuste para pantallas muy pequeñas (menos de 800px de ancho) */
+@media only screen and (max-width: 799px) and (min-width: 600px) {
+  .panel-summary-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .panel-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .panel-header-actions {
+    justify-content: center;
+  }
+
+  .panel-data-table th,
+  .panel-data-table td {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+}
+
+/* Soporte para orientación automática en Galaxy Tab A */
+@media only screen and (orientation: portrait) and (min-width: 800px) and (max-width: 1200px) {
+  .panel-container {
+    padding: 16px 20px;
+  }
+}
+
+@media only screen and (orientation: landscape) and (min-width: 1200px) and (max-width: 1920px) {
+  .panel-table-scroll {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
