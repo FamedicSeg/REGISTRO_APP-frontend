@@ -2000,90 +2000,92 @@ export default function Registro() {
         <div className="card">
           <div className="form-group">
             <label>DESCRIPCIÓN DE ETIQUETA:</label>
-            
             <style>{`
-              .etiqueta-grid {
-                display: flex;
-                align-items: flex-end;
-                gap: 15px;
-                margin-bottom: 20px;
-                padding: 15px;
-                background: #f8fafc;
-                border-radius: 10px;
-                border: 1px solid #e2e8f0;
-              }
-              .etiqueta-field {
-                flex: 1;
-              }
-              .etiqueta-field label {
-                display: block;
-                font-size: 11px;
-                font-weight: 600;
-                color: #4b5563;
-                margin-bottom: 5px;
-              }
-              .etiqueta-field input,
-              .etiqueta-field select {
-                width: 100%;
-                padding: 10px 12px;
-                border-radius: 8px;
-                border: 1px solid #d1d5db;
-                font-size: 11px;
-                background: white;
-              }
-              .etiqueta-field input:focus,
-              .etiqueta-field select:focus {
-                outline: none;
-                border-color: #3b82f6;
-                box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-              }
-              .btn-delete {
-                padding: 8px;
-                background: #e74c3c;
-                color: #ef4444;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                width: 38px;
-                height: 38px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s;
-                margin-top: 20px;
-                flex-shrink: 0;
-              }
-              .btn-delete:hover {
-                background: #e74c3c;
-              }
-              .btn-add {
-                padding: 12px 20px;
-                background: #28a745;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 11px;
-                font-weight: 500;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-              }
-              .btn-add:hover {
-                background: #28a745;
-              }
-              @media (max-width: 1200px) {
-                .etiqueta-grid {
-                  flex-direction: column;
-                  align-items: stretch;
-                  width: 100%;
-                }
-                .btn-delete {
-                  margin-top: 10px;
-                  width: 100%;
-                }
-              }
-            `}</style>
+  .etiqueta-grid {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    flex-wrap: nowrap;        /* 👈 NUEVO: evita que se envuelvan a varias líneas */
+    overflow-x: auto;         /* 👈 NUEVO: scroll horizontal si es necesario */
+  }
+  .etiqueta-field {
+    flex: 0 0 auto;           /* 👈 CAMBIADO: 1 → 0 0 auto (tamaño automático) */
+    min-width: 180px;         /* 👈 NUEVO: ancho mínimo */
+  }
+  .etiqueta-field label {
+    display: block;
+    font-size: 10px;          /* 👈 CAMBIADO: 11px → 10px */
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 4px;       /* 👈 CAMBIADO: 5px → 4px */
+  }
+  .etiqueta-field input,
+  .etiqueta-field select {
+    width: 100%;
+    padding: 6px 10px;        /* 👈 CAMBIADO: 10px 12px → 6px 10px */
+    border-radius: 6px;       /* 👈 CAMBIADO: 8px → 6px */
+    border: 1px solid #d1d5db;
+    font-size: 11px;
+    background: white;
+  }
+  .etiqueta-field input:focus,
+  .etiqueta-field select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .btn-delete {
+    padding: 6px;             /* 👈 CAMBIADO: 8px → 6px */
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;       /* 👈 CAMBIADO: 8px → 6px */
+    cursor: pointer;
+    width: 34px;              /* 👈 CAMBIADO: 38px → 34px */
+    height: 34px;             /* 👈 CAMBIADO: 38px → 34px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-delete:hover {
+    background: #c0392b;
+  }
+  .btn-add {
+    padding: 8px 16px;        /* 👈 CAMBIADO: 12px 20px → 8px 16px */
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;       /* 👈 CAMBIADO: 8px → 6px */
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-add:hover {
+    background: #218838;
+  }
+  
+  /* Scroll horizontal para pantallas pequeñas */
+  @media (max-width: 1200px) {
+    .etiqueta-grid {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .btn-delete {
+      margin-top: 0;
+      width: 34px;
+    }
+  }
+`}</style>
 
             {etiquetas.map((item, index) => (
               <div key={index} className="etiqueta-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
@@ -2413,97 +2415,98 @@ export default function Registro() {
           <div className="form-group">
             <label> DESCRIPCIÓN DE LA MAQUINARIA: </label>
             <style>{`
-              .maquinaria-grid{
-                display: flex;
-                align-items: flex-end;
-                gap: 15px;
-                margin-bottom: 20px;
-                padding: 15px;
-                background: #f8fafc;
-                border-radius: 10px;
-                border: 1px solid #e2e8f0;
-                flex-wrap: wrap;
-              }
-              .maquinaria-field {
-                flex:1;
-                min-width: 220px;
-              }
-              .maquinaria-field label{
-                display: block;
-                font-size: 11px;
-                font-weight: 600;
-                color: #4b5563;
-                margin-bottom: 5px;
-              }
-              .maquinaria-field input,
-              .maquinaria-field select {
-                width: 100%;
-                padding: 10px 12px;
-                border-radius: 8px;
-                border: 1px solid #d1d5db;
-                font-size: 11px;
-                background: white;
-              }
-              .maquinaria-field input:focus,
-              .maquinaria-field select:focus {
-                outline: none;
-                border-color: #3b82f6;
-                box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-              }
-              .numeros-maquina{
-                width: 100%;
-                margin-top: 10px;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 10px;
-              }
-              .btn-delete {
-                padding: 8px;
-                background: #e74c3c;
-                color: #ef4444;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                width: 38px;
-                height: 38px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s;
-                margin-top: 20px;
-                flex-shrink: 0;
-              }
-              .btn-delete:hover {
-                background: #e74c3c;
-              }
-              .btn-add {
-                padding: 12px 20px;
-                background: #28a745;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 11px;
-                font-weight: 500;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                margin-top:10px;
-              }
-              .btn-add:hover {
-                background: #28a745;
-              }
-              @media (max-width: 1200px) {
-                .maquinaria-grid {
-                  flex-direction: column;
-                  align-items: stretch;
-                }
-                .btn-delete {
-                  width: 100%;
-                  margin-top: 10px;
-                }
-              }
-            `}</style>
+  .maquinaria-grid{
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    flex-wrap: nowrap;  /* 👈 CAMBIADO: wrap → nowrap (no permite salto de línea) */
+    overflow-x: auto;   /* 👈 NUEVO: permite scroll horizontal si es necesario */
+  }
+  .maquinaria-field {
+    flex: 0 0 auto;     /* 👈 CAMBIADO: 1 → 0 0 auto (no se expande, tamaño automático) */
+    min-width: 180px;   /* 👈 CAMBIADO: 220px → 180px */
+  }
+  .maquinaria-field label{
+    display: block;
+    font-size: 10px;    /* 👈 CAMBIADO: 11px → 10px */
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 4px;
+  }
+  .maquinaria-field input,
+  .maquinaria-field select {
+    width: 100%;        /* 👈 CAMBIADO: 30% → 100% */
+    padding: 6px 10px;  /* 👈 CAMBIADO: 10px 12px → 6px 10px */
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 11px;
+    background: white;
+  }
+  .maquinaria-field input:focus,
+  .maquinaria-field select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .numeros-maquina{
+    display: flex;                    /* 👈 CAMBIADO: grid → flex */
+    flex-direction: column;             /* 👈 NUEVO: horizontal */
+    gap: 10px;
+    align-items: flex-end;
+    flex-wrap: nowrap;               /* 👈 NUEVO: sin salto de línea */
+  }
+  .numeros-maquina .maquinaria-field {
+    min-width: 150px;                /* 👈 NUEVO: ancho específico */
+  }
+  .btn-delete {
+    padding: 6px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .btn-delete:hover {
+    background: #c0392b;
+  }
+  .btn-add {
+    padding: 8px 16px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .btn-add:hover {
+    background: #218838;
+  }
+  
+  /* Scroll horizontal para pantallas pequeñas */
+  @media (max-width: 1400px) {
+    .maquinaria-grid {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+`}</style>
             {maquinarias.map((item, index)=>(
               <div key={index} className="maquinaria-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
                 <div className="maquinaria-field" style={{ flex: 1.2 }}>
@@ -2582,206 +2585,433 @@ export default function Registro() {
         </div>
 
         {/* DETALLES DE ACTIVIDADES - MODIFICADO */}
-        <div className="subtitle">
-          <h3>DETALLES DE ACTIVIDADES</h3>
-        </div>
-        
-        <div className="card">
-          {/* Mostrar checkboxes si el código empieza con EQE */}
-          {mostrarCheckboxes && listaActividadesEQE.length > 0 && (
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px" }}>
-                SELECCIONE LAS ACTIVIDADES QUE SE VAN A REALIZAR:
-              </label>
-              <div style={getResponsiveStyle(
-                { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6" },
-                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6" },
-                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6" }
-              )}>
-                {listaActividadesEQE.map((actividad, index) => (
-                  <label key={index} style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: "10px",
-                    padding: isGalaxyTabA ? "12px" : "8px",
-                    cursor: "pointer",
-                    backgroundColor: actividadesSeleccionadas[actividad] ? "#e3f2fd" : "transparent",
-                    borderRadius: "4px",
-                    transition: "background-color 0.2s"
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={actividadesSeleccionadas[actividad] || false}
-                      onChange={() => toggleActividad(actividad)}
-                      style={{ width: isGalaxyTabA ? "22px" : "18px", height: isGalaxyTabA ? "22px" : "18px", cursor: "pointer" }}
-                    />
-                    <span style={{ fontSize: isGalaxyTabA ? "16px" : "14px", fontWeight: actividadesSeleccionadas[actividad] ? "500" : "normal" }}>
-                      {actividad}
-                    </span>
-                  </label>
-                ))}
+<div className="subtitle">
+  <h3>DETALLES DE ACTIVIDADES</h3>
+</div>
+
+<div className="card">
+  {/* Mostrar checkboxes si el código empieza con EQE */}
+  {mostrarCheckboxes && (
+    <>
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px" }}>
+          SELECCIONE LAS ACTIVIDADES QUE SE VAN A REALIZAR:
+        </label>
+
+        {/* Lista de actividades con checkboxes */}
+        <div style={getResponsiveStyle(
+          { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" },
+          { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" },
+          { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" }
+        )}>
+          {listaActividadesEQE.map((actividad, index) => (
+            <label key={index} style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "10px",
+              padding: isGalaxyTabA ? "12px" : "8px",
+              cursor: "pointer",
+              backgroundColor: actividadesSeleccionadas[actividad] ? "#e3f2fd" : "transparent",
+              borderRadius: "4px",
+              transition: "background-color 0.2s",
+              justifyContent: "space-between"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
+                <input
+                  type="checkbox"
+                  checked={actividadesSeleccionadas[actividad] || false}
+                  onChange={() => toggleActividad(actividad)}
+                  style={{ width: isGalaxyTabA ? "22px" : "18px", height: isGalaxyTabA ? "22px" : "18px", cursor: "pointer" }}
+                />
+                <span style={{ fontSize: isGalaxyTabA ? "16px" : "14px", fontWeight: actividadesSeleccionadas[actividad] ? "500" : "normal" }}>
+                  {actividad}
+                </span>
               </div>
-              <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: isGalaxyTabA ? "14px" : "12px" }}>
-                <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
-              </div>
-            </div>
-          )}
-          
-          {/* Mostrar actividades en texto plano para productos normales */}
-          {!mostrarCheckboxes && form.detalles_actividades.split('\n').filter(act => act.trim() !== '').map((actividad, index) => {
-            const integrantesConActividad = Object.values(actividadesIntegrantes).filter(integrante => integrante.actividades?.some(act => act.actividad === actividad.trim()));
-            const totalPlanificado = integrantesConActividad.reduce((sum, integrante) => {
-              const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
-              return sum + (parseInt(actividadEnIntegrante?.cantidad_planificada) || 0);
-            }, 0);
-          
-            const totalElaborado = integrantesConActividad.reduce((sum, integrante) => {
-              const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
-              return sum + (parseInt(actividadEnIntegrante?.cantidad_elaborada) || 0);
-            }, 0);
-        
-            return (
-              <div key={`actividad-${index}`} style={{ 
-                marginBottom: "20px", 
-                padding: "15px", 
-                border: "1px solid #dee2e6", 
-                borderRadius: "8px",
-                backgroundColor: "#f8f9fa",
-                position: "relative"
-              }}>
+              {/* Botón para eliminar actividad agregada manualmente (solo las que no vienen del backend) */}
+              {!actividadesGlobalesEQE.includes(actividad) && (
                 <button
                   type="button"
-                  onClick={() => eliminarDetalleActividad(index)}
-                  title="Eliminar actividad"
-                  style={getResponsiveStyle(
-                    { position: "absolute", top: "10px", right: "10px", padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" },
-                    { position: "absolute", top: "10px", right: "10px", padding: "10px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold", minHeight: "44px" }
-                  )}
-                >
-                  ❌ Eliminar
-                </button>
-                <div style={getResponsiveStyle(
-                  { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" }
-                )}>
-                  <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "18px" : "16px" }}>
-                    {actividad.trim()}
-                    {integrantesConActividad.length > 0 && (
-                      <span style={{ 
-                        marginLeft: "10px", 
-                        fontSize: isGalaxyTabA ? "14px" : "12px", 
-                        color: "#28a745",
-                        backgroundColor: "#d4edda",
-                        padding: "2px 8px",
-                        borderRadius: "12px"
-                      }}>
-                        {integrantesConActividad.length} INTEGRANTE(S)
-                      </span>
-                    )}
-                  </div>
-          
-                  <div>
-                    <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
-                      PLANIFICADA TOTAL:
-                    </label>
-                    <input
-                      type="number"
-                      value={totalPlanificado}
-                      readOnly
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" },
-                        { width: "100%", padding: "12px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "14px", fontWeight: "bold", color: "#0f5132" }
-                      )}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
-                      ELABORADA TOTAL:
-                    </label>
-                    <input
-                      type="number"
-                      value={totalElaborado}
-                      readOnly
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' },
-                        { width: "100%", padding: "12px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "14px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }
-                      )}
-                    />
-                  </div>
-                </div>
-        
-                {integrantesConActividad.length > 0 && (
-                  <div style={{
-                    marginTop: "10px",
-                    padding: "10px",
-                    backgroundColor: "#e9ecef",
-                    border: "1px solid #ced4da",
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`¿Eliminar la actividad "${actividad}"?`)) {
+                      setListaActividadesEQE(prev => prev.filter(a => a !== actividad));
+                      setActividadesSeleccionadas(prev => {
+                        const newState = { ...prev };
+                        delete newState[actividad];
+                        return newState;
+                      });
+                    }
+                  }}
+                  style={{
+                    padding: "4px 8px",
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    border: "none",
                     borderRadius: "4px",
-                    fontSize: isGalaxyTabA ? "14px" : "12px"
-                  }}>
-                    <strong>DISTRIBUCIÓN:</strong> {integrantesConActividad.length} integrantes × horas variables
-                    {totalPlanificado > 0 && (
-                      <> | <strong>AVANCE:</strong> {Math.round((totalElaborado/totalPlanificado)*100)}%</>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-      
-          {/* INPUT Y BOTÓN PARA AGREGAR NUEVO DETALLE (solo para productos normales) */}
-          {!mostrarCheckboxes && (
-            <div style={getResponsiveStyle(
-              { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", gap: "10px", alignItems: "flex-end" },
-              { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
-              { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
-            )}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1f2937" }}>
-                  NUEVA ACTIVIDAD:
-                </label>
-                <input
-                  type="text"
-                  value={nuevoDetalleActividad}
-                  onChange={(e) => setNuevoDetalleActividad(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && agregarDetalleActividad()}
-                  placeholder="Escribe una nueva actividad y presiona Enter o haz clic en Agregar..."
-                  style={getResponsiveStyle(
-                    { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "12px", fontWeight: "500" },
-                    { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "14px", fontWeight: "500" }
-                  )}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={agregarDetalleActividad}
-                style={getResponsiveStyle(
-                  { padding: "10px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
-                  { padding: "12px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "48px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
-                )}
-              >
-                <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
-              </button>
-            </div>
-          )}
-          
-          {/* Mensaje cuando no hay actividades para EQE */}
-          {mostrarCheckboxes && listaActividadesEQE.length === 0 && form.codigo_producto && (
-            <div style={{
-              padding: "20px",
-              textAlign: "center",
-              backgroundColor: "#fff3cd",
-              border: "1px solid #ffeeba",
-              borderRadius: "8px",
-              color: "#856404",
-              fontSize: isGalaxyTabA ? "14px" : "12px"
-            }}>
-              No se encontraron actividades para el producto {form.codigo_producto}
-            </div>
-          )}
+                    cursor: "pointer",
+                    fontSize: "11px",
+                    minHeight: "30px"
+                  }}
+                  title="Eliminar actividad"
+                >
+                  🗑️
+                </button>
+              )}
+            </label>
+          ))}
         </div>
+        
+        <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: isGalaxyTabA ? "14px" : "12px" }}>
+          <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
+        </div>
+      </div>
+
+      {/* MOSTRAR RESUMEN DE ACTIVIDADES SELECCIONADAS PARA EQE */}
+      {Object.keys(actividadesSeleccionadas).filter(act => actividadesSeleccionadas[act]).length > 0 && (
+        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+          <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px", color: "#2563eb" }}>
+            RESUMEN DE ACTIVIDADES SELECCIONADAS:
+          </label>
+          
+          {Object.keys(actividadesSeleccionadas)
+            .filter(actividad => actividadesSeleccionadas[actividad])
+            .map((actividad, index) => {
+              // Obtener integrantes que tienen esta actividad
+              const integrantesConActividad = Object.values(actividadesIntegrantes).filter(
+                integrante => integrante.actividades?.some(act => act.actividad === actividad.trim())
+              );
+              
+              // Calcular total planificado de esta actividad
+              const totalPlanificado = integrantesConActividad.reduce((sum, integrante) => {
+                const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
+                return sum + (parseInt(actividadEnIntegrante?.cantidad_planificada) || 0);
+              }, 0);
+            
+              // Calcular total elaborado de esta actividad
+              const totalElaborado = integrantesConActividad.reduce((sum, integrante) => {
+                const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
+                return sum + (parseInt(actividadEnIntegrante?.cantidad_elaborada) || 0);
+              }, 0);
+              
+              return (
+                <div key={`resumen-eqe-${index}`} style={{ 
+                  marginBottom: "15px", 
+                  padding: "15px", 
+                  border: "1px solid #dee2e6", 
+                  borderRadius: "8px",
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+                }}>
+                  <div style={getResponsiveStyle(
+                    { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "15px", alignItems: "center" },
+                    { display: "grid", gridTemplateColumns: "1fr", gap: "12px", alignItems: "center" },
+                    { display: "grid", gridTemplateColumns: "1fr", gap: "12px", alignItems: "center" }
+                  )}>
+                    <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "16px" : "14px", color: "#1f2937" }}>
+                      {actividad.trim()}
+                      {!actividadesGlobalesEQE.includes(actividad) && (
+                        <span style={{ 
+                          marginLeft: "10px", 
+                          fontSize: isGalaxyTabA ? "11px" : "10px", 
+                          color: "#ff9800",
+                          backgroundColor: "#fff3e0",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                          display: "inline-block"
+                        }}>
+                          AÑADIDO
+                        </span>
+                      )}
+                      {integrantesConActividad.length > 0 && (
+                        <span style={{ 
+                          marginLeft: "10px", 
+                          fontSize: isGalaxyTabA ? "12px" : "11px", 
+                          color: "#28a745",
+                          backgroundColor: "#d4edda",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                          display: "inline-block"
+                        }}>
+                          {integrantesConActividad.length} INTEGRANTE(S)
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: isGalaxyTabA ? "12px" : "11px", color: "#495057", display: "block", marginBottom: "5px" }}>
+                        PLANIFICADA TOTAL:
+                      </label>
+                      <input
+                        type="number"
+                        value={totalPlanificado}
+                        readOnly
+                        style={getResponsiveStyle(
+                          { width: "100%", padding: "8px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" },
+                          { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "14px", fontWeight: "bold", color: "#0f5132" }
+                        )}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: isGalaxyTabA ? "12px" : "11px", color: "#495057", display: "block", marginBottom: "5px" }}>
+                        ELABORADA TOTAL:
+                      </label>
+                      <input
+                        type="number"
+                        value={totalElaborado}
+                        readOnly
+                        style={getResponsiveStyle(
+                          { width: "100%", padding: "8px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' },
+                          { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "14px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }
+                        )}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Si no hay integrantes asignados, mostrar mensaje */}
+                  {integrantesConActividad.length === 0 && (
+                    <div style={{
+                      marginTop: "12px",
+                      padding: "10px",
+                      backgroundColor: "#fff3cd",
+                      borderRadius: "6px",
+                      fontSize: isGalaxyTabA ? "12px" : "11px",
+                      color: "#856404",
+                      textAlign: "center"
+                    }}>
+                      ⚠️ Aún no hay integrantes asignados a esta actividad. Ve a la sección "INTEGRANTES Y ACTIVIDADES" para asignar.
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+      )}
+    </>
+  )}
+
+  {/* Mostrar checkboxes si el código empieza con EQE */}
+{mostrarCheckboxes && listaActividadesEQE.length > 0 && (
+  <>
+    {/* Input para agregar actividad manualmente - SOLO PARA EQE */}
+    <div style={getResponsiveStyle(
+      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", gap: "10px", alignItems: "flex-end" },
+      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
+      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
+    )}>
+      <div style={{ flex: 1 }}>
+        <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1565c0" }}>
+          AGREGAR ACTIVIDAD:
+        </label>
+        <input
+          type="text"
+          id="nuevaActividadManual"
+          placeholder="Escribe una nueva actividad y presiona Agregar..."
+          style={getResponsiveStyle(
+            { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "12px", fontWeight: "500", backgroundColor: "white" },
+            { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "14px", fontWeight: "500", backgroundColor: "white" }
+          )}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              const nuevaActividad = e.target.value.trim().toUpperCase();
+              if (nuevaActividad && !listaActividadesEQE.includes(nuevaActividad)) {
+                setListaActividadesEQE(prev => [...prev, nuevaActividad]);
+                setActividadesSeleccionadas(prev => ({ ...prev, [nuevaActividad]: true }));
+                e.target.value = "";
+              } else if (nuevaActividad && listaActividadesEQE.includes(nuevaActividad)) {
+                alert("⚠️ Esta actividad ya existe en la lista");
+              }
+            }
+          }}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          const inputElement = document.getElementById("nuevaActividadManual");
+          const nuevaActividad = inputElement?.value.trim().toUpperCase();
+          if (nuevaActividad && !listaActividadesEQE.includes(nuevaActividad)) {
+            setListaActividadesEQE(prev => [...prev, nuevaActividad]);
+            setActividadesSeleccionadas(prev => ({ ...prev, [nuevaActividad]: true }));
+            if (inputElement) inputElement.value = "";
+          } else if (nuevaActividad && listaActividadesEQE.includes(nuevaActividad)) {
+            alert("⚠️ Esta actividad ya existe en la lista");
+          } else if (!nuevaActividad) {
+            alert("⚠️ Por favor escribe una actividad");
+          }
+        }}
+        style={getResponsiveStyle(
+          { padding: "10px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
+          { padding: "12px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
+        )}
+      >
+        <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
+      </button>
+    </div>
+
+    
+    
+    <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: isGalaxyTabA ? "14px" : "12px" }}>
+      <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
+    </div>
+  </>
+)}
+  
+  {/* Mostrar actividades en texto plano para productos normales */}
+  {!mostrarCheckboxes && form.detalles_actividades.split('\n').filter(act => act.trim() !== '').map((actividad, index) => {
+    const integrantesConActividad = Object.values(actividadesIntegrantes).filter(integrante => integrante.actividades?.some(act => act.actividad === actividad.trim()));
+    const totalPlanificado = integrantesConActividad.reduce((sum, integrante) => {
+      const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
+      return sum + (parseInt(actividadEnIntegrante?.cantidad_planificada) || 0);
+    }, 0);
+  
+    const totalElaborado = integrantesConActividad.reduce((sum, integrante) => {
+      const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
+      return sum + (parseInt(actividadEnIntegrante?.cantidad_elaborada) || 0);
+    }, 0);
+
+    return (
+      <div key={`actividad-${index}`} style={{ 
+        marginBottom: "20px", 
+        padding: "15px", 
+        border: "1px solid #dee2e6", 
+        borderRadius: "8px",
+        backgroundColor: "#f8f9fa",
+        position: "relative"
+      }}>
+        <button
+          type="button"
+          onClick={() => eliminarDetalleActividad(index)}
+          title="Eliminar actividad"
+          style={getResponsiveStyle(
+            { position: "absolute", top: "10px", right: "10px", padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" },
+            { position: "absolute", top: "10px", right: "10px", padding: "10px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold", minHeight: "44px" }
+          )}
+        >
+          ❌ Eliminar
+        </button>
+        <div style={getResponsiveStyle(
+          { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" },
+          { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" },
+          { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" }
+        )}>
+          <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "18px" : "16px" }}>
+            {actividad.trim()}
+            {integrantesConActividad.length > 0 && (
+              <span style={{ 
+                marginLeft: "10px", 
+                fontSize: isGalaxyTabA ? "14px" : "12px", 
+                color: "#28a745",
+                backgroundColor: "#d4edda",
+                padding: "2px 8px",
+                borderRadius: "12px"
+              }}>
+                {integrantesConActividad.length} INTEGRANTE(S)
+              </span>
+            )}
+          </div>
+          
+          <div>
+            <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
+              PLANIFICADA TOTAL:
+            </label>
+            <input
+              type="number"
+              value={totalPlanificado}
+              readOnly
+              style={getResponsiveStyle(
+                { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" },
+                { width: "100%", padding: "12px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "14px", fontWeight: "bold", color: "#0f5132" }
+              )}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
+              ELABORADA TOTAL:
+            </label>
+            <input
+              type="number"
+              value={totalElaborado}
+              readOnly
+              style={getResponsiveStyle(
+                { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' },
+                { width: "100%", padding: "12px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "14px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }
+              )}
+            />
+          </div>
+        </div>
+
+        {integrantesConActividad.length > 0 && (
+          <div style={{
+            marginTop: "10px",
+            padding: "10px",
+            backgroundColor: "#e9ecef",
+            border: "1px solid #ced4da",
+            borderRadius: "4px",
+            fontSize: isGalaxyTabA ? "14px" : "12px"
+          }}>
+            <strong>DISTRIBUCIÓN:</strong> {integrantesConActividad.length} integrantes × horas variables
+            {totalPlanificado > 0 && (
+              <> | <strong>AVANCE:</strong> {Math.round((totalElaborado/totalPlanificado)*100)}%</>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  })}
+
+  {/* INPUT Y BOTÓN PARA AGREGAR NUEVO DETALLE (solo para productos normales) */}
+  {!mostrarCheckboxes && (
+    <div style={getResponsiveStyle(
+      { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", gap: "10px", alignItems: "flex-end" },
+      { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
+      { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
+    )}>
+      <div style={{ flex: 1 }}>
+        <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1f2937" }}>
+          NUEVA ACTIVIDAD:
+        </label>
+        <input
+          type="text"
+          value={nuevoDetalleActividad}
+          onChange={(e) => setNuevoDetalleActividad(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && agregarDetalleActividad()}
+          placeholder="Escribe una nueva actividad y presiona Enter o haz clic en Agregar..."
+          style={getResponsiveStyle(
+            { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "12px", fontWeight: "500" },
+            { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "14px", fontWeight: "500" }
+          )}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={agregarDetalleActividad}
+        style={getResponsiveStyle(
+          { padding: "10px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
+          { padding: "12px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "48px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
+        )}
+      >
+        <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
+      </button>
+    </div>
+  )}
+  
+  {/* Mensaje cuando no hay actividades para EQE */}
+  {mostrarCheckboxes && listaActividadesEQE.length === 0 && form.codigo_producto && (
+    <div style={{
+      padding: "20px",
+      textAlign: "center",
+      backgroundColor: "#fff3cd",
+      border: "1px solid #ffeeba",
+      borderRadius: "8px",
+      color: "#856404",
+      fontSize: isGalaxyTabA ? "14px" : "12px"
+    }}>
+      No se encontraron actividades para el producto {form.codigo_producto}. Puedes agregar actividades manualmente en el campo de arriba.
+    </div>
+  )}
+</div>
         
         {/* INTEGRANTES */}
         <div className="card2">
