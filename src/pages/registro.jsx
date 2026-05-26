@@ -53,7 +53,7 @@ export default function Registro() {
     personal_presente:"",
     personal_otro:"",
     cliente: "",
-    lotePrimario: "",
+    lotePrincipal: "",
     loteSecundario: "",
 
     // Materia prima e insumos
@@ -1054,7 +1054,7 @@ useEffect(() => {
     const codigo = form.codigo_producto?.trim();
 
     if (!codigo || codigo.length < 3) {
-      setForm((p) => ({ ...p, lotePrimario: "" }));
+      setForm((p) => ({ ...p, lotePrincipal: "" }));
       return;
     }
 
@@ -1067,19 +1067,19 @@ useEffect(() => {
         if (data && data.loteInfo !== undefined) {
           setForm((p) => ({
             ...p,
-            lotePrimario: String(data.loteInfo).trim(),
+            lotePrincipal: String(data.loteInfo).trim(),
           }));
         } else {
           setForm((p) => ({
             ...p,
-            lotePrimario: "",
+            lotePrincipal: "",
           }));
         }
       } catch (err) {
         console.error("Error obteniendo lote info:", err);
         setForm((p) => ({
           ...p,
-          lotePrimario: "",
+          lotePrincipal: "",
         }));
       }
     }, 400);
@@ -1145,7 +1145,7 @@ useEffect(() => {
       
       const actividadesPorIntegranteJSON = JSON.stringify(actividadesParaGuardar, null, 2);
       const reposicionNoConformeJSON = JSON.stringify(reposicionNoConforme || []);
-      const loteUnido = (form.lotePrimario || "") + (form.loteSecundario || "");
+      const loteUnido = (form.lotePrincipal || "") + (form.loteSecundario || "");
 
       const datosCompletos = {
         ...form,
@@ -1176,7 +1176,7 @@ useEffect(() => {
       const dd = String(hoy.getDate()).padStart(2, "0");
       const fechaHoy = `${yyyy}-${mm}-${dd}`;
 
-      setForm({ ...INITIAL_FORM, fecha: fechaHoy, lotePrimario: "", loteSecundario: "" });
+      setForm({ ...INITIAL_FORM, fecha: fechaHoy, lotePrincipal: "", loteSecundario: "" });
       setIntegrantes([{ nombre: "", cargo: "" }]);
       setActividadesIntegrantes({});
       setCantidadesActividades({});
@@ -1679,8 +1679,8 @@ useEffect(() => {
                 <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
               </div>
               <div className="form-group">
-                <label htmlFor="lotePrimario">LOTE MAESTRO:</label>
-                <input type="text" id="lotePrimario" name="lotePrimario" value={form.lotePrimario} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
+                <label htmlFor="lotePrincipal">LOTE MAESTRO:</label>
+                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
               </div>
               <div className="form-group">
                 <label htmlFor="loteSecundario" >N°:</label>

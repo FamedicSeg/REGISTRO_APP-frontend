@@ -487,9 +487,9 @@ export default function AdminDetalleRegistro() {
   const handleChange = useCallback((campo, valor) => {
     setForm(prev => {
       const nuevoForm = { ...prev, [campo]: valor };
-      // Cuando se editen lotePrimario o loteSecundario, recalcular loteUnido
-      if (campo === 'lotePrimario' || campo === 'loteSecundario') {
-        nuevoForm.loteUnido = (nuevoForm.lotePrimario || "") + (nuevoForm.loteSecundario || "");
+      // Cuando se editen lotePrincipal o loteSecundario, recalcular loteUnido
+      if (campo === 'lotePrincipal' || campo === 'loteSecundario') {
+        nuevoForm.loteUnido = (nuevoForm.lotePrincipal || "") + (nuevoForm.loteSecundario || "");
       }
       return nuevoForm;
     });
@@ -776,7 +776,7 @@ export default function AdminDetalleRegistro() {
             <Campo label="Descripción" campo="descripcion" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.descripcion} onChange={handleChange} />
             <Campo label="Hora Planificada" campo="hora_planificada" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.hora_planificada} onChange={handleChange} />
             <Campo label="Cantidad Planificada" campo="cantidad_planificada" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_planificada} onChange={handleChange} />
-            <Campo label="Lote Primario" campo="lotePrimario" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.lotePrimario} onChange={handleChange} />
+            <Campo label="Lote Primario" campo="lotePrincipal" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.lotePrincipal} onChange={handleChange} />
             <Campo label="N°" campo="loteSecundario" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.loteSecundario} onChange={handleChange} />
           </div>
         </div>
