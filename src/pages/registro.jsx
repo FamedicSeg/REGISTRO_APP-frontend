@@ -373,106 +373,94 @@ export default function Registro() {
     const timeoutId = setTimeout(cargarInsumos, 400);
     return () => clearTimeout(timeoutId);
   }, [form.codigo_producto]);
+  
+  // useEffect modificado para cargar actividades - VERSIÓN CON ACTIVIDADES COMPARTIDAS PARA TODOS LOS EQE
+useEffect(() => {
+  const codigo_producto = form.codigo_producto?.trim() || "";
 
-  // useEffect modificado para cargar actividades con acumulación global para EQE
-  useEffect(() => {
-    const codigo_producto = form.codigo_producto?.trim() || "";
-
-    if (!codigo_producto || codigo_producto.length < 3) {
+  if (!codigo_producto || codigo_producto.length < 3) {
+    setForm(prev => ({
+      ...prev,
+      detalles_actividades: "",
+    }));
+    setMostrarCheckboxes(false);
+    setListaActividadesEQE([]);
+    setActividadesSeleccionadas({});
+    return;
+  }
+  
+  const esEQE = codigo_producto.toUpperCase().startsWith("EQE");
+  setMostrarCheckboxes(esEQE);
+  
+  // Si no es EQE, limpiar y salir
+  if (!esEQE) {
+    setListaActividadesEQE([]);
+    setActividadesSeleccionadas({});
+    setForm(prev => ({
+      ...prev,
+      detalles_actividades: "",
+    }));
+    return;
+  }
+  
+  // ✅ PARA EQE: Cargar una lista MAESTRA de actividades
+  // Puedes elegir:
+  // Opción 1: Cargar siempre desde el backend con un código fijo (ej: "EQE-MASTER" o "EQE-075")
+  // Opción 2: Usar una lista fija definida en el código
+  
+  const cargarActividadesMaestras = async () => {
+    try {
+      // 🔹 OPCIÓN 1: Cargar desde el backend usando un código específico
+      const codigoMaestro = "EQE-075"; // 👈 Cambia esto al código que tiene las actividades
+      const resProcesos = await api.get("/procesos/producto", {
+        params: { codigo: codigoMaestro },
+      });
+      
+      let actividadesMaestras = [];
+      
+      if (resProcesos.data && resProcesos.data.detalles) {
+        actividadesMaestras = resProcesos.data.detalles
+          .split('\n')
+          .filter(act => act.trim() !== '')
+          .map(act => act.trim());
+      }
+      
+      // 🔹 OPCIÓN 2: Lista fija (descomenta si quieres usarla)
+      // const actividadesMaestras = [
+      //   "ACTIVIDAD 1",
+      //   "ACTIVIDAD 2",
+      //   "ACTIVIDAD 3",
+      //   "ACTIVIDAD 4",
+      // ];
+      
+      setListaActividadesEQE(actividadesMaestras);
+      
+      // Inicializar selecciones (todas false)
+      const nuevasSelecciones = {};
+      actividadesMaestras.forEach(act => {
+        nuevasSelecciones[act] = false;
+      });
+      setActividadesSeleccionadas(nuevasSelecciones);
+      
+      // Limpiar el texto de actividades
       setForm(prev => ({
         ...prev,
         detalles_actividades: "",
       }));
-      setMostrarCheckboxes(false);
-      return;
-    }
-    
-    const esEQE = codigo_producto.toUpperCase().startsWith("EQE");
-    setMostrarCheckboxes(esEQE);
-    
-    // Si no es EQE, resetear acumuladores
-    if (!esEQE) {
-      setActividadesGlobalesEQE([]);
-      setProductosEQECargados(new Set());
+      
+      setActividadesIntegrantes({});
+      
+    } catch (err) {
+      console.error("Error cargando actividades maestras:", err);
       setListaActividadesEQE([]);
       setActividadesSeleccionadas({});
     }
-    
-    const cargarProcesos = async () => {
-      try {
-        const resProcesos = await api.get("/procesos/producto", {
-          params: { codigo: codigo_producto },
-        });
-        
-        if (resProcesos.data && resProcesos.data.detalles) {
-          const actividadesTexto = resProcesos.data.detalles;
-          
-          if (esEQE) {
-            const listaActual = actividadesTexto.split('\n')
-              .filter(act => act.trim() !== '')
-              .map(act => act.trim());
-            
-            // Acumular actividades globales (sin duplicados)
-            setActividadesGlobalesEQE(prev => {
-              const nuevasActividades = [...prev];
-              listaActual.forEach(act => {
-                if (!nuevasActividades.includes(act)) {
-                  nuevasActividades.push(act);
-                }
-              });
-              return nuevasActividades;
-            });
-            
-            // Limpiar el texto de actividades
-            setForm(prev => ({
-              ...prev,
-              detalles_actividades: "",
-            }));
-          } else {
-            setForm(prev => ({
-              ...prev,
-              detalles_actividades: actividadesTexto,
-            }));
-            setListaActividadesEQE([]);
-            setActividadesSeleccionadas({});
-          }
-          setActividadesIntegrantes({});
-        } else {
-          setForm(prev => ({
-            ...prev,
-            detalles_actividades: "",
-          }));
-        }
-      } catch (err) {
-        console.error("Error cargando procesos del producto:", err);
-        setForm(prev => ({
-          ...prev,
-          detalles_actividades: "",
-        }));
-      }
-    };
-    
-    const timeoutId = setTimeout(cargarProcesos, 400);
-    return () => clearTimeout(timeoutId);
-  }, [form.codigo_producto]);
+  };
+  
+  cargarActividadesMaestras();
+  
+}, [form.codigo_producto]); // ✅ Dependencia: solo el código del producto (para detectar EQE)
 
-  // Efecto separado para actualizar la lista de actividades EQE cuando cambian las globales
-  useEffect(() => {
-    if (mostrarCheckboxes && actividadesGlobalesEQE.length > 0) {
-      setListaActividadesEQE(actividadesGlobalesEQE);
-      
-      // Mantener las selecciones existentes
-      setActividadesSeleccionadas(prev => {
-        const nuevasSelecciones = { ...prev };
-        actividadesGlobalesEQE.forEach(act => {
-          if (nuevasSelecciones[act] === undefined) {
-            nuevasSelecciones[act] = false;
-          }
-        });
-        return nuevasSelecciones;
-      });
-    }
-  }, [actividadesGlobalesEQE, mostrarCheckboxes]);
 
   // Función para toggle de actividad seleccionada (para EQE)
   const toggleActividad = (actividad) => {
@@ -2590,15 +2578,72 @@ export default function Registro() {
 </div>
 
 <div className="card">
-  {/* Mostrar checkboxes si el código empieza con EQE */}
+  {/* Input para agregar actividad manualmente - SIEMPRE visible para EQE (independientemente de si hay actividades o no) */}
   {mostrarCheckboxes && (
+    <div style={getResponsiveStyle(
+      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", gap: "10px", alignItems: "flex-end" },
+      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
+      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
+    )}>
+      <div style={{ flex: 1 }}>
+        <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1565c0" }}>
+          AGREGAR ACTIVIDAD MANUALMENTE:
+        </label>
+        <input
+          type="text"
+          id="nuevaActividadManual"
+          placeholder="Escribe una nueva actividad y presiona Agregar..."
+          style={getResponsiveStyle(
+            { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "12px", fontWeight: "500", backgroundColor: "white" },
+            { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "14px", fontWeight: "500", backgroundColor: "white" }
+          )}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              const nuevaActividad = e.target.value.trim().toUpperCase();
+              if (nuevaActividad && !listaActividadesEQE.includes(nuevaActividad)) {
+                setListaActividadesEQE(prev => [...prev, nuevaActividad]);
+                setActividadesSeleccionadas(prev => ({ ...prev, [nuevaActividad]: true }));
+                e.target.value = "";
+              } else if (nuevaActividad && listaActividadesEQE.includes(nuevaActividad)) {
+                alert("⚠️ Esta actividad ya existe en la lista");
+              }
+            }
+          }}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          const inputElement = document.getElementById("nuevaActividadManual");
+          const nuevaActividad = inputElement?.value.trim().toUpperCase();
+          if (nuevaActividad && !listaActividadesEQE.includes(nuevaActividad)) {
+            setListaActividadesEQE(prev => [...prev, nuevaActividad]);
+            setActividadesSeleccionadas(prev => ({ ...prev, [nuevaActividad]: true }));
+            if (inputElement) inputElement.value = "";
+          } else if (nuevaActividad && listaActividadesEQE.includes(nuevaActividad)) {
+            alert("⚠️ Esta actividad ya existe en la lista");
+          } else if (!nuevaActividad) {
+            alert("⚠️ Por favor escribe una actividad");
+          }
+        }}
+        style={getResponsiveStyle(
+          { padding: "10px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
+          { padding: "12px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
+        )}
+      >
+        <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
+      </button>
+    </div>
+  )}
+
+  {/* Lista de actividades con checkboxes - solo visible si hay actividades */}
+  {mostrarCheckboxes && listaActividadesEQE.length > 0 && (
     <>
       <div style={{ marginBottom: "20px" }}>
         <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px" }}>
           SELECCIONE LAS ACTIVIDADES QUE SE VAN A REALIZAR:
         </label>
 
-        {/* Lista de actividades con checkboxes */}
         <div style={getResponsiveStyle(
           { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" },
           { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" },
@@ -2627,7 +2672,6 @@ export default function Registro() {
                   {actividad}
                 </span>
               </div>
-              {/* Botón para eliminar actividad agregada manualmente (solo las que no vienen del backend) */}
               {!actividadesGlobalesEQE.includes(actividad) && (
                 <button
                   type="button"
@@ -2676,18 +2720,15 @@ export default function Registro() {
           {Object.keys(actividadesSeleccionadas)
             .filter(actividad => actividadesSeleccionadas[actividad])
             .map((actividad, index) => {
-              // Obtener integrantes que tienen esta actividad
               const integrantesConActividad = Object.values(actividadesIntegrantes).filter(
                 integrante => integrante.actividades?.some(act => act.actividad === actividad.trim())
               );
               
-              // Calcular total planificado de esta actividad
               const totalPlanificado = integrantesConActividad.reduce((sum, integrante) => {
                 const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
                 return sum + (parseInt(actividadEnIntegrante?.cantidad_planificada) || 0);
               }, 0);
             
-              // Calcular total elaborado de esta actividad
               const totalElaborado = integrantesConActividad.reduce((sum, integrante) => {
                 const actividadEnIntegrante = integrante.actividades.find(act => act.actividad === actividad.trim());
                 return sum + (parseInt(actividadEnIntegrante?.cantidad_elaborada) || 0);
@@ -2703,25 +2744,13 @@ export default function Registro() {
                   boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
                 }}>
                   <div style={getResponsiveStyle(
-                    { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "15px", alignItems: "center" },
+                    { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "15px", alignItems: "center" },
                     { display: "grid", gridTemplateColumns: "1fr", gap: "12px", alignItems: "center" },
                     { display: "grid", gridTemplateColumns: "1fr", gap: "12px", alignItems: "center" }
                   )}>
                     <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "16px" : "14px", color: "#1f2937" }}>
                       {actividad.trim()}
-                      {!actividadesGlobalesEQE.includes(actividad) && (
-                        <span style={{ 
-                          marginLeft: "10px", 
-                          fontSize: isGalaxyTabA ? "11px" : "10px", 
-                          color: "#ff9800",
-                          backgroundColor: "#fff3e0",
-                          padding: "2px 8px",
-                          borderRadius: "12px",
-                          display: "inline-block"
-                        }}>
-                          AÑADIDO
-                        </span>
-                      )}
+                      
                       {integrantesConActividad.length > 0 && (
                         <span style={{ 
                           marginLeft: "10px", 
@@ -2739,7 +2768,7 @@ export default function Registro() {
                     
                     <div>
                       <label style={{ fontSize: isGalaxyTabA ? "12px" : "11px", color: "#495057", display: "block", marginBottom: "5px" }}>
-                        PLANIFICADA TOTAL:
+                        PLANIFICADA:
                       </label>
                       <input
                         type="number"
@@ -2754,7 +2783,7 @@ export default function Registro() {
 
                     <div>
                       <label style={{ fontSize: isGalaxyTabA ? "12px" : "11px", color: "#495057", display: "block", marginBottom: "5px" }}>
-                        ELABORADA TOTAL:
+                        ELABORADA:
                       </label>
                       <input
                         type="number"
@@ -2768,7 +2797,6 @@ export default function Registro() {
                     </div>
                   </div>
                   
-                  {/* Si no hay integrantes asignados, mostrar mensaje */}
                   {integrantesConActividad.length === 0 && (
                     <div style={{
                       marginTop: "12px",
@@ -2789,73 +2817,23 @@ export default function Registro() {
       )}
     </>
   )}
-
-  {/* Mostrar checkboxes si el código empieza con EQE */}
-{mostrarCheckboxes && listaActividadesEQE.length > 0 && (
-  <>
-    {/* Input para agregar actividad manualmente - SOLO PARA EQE */}
-    <div style={getResponsiveStyle(
-      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", gap: "10px", alignItems: "flex-end" },
-      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
-      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
-    )}>
-      <div style={{ flex: 1 }}>
-        <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1565c0" }}>
-          AGREGAR ACTIVIDAD:
-        </label>
-        <input
-          type="text"
-          id="nuevaActividadManual"
-          placeholder="Escribe una nueva actividad y presiona Agregar..."
-          style={getResponsiveStyle(
-            { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "12px", fontWeight: "500", backgroundColor: "white" },
-            { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "14px", fontWeight: "500", backgroundColor: "white" }
-          )}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') {
-              const nuevaActividad = e.target.value.trim().toUpperCase();
-              if (nuevaActividad && !listaActividadesEQE.includes(nuevaActividad)) {
-                setListaActividadesEQE(prev => [...prev, nuevaActividad]);
-                setActividadesSeleccionadas(prev => ({ ...prev, [nuevaActividad]: true }));
-                e.target.value = "";
-              } else if (nuevaActividad && listaActividadesEQE.includes(nuevaActividad)) {
-                alert("⚠️ Esta actividad ya existe en la lista");
-              }
-            }
-          }}
-        />
-      </div>
-      <button
-        type="button"
-        onClick={() => {
-          const inputElement = document.getElementById("nuevaActividadManual");
-          const nuevaActividad = inputElement?.value.trim().toUpperCase();
-          if (nuevaActividad && !listaActividadesEQE.includes(nuevaActividad)) {
-            setListaActividadesEQE(prev => [...prev, nuevaActividad]);
-            setActividadesSeleccionadas(prev => ({ ...prev, [nuevaActividad]: true }));
-            if (inputElement) inputElement.value = "";
-          } else if (nuevaActividad && listaActividadesEQE.includes(nuevaActividad)) {
-            alert("⚠️ Esta actividad ya existe en la lista");
-          } else if (!nuevaActividad) {
-            alert("⚠️ Por favor escribe una actividad");
-          }
-        }}
-        style={getResponsiveStyle(
-          { padding: "10px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
-          { padding: "12px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
-        )}
-      >
-        <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
-      </button>
+  
+  {/* Mensaje cuando NO hay actividades para EQE */}
+  {mostrarCheckboxes && listaActividadesEQE.length === 0 && (
+    <div style={{
+      padding: "20px",
+      textAlign: "center",
+      backgroundColor: "#fff3cd",
+      border: "1px solid #ffeeba",
+      borderRadius: "8px",
+      color: "#856404",
+      fontSize: isGalaxyTabA ? "14px" : "12px",
+      marginTop: "15px"
+    }}>
+      ⚠️ No se encontraron actividades para el producto {form.codigo_producto}. 
+      Puedes agregar actividades manualmente en el campo de arriba.
     </div>
-
-    
-    
-    <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: isGalaxyTabA ? "14px" : "12px" }}>
-      <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
-    </div>
-  </>
-)}
+  )}
   
   {/* Mostrar actividades en texto plano para productos normales */}
   {!mostrarCheckboxes && form.detalles_actividades.split('\n').filter(act => act.trim() !== '').map((actividad, index) => {
@@ -2891,7 +2869,7 @@ export default function Registro() {
           ❌ Eliminar
         </button>
         <div style={getResponsiveStyle(
-          { display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" },
+          { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" },
           { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" },
           { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" }
         )}>
@@ -2996,22 +2974,9 @@ export default function Registro() {
       </button>
     </div>
   )}
-  
-  {/* Mensaje cuando no hay actividades para EQE */}
-  {mostrarCheckboxes && listaActividadesEQE.length === 0 && form.codigo_producto && (
-    <div style={{
-      padding: "20px",
-      textAlign: "center",
-      backgroundColor: "#fff3cd",
-      border: "1px solid #ffeeba",
-      borderRadius: "8px",
-      color: "#856404",
-      fontSize: isGalaxyTabA ? "14px" : "12px"
-    }}>
-      No se encontraron actividades para el producto {form.codigo_producto}. Puedes agregar actividades manualmente en el campo de arriba.
-    </div>
-  )}
 </div>
+
+
         
         {/* INTEGRANTES */}
         <div className="card2">
