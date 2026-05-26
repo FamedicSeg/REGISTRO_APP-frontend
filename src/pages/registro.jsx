@@ -373,8 +373,8 @@ export default function Registro() {
     const timeoutId = setTimeout(cargarInsumos, 400);
     return () => clearTimeout(timeoutId);
   }, [form.codigo_producto]);
-  
-  // useEffect modificado para cargar actividades - VERSIÓN CON ACTIVIDADES COMPARTIDAS PARA TODOS LOS EQE
+
+  // useEffect modificado para cargar actividades
 useEffect(() => {
   const codigo_producto = form.codigo_producto?.trim() || "";
 
@@ -392,74 +392,87 @@ useEffect(() => {
   const esEQE = codigo_producto.toUpperCase().startsWith("EQE");
   setMostrarCheckboxes(esEQE);
   
-  // Si no es EQE, limpiar y salir
-  if (!esEQE) {
+  if (esEQE) {
+    // ✅ PARA EQE: Limpiar y cargar actividades maestras
     setListaActividadesEQE([]);
     setActividadesSeleccionadas({});
     setForm(prev => ({
       ...prev,
       detalles_actividades: "",
     }));
-    return;
+    
+    const cargarActividadesMaestras = async () => {
+      try {
+        const codigoMaestro = "EQE-075";
+        const resProcesos = await api.get("/procesos/producto", {
+          params: { codigo: codigoMaestro },
+        });
+        
+        let actividadesMaestras = [];
+        
+        if (resProcesos.data && resProcesos.data.detalles) {
+          actividadesMaestras = resProcesos.data.detalles
+            .split('\n')
+            .filter(act => act.trim() !== '')
+            .map(act => act.trim());
+        }
+        
+        setListaActividadesEQE(actividadesMaestras);
+        
+        const nuevasSelecciones = {};
+        actividadesMaestras.forEach(act => {
+          nuevasSelecciones[act] = false;
+        });
+        setActividadesSeleccionadas(nuevasSelecciones);
+        
+        setActividadesIntegrantes({});
+        
+      } catch (err) {
+        console.error("Error cargando actividades maestras:", err);
+        setListaActividadesEQE([]);
+        setActividadesSeleccionadas({});
+      }
+    };
+    
+    cargarActividadesMaestras();
+    
+  } else {
+    // ✅ PARA PRODUCTOS NORMALES (NO EQE): Cargar actividades desde el backend
+    setListaActividadesEQE([]);
+    setActividadesSeleccionadas({});
+    
+    const cargarActividadesNormales = async () => {
+      try {
+        const resProcesos = await api.get("/procesos/producto", {
+          params: { codigo: codigo_producto },
+        });
+        
+        if (resProcesos.data && resProcesos.data.detalles) {
+          const actividadesTexto = resProcesos.data.detalles;
+          setForm(prev => ({
+            ...prev,
+            detalles_actividades: actividadesTexto,
+          }));
+        } else {
+          setForm(prev => ({
+            ...prev,
+            detalles_actividades: "",
+          }));
+        }
+        setActividadesIntegrantes({});
+      } catch (err) {
+        console.error("Error cargando procesos del producto:", err);
+        setForm(prev => ({
+          ...prev,
+          detalles_actividades: "",
+        }));
+      }
+    };
+    
+    cargarActividadesNormales();
   }
   
-  // ✅ PARA EQE: Cargar una lista MAESTRA de actividades
-  // Puedes elegir:
-  // Opción 1: Cargar siempre desde el backend con un código fijo (ej: "EQE-MASTER" o "EQE-075")
-  // Opción 2: Usar una lista fija definida en el código
-  
-  const cargarActividadesMaestras = async () => {
-    try {
-      // 🔹 OPCIÓN 1: Cargar desde el backend usando un código específico
-      const codigoMaestro = "EQE-075"; // 👈 Cambia esto al código que tiene las actividades
-      const resProcesos = await api.get("/procesos/producto", {
-        params: { codigo: codigoMaestro },
-      });
-      
-      let actividadesMaestras = [];
-      
-      if (resProcesos.data && resProcesos.data.detalles) {
-        actividadesMaestras = resProcesos.data.detalles
-          .split('\n')
-          .filter(act => act.trim() !== '')
-          .map(act => act.trim());
-      }
-      
-      // 🔹 OPCIÓN 2: Lista fija (descomenta si quieres usarla)
-      // const actividadesMaestras = [
-      //   "ACTIVIDAD 1",
-      //   "ACTIVIDAD 2",
-      //   "ACTIVIDAD 3",
-      //   "ACTIVIDAD 4",
-      // ];
-      
-      setListaActividadesEQE(actividadesMaestras);
-      
-      // Inicializar selecciones (todas false)
-      const nuevasSelecciones = {};
-      actividadesMaestras.forEach(act => {
-        nuevasSelecciones[act] = false;
-      });
-      setActividadesSeleccionadas(nuevasSelecciones);
-      
-      // Limpiar el texto de actividades
-      setForm(prev => ({
-        ...prev,
-        detalles_actividades: "",
-      }));
-      
-      setActividadesIntegrantes({});
-      
-    } catch (err) {
-      console.error("Error cargando actividades maestras:", err);
-      setListaActividadesEQE([]);
-      setActividadesSeleccionadas({});
-    }
-  };
-  
-  cargarActividadesMaestras();
-  
-}, [form.codigo_producto]); // ✅ Dependencia: solo el código del producto (para detectar EQE)
+}, [form.codigo_producto]);
 
 
   // Función para toggle de actividad seleccionada (para EQE)
