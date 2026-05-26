@@ -1488,29 +1488,47 @@ export default function Registro() {
               <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} style={getResponsiveStyle({fontSize:"14px"}, {fontSize:"16px", padding:"12px"})} />
             </div>
             
-            {/* OP MODIFICADO - CON DATALIST PARA ESCRIBIR MANUALMENTE */}
             <div className="form-group">
-              <label htmlFor="op">OP:</label>
-              <input 
-                list="op-list"
-                id="op" 
-                name="op"
-                value={form.op}
-                onChange={onChange}
-                placeholder="SELECCIONA O ESCRIBE LA ORDEN DE PRODUCCIÓN..."
-                style={getResponsiveStyle(
-                  { fontSize: "12px", width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
-                  { fontSize: "14px", width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da" }
-                )}
-                autoComplete="off"
-              />
-              <datalist id="op-list">
-                <option value="">SELECCIONA LA ORDEN DE PRODUCCIÓN...</option>
-                {ops.map(op => (
-                  <option key={op} value={op}>{op}</option>
-                ))}
-              </datalist>
-            </div>
+  <label htmlFor="op">OP:</label>
+  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+    <input 
+      list="op-list"
+      id="op" 
+      name="op"
+      value={form.op}
+      onChange={onChange}
+      placeholder="SELECCIONA O ESCRIBE LA ORDEN DE PRODUCCIÓN..."
+      style={getResponsiveStyle(
+        { flex: 1, fontSize: "12px", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
+        { flex: 1, fontSize: "14px", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da" }
+      )}
+      autoComplete="off"
+    />
+    <button
+      type="button"
+      onClick={() => setForm(prev => ({ ...prev, op: "" }))}
+      style={{
+        padding: "8px 12px",
+        backgroundColor: "#dc3545",
+        color: "white",
+        border: "none",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "12px",
+        whiteSpace: "nowrap"
+      }}
+      title="Limpiar OP"
+    >
+      ✖
+    </button>
+  </div>
+  <datalist id="op-list">
+    <option value="">SELECCIONA LA ORDEN DE PRODUCCIÓN...</option>
+    {ops.map(op => (
+      <option key={op} value={op}>{op}</option>
+    ))}
+  </datalist>
+</div>
             
             <div className="form-group">
               <label htmlFor="turno" style={{fontSize:"12px"}}>TURNO:</label>
