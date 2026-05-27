@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import logo_safemed from "../assets/logo_safemed.jpg";
 import logo3 from "../assets/logo3.png";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+//import html2canvas from "html2canvas";
+//import jsPDF from "jspdf";
 import { toUpperCase, shouldUpperCase } from "../utils/textUtils";
 
 const MODULO_TO_HOJA ={
@@ -1168,7 +1168,7 @@ useEffect(() => {
 
       setMsg("Registro guardado correctamente");
 
-      await generarPDF();
+      //await generarPDF();
 
       const hoy = new Date();
       const yyyy = hoy.getFullYear();
@@ -1414,7 +1414,7 @@ useEffect(() => {
     cargarPersonal();
   }, [form.modulo]);
 
-  const generarPDF = async() =>{
+  {/*const generarPDF = async() =>{
     const elemento = document.getElementById("formulario");
 
     const canvas = await html2canvas(elemento);
@@ -1439,7 +1439,7 @@ useEffect(() => {
     }
 
     pdf.save("registro.pdf");
-  }
+  }*/}
 
   return (
     <div 
