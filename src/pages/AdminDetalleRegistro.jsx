@@ -674,7 +674,7 @@ export default function AdminDetalleRegistro() {
 
   // Función para agregar una nueva actividad en mayúsculas
   const agregarNuevaActividad = () => {
-    const nuevosDetalles = [...(form.detalles_actividades || []), "NUEVA ACTIVIDAD"];
+    const nuevosDetalles = [...(form.detalles_actividades || []), ""];
     handleArrayChange("detalles_actividades", nuevosDetalles);
   };
 
@@ -1100,12 +1100,14 @@ export default function AdminDetalleRegistro() {
 
                 const totalPlanificado = integrantesConActividad.reduce((sum, integrante) => {
                   const actividadEnIntegrante = integrante.actividades.find(act => String(act.actividad || '').trim() === textoDetalle);
-                  return sum + (parseInt(actividadEnIntegrante?.cantidad_planificada) || 0);
+                  const valor = parseFloat(actividadEnIntegrante?.cantidad_planificada);
+                  return sum + (isNaN(valor) ? 0 : valor);
                 }, 0);
 
                 const totalElaborado = integrantesConActividad.reduce((sum, integrante) => {
                   const actividadEnIntegrante = integrante.actividades.find(act => String(act.actividad || '').trim() === textoDetalle);
-                  return sum + (parseInt(actividadEnIntegrante?.cantidad_elaborada) || 0);
+                  const valor = parseFloat(actividadEnIntegrante?.cantidad_elaborada);
+                  return sum + (isNaN(valor) ? 0 : valor);
                 }, 0);
 
                 return (
@@ -1193,10 +1195,10 @@ export default function AdminDetalleRegistro() {
                       fontSize: 13
                     }}>
                       <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}>
-                        <span style={{ color: "#1e40af", fontWeight: 600 }}>Planificada:</span> <span style={{ color: "#0c4a6e" }}>{totalPlanificado}</span>
+                        <span style={{ color: "#1e40af", fontWeight: 600 }}>Planificada:</span> <span style={{ color: "#0c4a6e" }}>{totalPlanificado > 0 ? totalPlanificado : "-"}</span>
                       </div>
                       <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}>
-                        <span style={{ color: "#1e40af", fontWeight: 600 }}>Elaborada:</span> <span style={{ color: "#0c4a6e" }}>{totalElaborado}</span>
+                        <span style={{ color: "#1e40af", fontWeight: 600 }}>Elaborada:</span> <span style={{ color: "#0c4a6e" }}>{totalElaborado > 0 ? totalElaborado : "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -1251,7 +1253,7 @@ export default function AdminDetalleRegistro() {
               nuevaData[integranteKey].actividades = [];
             }
             nuevaData[integranteKey].actividades.push({
-              actividad: "NUEVA ACTIVIDAD",
+              actividad: "",
               horas_persona: "",
               cantidad_planificada: "",
               cantidad_elaborada: "",
