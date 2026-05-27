@@ -1253,9 +1253,9 @@ export default function AdminDetalleRegistro() {
             }
             nuevaData[integranteKey].actividades.push({
               actividad: "NUEVA ACTIVIDAD",
-              horas_persona: 0,
-              cantidad_planificada: 0,
-              cantidad_elaborada: 0,
+              horas_persona: "",
+              cantidad_planificada: "",
+              cantidad_elaborada: "",
               observaciones_integrante: ""
             });
             handleActividadesPorIntegranteChange(nuevaData);
