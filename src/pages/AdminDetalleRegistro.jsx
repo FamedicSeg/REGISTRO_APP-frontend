@@ -580,7 +580,7 @@ export default function AdminDetalleRegistro() {
         setForm(JSON.parse(JSON.stringify(datosParsados)));
         alert(`Registro actualizado a ${nuevoEstado}`);
       } else {
-        throw new Error("Respuesta inesperada del servidor. Por  favor revisa");
+        throw new Error("Respuesta inesperada del servidor. Por favor revisa");
       }
     } catch (error) {
       console.error("Error actualizando estado:", error);
@@ -1460,7 +1460,7 @@ export default function AdminDetalleRegistro() {
                                 ) : (
                                   <span style={{ textTransform: "uppercase" }}>{act.actividad || "-"}</span>
                                 )}
-                              </td>
+                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                 {modoEdicion && puedeEditar ? (
                                   <input
@@ -1472,7 +1472,7 @@ export default function AdminDetalleRegistro() {
                                 ) : (
                                   (act.horas_persona || "") + "hrs"
                                 )}
-                              </td>
+                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                 {modoEdicion && puedeEditar ? (
                                   <input
@@ -1484,7 +1484,7 @@ export default function AdminDetalleRegistro() {
                                 ) : (
                                   act.cantidad_planificada || ""
                                 )}
-                              </td>
+                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                 {modoEdicion && puedeEditar ? (
                                   <input
@@ -1496,7 +1496,7 @@ export default function AdminDetalleRegistro() {
                                 ) : (
                                   act.cantidad_elaborada || ""
                                 )}
-                              </td>
+                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                 {modoEdicion && puedeEditar ? (
                                   <input
@@ -1508,7 +1508,7 @@ export default function AdminDetalleRegistro() {
                                 ) : (
                                   act.observaciones_integrante || '-'
                                 )}
-                              </td>
+                               </td>
                               {modoEdicion && puedeEditar && (
                                 <td style={{ padding: 10, textAlign: "center" }}>
                                   <button
@@ -1584,7 +1584,7 @@ export default function AdminDetalleRegistro() {
         </div>
       )}
       
-      {/* BOTONES DE ACCIÓN */}
+      {/* BOTONES DE ACCIÓN - MODIFICADO PARA PERMITIR EDICIÓN EN ESTADO RECHAZADO */}
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
         {estadoAprobado ? (
           <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
@@ -1592,15 +1592,16 @@ export default function AdminDetalleRegistro() {
           </button>
         ) : (
           <>
-            {puedeEditar && !modoEdicion && registro?.estado === "pendiente_SUPERVISOR" && (
+            {/* Botón Editar Registro - AHORA también visible para estado "rechazado" */}
+            {puedeEditar && !modoEdicion && (registro?.estado === "pendiente_SUPERVISOR" || registro?.estado === "rechazado") && (
               <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
                 ✏️ Editar Registro
-                </button>
-              )}
-              
-              {/* Mostrar el botón deshabilitado si el estado no es pendiente_SUPERVISOR */}
-              {puedeEditar && !modoEdicion && registro?.estado !== "pendiente_SUPERVISOR" && (
-                <button 
+              </button>
+            )}
+            
+            {/* Mostrar el botón deshabilitado solo para otros estados que NO sean pendiente_SUPERVISOR ni rechazado */}
+            {puedeEditar && !modoEdicion && registro?.estado !== "pendiente_SUPERVISOR" && registro?.estado !== "rechazado" && (
+              <button 
                 className="btn2" 
                 style={{ 
                   padding: "12px 24px", 
@@ -1611,11 +1612,11 @@ export default function AdminDetalleRegistro() {
                   opacity: 0.6
                 }} 
                 disabled 
-                title="Solo se pueden editar registros en estado Pendiente Supervisor"
-                >
-                  ✏️ Editar Registro
-                  </button>
-                )}
+                title="Solo se pueden editar registros en estado Pendiente Supervisor o Rechazado"
+              >
+                ✏️ Editar Registro
+              </button>
+            )}
 
             {modoEdicion && puedeEditar && (
               <>
