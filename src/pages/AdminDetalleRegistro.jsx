@@ -5,7 +5,6 @@ import logo_safemed from "../assets/logo_safemed.jpg";
 import logo3 from "../assets/logo3.png";
 import "../styles/detallesRegistro.css";
 
-// Componente Campo - Versión controlada SIN errores
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
   const handleChange = (e) => {
     onChange(campo, e.target.value);
@@ -581,7 +580,7 @@ export default function AdminDetalleRegistro() {
         setForm(JSON.parse(JSON.stringify(datosParsados)));
         alert(`Registro actualizado a ${nuevoEstado}`);
       } else {
-        throw new Error("Respuesta inesperada del servidor");
+        throw new Error("Respuesta inesperada del servidor. Por  favor revisa");
       }
     } catch (error) {
       console.error("Error actualizando estado:", error);
@@ -1464,36 +1463,36 @@ export default function AdminDetalleRegistro() {
                                 {modoEdicion && puedeEditar ? (
                                   <input
                                     type="number"
-                                    value={act.horas_persona || 0}
+                                    value={act.horas_persona || ""}
                                     onChange={(e) => actualizarActividad(integranteKey, actIdx, 'horas_persona', e.target.value)}
                                     style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
                                   />
                                 ) : (
-                                  (act.horas_persona || 0) + "h"
+                                  (act.horas_persona || "") + "hrs"
                                 )}
                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                 {modoEdicion && puedeEditar ? (
                                   <input
                                     type="number"
-                                    value={act.cantidad_planificada || 0}
+                                    value={act.cantidad_planificada || ""}
                                     onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_planificada', e.target.value)}
                                     style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
                                   />
                                 ) : (
-                                  act.cantidad_planificada || 0
+                                  act.cantidad_planificada || ""
                                 )}
                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                 {modoEdicion && puedeEditar ? (
                                   <input
                                     type="number"
-                                    value={act.cantidad_elaborada || 0}
+                                    value={act.cantidad_elaborada || ""}
                                     onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', e.target.value)}
                                     style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
                                   />
                                 ) : (
-                                  act.cantidad_elaborada || 0
+                                  act.cantidad_elaborada || ""
                                 )}
                               </td>
                               <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
