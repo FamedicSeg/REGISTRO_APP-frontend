@@ -1557,11 +1557,9 @@ useEffect(() => {
                 <option value="MODULO 2">MÓDULO 2</option>
                 <option value="MODULO 3">MÓDULO 3</option>
                 <option value="MODULO 4">MÓDULO 4</option>
-                <option value="MODULO 5">MÓDULO 5</option>
                 <option value="MODULO 6">MÓDULO 6</option>
                 <option value="MODULO 7">MÓDULO 7</option>
                 <option value="MODULO 8">MÓDULO 8</option>
-                <option value="MODULO 9">MÓDULO 9</option>
                 <option value="MODULO 10">MÓDULO 10</option>
                 <option value="MODULO 11">MÓDULO 11</option>
                 <option value="MODULO 12">MÓDULO 12</option>
@@ -1719,7 +1717,7 @@ useEffect(() => {
             
             {insumos.map((item, index) => (
               <div key={item.id || index} style={getResponsiveStyle(
-                { display: "grid", width: "950px", gridTemplateColumns: "1.8fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px", alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", boxSizing: "border-box" },
+                { display: "grid", width: "950px", gridTemplateColumns: "2.0fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px", alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", boxSizing: "border-box" },
                 { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "20px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" },
                 { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "20px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" }
               )}>
@@ -1781,10 +1779,27 @@ useEffect(() => {
 
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> ENTREGA: </label>
-                  <input className="input-uppercase" type="text" value={item.entrega || ""} onChange={(e) => actualizarInsumo(index, "entrega", e.target.value)} style={getResponsiveStyle(
+                  <select
+                    value={item.entrega}
+                    onChange={(e) => actualizarInsumo(index, "entrega", e.target.value)}
+                    style={getResponsiveStyle(
                     { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
                     { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
-                  )} placeholder="INGRESA EL NOMBRE DE LA PERSONA QUE ENTREGA"/>
+                  )}
+                  >
+                    <option value="">SELECCIONE...</option>
+                    <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
+                    <option value="JUAN ANIBAL CHASIPANTA ALQUINGA">JUAN ANIBAL CHASIPANTA ALQUINGA</option>
+                    <option value="CARLA MICAELA CHUQUIMARCA FERNANDEZ">CARLA MICAELA CHUQUIMARCA FERNANDEZ</option>
+                    <option value="JEREMY JOEL COLUMBA COLCHA">JEREMY JOEL COLUMBA COLCHA</option>
+                    <option value="GABRIELA SOLANGE COLUMBA IZA">GABRIELA SOLANGE COLUMBA IZA</option>
+                    <option value="ANA LUCIA GUAMAN PILATUÑA">ANA LUCIA GUAMAN PILATUÑA</option>
+                    <option value="MANUEL ALEJANDRO PERUGACHE QUIMBIURCO">MANUEL ALEJANDRO PERUGACHE QUIMBIURCO</option>
+                    <option value="ANA MARIA PINCAY RUIZ">ANA MARIA PINCAY RUIZ</option>
+                    <option value="ERIKA MARISELA SUNTAXI PAUCAR">ERIKA MARISELA SUNTAXI PAUCAR</option>
+                    <option value="NATALY SILVANA TIPAN GUALOTUÑA">NATALY SILVANA TIPAN GUALOTUÑA</option>
+                    <option value="CAROLINA ESTEFANIA VACA GUANATASIG">CAROLINA ESTEFANIA VACA GUANATASIG</option>
+                  </select>
                 </div>
 
                 <div>
@@ -1794,6 +1809,7 @@ useEffect(() => {
                     { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
                   )}>
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
+                    <option value="Vaca Guanatasig Carolina Estefania">Vaca Guanatasig Carolina Estefania</option>
                     {integrantes.map((integrante, idx) => (
                       <option key={idx} value={integrante.nombre}>
                         {integrante.nombre}
