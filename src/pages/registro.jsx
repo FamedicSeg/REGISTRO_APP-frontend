@@ -2018,91 +2018,91 @@ useEffect(() => {
           <div className="form-group">
             <label>DESCRIPCIÓN DE ETIQUETA:</label>
             <style>{`
-  .etiqueta-grid {
-    display: flex;
-    align-items: flex-end;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    flex-wrap: nowrap;        /* 👈 NUEVO: evita que se envuelvan a varias líneas */
-    overflow-x: auto;         /* 👈 NUEVO: scroll horizontal si es necesario */
-  }
-  .etiqueta-field {
-    flex: 0 0 auto;           /* 👈 CAMBIADO: 1 → 0 0 auto (tamaño automático) */
-    min-width: 180px;         /* 👈 NUEVO: ancho mínimo */
-  }
-  .etiqueta-field label {
-    display: block;
-    font-size: 10px;          /* 👈 CAMBIADO: 11px → 10px */
-    font-weight: 600;
-    color: #4b5563;
-    margin-bottom: 4px;       /* 👈 CAMBIADO: 5px → 4px */
-  }
-  .etiqueta-field input,
-  .etiqueta-field select {
-    width: 100%;
-    padding: 6px 10px;        /* 👈 CAMBIADO: 10px 12px → 6px 10px */
-    border-radius: 6px;       /* 👈 CAMBIADO: 8px → 6px */
-    border: 1px solid #d1d5db;
-    font-size: 11px;
-    background: white;
-  }
-  .etiqueta-field input:focus,
-  .etiqueta-field select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-  }
-  .btn-delete {
-    padding: 6px;             /* 👈 CAMBIADO: 8px → 6px */
-    background: #e74c3c;
-    color: white;
-    border: none;
-    border-radius: 6px;       /* 👈 CAMBIADO: 8px → 6px */
-    cursor: pointer;
-    width: 34px;              /* 👈 CAMBIADO: 38px → 34px */
-    height: 34px;             /* 👈 CAMBIADO: 38px → 34px */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .btn-delete:hover {
-    background: #c0392b;
-  }
-  .btn-add {
-    padding: 8px 16px;        /* 👈 CAMBIADO: 12px 20px → 8px 16px */
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;       /* 👈 CAMBIADO: 8px → 6px */
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-add:hover {
-    background: #218838;
-  }
+            .etiqueta-grid {
+              display: flex;
+              align-items: flex-end;
+              gap: 15px;
+              margin-bottom: 20px;
+              padding: 15px;
+              background: #f8fafc;
+              border-radius: 10px;
+              border: 1px solid #e2e8f0;
+              flex-wrap: nowrap;        
+              overflow-x: auto;         
+            }
+            .etiqueta-field {
+              flex: 0 0 auto;           
+              min-width: 180px;         
+            }
+            .etiqueta-field label {
+              display: block;
+              font-size: 10px;          
+              font-weight: 600;
+              color: #4b5563;
+              margin-bottom: 4px;       
+            }
+            .etiqueta-field input,
+            .etiqueta-field select {
+              width: 100%;
+              padding: 6px 10px;        
+              border-radius: 6px;       
+              border: 1px solid #d1d5db;
+              font-size: 11px;
+              background: white;
+            }
+            .etiqueta-field input:focus,
+            .etiqueta-field select:focus {
+              outline: none;
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            }
+            .btn-delete {
+              padding: 6px;             
+              background: #e74c3c;
+              color: white;
+              border: none;
+              border-radius: 6px;       
+              cursor: pointer;
+              width: 34px;              
+              height: 34px;             
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.2s;
+              flex-shrink: 0;
+            }
+            .btn-delete:hover {
+              background: #c0392b;
+            }
+            .btn-add {
+              padding: 8px 16px;        
+              background: #28a745;
+              color: white;
+              border: none;
+              border-radius: 6px;       
+              cursor: pointer;
+              font-size: 11px;
+              font-weight: 500;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+            }
+            .btn-add:hover {
+              background: #218838;
+            }
   
-  /* Scroll horizontal para pantallas pequeñas */
-  @media (max-width: 1200px) {
-    .etiqueta-grid {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .btn-delete {
-      margin-top: 0;
-      width: 34px;
-    }
-  }
-`}</style>
+            /* Scroll horizontal para pantallas pequeñas */
+            @media (max-width: 1200px) {
+            .etiqueta-grid {
+              overflow-x: auto;
+              -webkit-overflow-scrolling: touch;
+            }
+            .btn-delete {
+              margin-top: 0;
+              width: 34px;
+            }
+          }
+          `}</style>
 
             {etiquetas.map((item, index) => (
               <div key={index} className="etiqueta-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
@@ -2432,98 +2432,98 @@ useEffect(() => {
           <div className="form-group">
             <label> DESCRIPCIÓN DE LA MAQUINARIA: </label>
             <style>{`
-  .maquinaria-grid{
-    display: flex;
-    align-items: flex-end;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    flex-wrap: nowrap;  /* 👈 CAMBIADO: wrap → nowrap (no permite salto de línea) */
-    overflow-x: auto;   /* 👈 NUEVO: permite scroll horizontal si es necesario */
-  }
-  .maquinaria-field {
-    flex: 0 0 auto;     /* 👈 CAMBIADO: 1 → 0 0 auto (no se expande, tamaño automático) */
-    min-width: 180px;   /* 👈 CAMBIADO: 220px → 180px */
-  }
-  .maquinaria-field label{
-    display: block;
-    font-size: 10px;    /* 👈 CAMBIADO: 11px → 10px */
-    font-weight: 600;
-    color: #4b5563;
-    margin-bottom: 4px;
-  }
-  .maquinaria-field input,
-  .maquinaria-field select {
-    width: 100%;        /* 👈 CAMBIADO: 30% → 100% */
-    padding: 6px 10px;  /* 👈 CAMBIADO: 10px 12px → 6px 10px */
-    border-radius: 6px;
-    border: 1px solid #d1d5db;
-    font-size: 11px;
-    background: white;
-  }
-  .maquinaria-field input:focus,
-  .maquinaria-field select:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-  }
-  .numeros-maquina{
-    display: flex;                    /* 👈 CAMBIADO: grid → flex */
-    flex-direction: column;             /* 👈 NUEVO: horizontal */
-    gap: 10px;
-    align-items: flex-end;
-    flex-wrap: nowrap;               /* 👈 NUEVO: sin salto de línea */
-  }
-  .numeros-maquina .maquinaria-field {
-    min-width: 150px;                /* 👈 NUEVO: ancho específico */
-  }
-  .btn-delete {
-    padding: 6px;
-    background: #e74c3c;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  .btn-delete:hover {
-    background: #c0392b;
-  }
-  .btn-add {
-    padding: 8px 16px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 10px;
-  }
-  .btn-add:hover {
-    background: #218838;
-  }
+            .maquinaria-grid{
+              display: flex;
+              align-items: flex-end;
+              gap: 15px;
+              margin-bottom: 20px;
+              padding: 15px;
+              background: #f8fafc;
+              border-radius: 10px;
+              border: 1px solid #e2e8f0;
+              flex-wrap: nowrap;  
+              overflow-x: auto;   
+            }
+            .maquinaria-field {
+              flex: 0 0 auto;     
+              min-width: 180px;   
+            }
+            .maquinaria-field label{
+              display: block;
+              font-size: 10px;    
+              font-weight: 600;
+              color: #4b5563;
+              margin-bottom: 4px;
+            }
+            .maquinaria-field input,
+            .maquinaria-field select {
+              width: 100%;        
+              padding: 6px 10px;  
+              border-radius: 6px;
+              border: 1px solid #d1d5db;
+              font-size: 11px;
+              background: white;
+            }
+            .maquinaria-field input:focus,
+            .maquinaria-field select:focus {
+              outline: none;
+              border-color: #3b82f6;
+              box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            }
+            .numeros-maquina{
+              display: flex;                  
+              flex-direction: column;             
+              gap: 10px;
+              align-items: flex-end;
+              flex-wrap: nowrap;               
+            }
+            .numeros-maquina .maquinaria-field {
+              min-width: 150px;                
+            }
+            .btn-delete {
+              padding: 6px;
+              background: #e74c3c;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+              width: 34px;
+              height: 34px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.2s;
+              flex-shrink: 0;
+            }
+            .btn-delete:hover {
+              background: #c0392b;
+            }
+            .btn-add {
+              padding: 8px 16px;
+              background: #28a745;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 11px;
+              font-weight: 500;
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              margin-top: 10px;
+            }
+            .btn-add:hover {
+              background: #218838;
+            }
   
-  /* Scroll horizontal para pantallas pequeñas */
-  @media (max-width: 1400px) {
-    .maquinaria-grid {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-`}</style>
+            /* Scroll horizontal para pantallas pequeñas */
+            @media (max-width: 1400px) {
+              .maquinaria-grid {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+              }
+            }
+          `}</style>
             {maquinarias.map((item, index)=>(
               <div key={index} className="maquinaria-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
                 <div className="maquinaria-field" style={{ flex: 1.2 }}>
@@ -3006,8 +3006,6 @@ useEffect(() => {
     </div>
   )}
 </div>
-
-
         
         {/* INTEGRANTES */}
         <div className="card2">
