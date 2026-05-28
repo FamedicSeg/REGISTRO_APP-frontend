@@ -17,11 +17,7 @@ const MODULO_TO_HOJA ={
     "MODULO 6":"MODULO 6",
     "MODULO 7":"MODULO 7",
     "MODULO 8":"MODULO 8",
-    "MODULO 9":"MODULO 9",
     "MODULO 10":"MODULO 10",
-    "MODULO 11":"MODULO 11",
-    "MODULO 12":"MODULO 12",
-    "MODULO 13":"MODULO 13",
     "VARIOS 1":"VARIOS 1",
     "VARIOS 2":"VARIOS 2",
     "ESTAMPADO":"ESTAMPADO",
@@ -1561,9 +1557,6 @@ useEffect(() => {
                 <option value="MODULO 7">MÓDULO 7</option>
                 <option value="MODULO 8">MÓDULO 8</option>
                 <option value="MODULO 10">MÓDULO 10</option>
-                <option value="MODULO 11">MÓDULO 11</option>
-                <option value="MODULO 12">MÓDULO 12</option>
-                <option value="MODULO 13">MÓDULO 13</option>
                 <option value="VARIOS 1">VARIOS 1</option>
                 <option value="VARIOS 2">VARIOS 2</option>
                 <option value="ESTAMPADO">ESTAMPADO</option>
