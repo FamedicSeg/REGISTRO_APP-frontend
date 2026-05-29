@@ -1661,27 +1661,27 @@ const decimalParaHorasMinutos = (decimal) => {
                           buscarDescripcionInsumo(item.tipo_insumo, index);
                           cargarDescripcionLoteInsumo(index, item.tipo_insumo);
                          }}
-                         style={{fontSize: "10.5px" }} 
+                         style={{fontSize: "9.5px" }} 
                          />
                 </div>
 
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> DESCRIPCIÓN: </label>
-                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={{ backgroundColor: "#e9ecef", fontSize: "10.5px" }}/>
+                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={{ backgroundColor: "#e9ecef", fontSize: "9.5px" }}/>
                 </div>
 
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}>CANTIDAD: </label>
-                  <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000" placeholder="EJ: 10" style={{fontSize: "10.5px" }}/>
+                  <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000" placeholder="EJ: 10" style={{fontSize: "9.5px" }}/>
                 </div>
 
                 <div className="insumo-field">
                   <label style={{display: "block", marginBottom: "5px", fontSize: "10px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
-                  <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)} style={{fontSize: "10.5px" }} />
+                  <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)} style={{fontSize: "9.5px" }} />
                 </div>
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> LOTE: </label>
-                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} placeholder="N° DE LOTE" style={{fontSize: "10.5px" }} />
+                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} placeholder="N° DE LOTE" style={{fontSize: "9.5px" }} />
                 </div>
 
                 <div className="insumo-field">
