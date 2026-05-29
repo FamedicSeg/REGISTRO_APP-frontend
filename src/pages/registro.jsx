@@ -160,47 +160,6 @@ export default function Registro() {
   const [actividadesGlobalesEQE, setActividadesGlobalesEQE] = useState([]);
   const [_productosEQECargados, setProductosEQECargados] = useState(new Set());
 
-  // ESTADOS PARA RESPONSIVE EN GALAXY TAB A
-  const [isGalaxyTabA, setIsGalaxyTabA] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(true);
-
-  // Detectar Galaxy Tab A y orientación
-  useEffect(() => {
-    const checkDevice = () => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      // Detectar Galaxy Tab A 8.0" 2019 (1200x1920 o 1920x1200)
-      const isTabADimensions = (width >= 800 && width <= 1200 && height >= 1200 && height <= 1920) ||
-                              (width >= 1200 && width <= 1920 && height >= 800 && height <= 1200);
-      
-      setIsGalaxyTabA(isTabADimensions);
-      setIsPortrait(height > width);
-    };
-    
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('orientationchange', checkDevice);
-    
-    return () => {
-      window.removeEventListener('resize', checkDevice);
-      window.removeEventListener('orientationchange', checkDevice);
-    };
-  }, []);
-
-  // Función para obtener estilos responsivos
-  const getResponsiveStyle = (baseStyle, tabletStyle, portraitStyle = null) => {
-    if (!isGalaxyTabA) return baseStyle;
-    if (!isPortrait && portraitStyle) return portraitStyle;
-    return tabletStyle;
-  };
-
-  // Función para obtener clases responsivas
-  const _getResponsiveClass = (baseClass, tabletClass) => {
-    if (!isGalaxyTabA) return baseClass;
-    return `${baseClass} ${tabletClass}`;
-  };
-
   // Función para calcular cantidad_proceso automáticamente
   const calcularProceso = useCallback((planificada, elaborada) => {
     const plan = Number(planificada) || 0;
@@ -1410,33 +1369,6 @@ useEffect(() => {
     cargarPersonal();
   }, [form.modulo]);
 
-  {/*const generarPDF = async() =>{
-    const elemento = document.getElementById("formulario");
-
-    const canvas = await html2canvas(elemento);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p","mm","a4");
-
-    const imgWidth = 210;
-    const pageHeight = 297;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    pdf.save("registro.pdf");
-  }*/}
-
   // Agrega esta función ANTES del return, junto a las otras funciones
 const decimalParaHorasMinutos = (decimal) => {
   if (isNaN(decimal) || decimal <= 0) return '';
@@ -1452,51 +1384,33 @@ const decimalParaHorasMinutos = (decimal) => {
 };
 
   return (
-    <div 
-      id="formulario" 
-      className="registro-container"
-      style={isGalaxyTabA ? { 
-        padding: isPortrait ? "12px" : "16px",
-        overflowX: "hidden",
-        width: "100%",
-        maxWidth: "100%"
-      } : {}}
-    >
+    <div id="formulario" className="registro-container">
       {msg && (
         <div className={`toast ${msg.toLowerCase().includes("error") ? "error" : "success"}`}>
           {msg}
         </div>
       )}
-      <header style={isGalaxyTabA ? { flexDirection: isPortrait ? "column" : "row", gap: "12px" } : {}}>
+      <header>
         <div className="logo-left">
           <img src={logo_safemed} alt="logo" className="logo" />
         </div>
-        <h1 style={isGalaxyTabA ? { fontSize: isPortrait ? "1.2rem" : "1rem", margin: isPortrait ? "0" : "0 15px" } : {}}>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
+        <h1>REGISTRO DE CONFECCIÓN O AUTOMÁTICAS - EMPAQUE Y CONTROL DE ACTIVIDADES</h1>
         <div className="logo-right">
           <img src={logo3} alt="logo2" className="logo" />
         </div>
       </header>
 
-      <button 
-        className="btn" 
-        type="button" 
-        onClick={() => nav("/")}
-        style={isGalaxyTabA ? { padding: "12px 20px", fontSize: "14px", minHeight: "44px" } : {}}
-      >
+      <button className="btn" type="button" onClick={() => nav("/")}>
         ⬅ Volver
       </button>
 
       <form onSubmit={onSubmit}>
         {/* CABECERA */}
         <div className="card">
-          <div style={getResponsiveStyle(
-            { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "20px" },
-            { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" },
-            { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }
-          )}>
+          <div className="form-grid-5">
             <div className="form-group">
               <label htmlFor="fecha">FECHA:</label>
-              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} style={getResponsiveStyle({fontSize:"14px"}, {fontSize:"16px", padding:"12px"})} />
+              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} />
             </div>
             
             <div className="form-group">
@@ -1509,10 +1423,6 @@ const decimalParaHorasMinutos = (decimal) => {
                 value={form.op}
                 onChange={onChange}
                 placeholder="SELECCIONA O ESCRIBE LA ORDEN DE PRODUCCIÓN..."
-                style={getResponsiveStyle(
-                  { flex: 1, fontSize: "12px", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
-                  { flex: 1, fontSize: "14px", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da" }
-                )}
                 autoComplete="off"
                 />
                 <button
@@ -1542,8 +1452,8 @@ const decimalParaHorasMinutos = (decimal) => {
                       </div>
             
             <div className="form-group">
-              <label htmlFor="turno" style={{fontSize:"12px"}}>TURNO:</label>
-              <select id="turno" name="turno" value={form.turno} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
+              <label htmlFor="turno">TURNO:</label>
+              <select id="turno" name="turno" value={form.turno} onChange={onChange}>
                 <option value="">SELECCIONA EL TURNO...</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -1552,7 +1462,7 @@ const decimalParaHorasMinutos = (decimal) => {
 
             <div className="form-group">
               <label htmlFor="area">ÁREA:</label>
-              <select id="area" name="area" value={form.area} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
+              <select id="area" name="area" value={form.area} onChange={onChange}>
                 <option value="">SELECCIONA EL ÁREA...</option>
                 <option value="CONFECCIÓN">CONFECCIÓN</option>
                 <option value="AUTOMÁTICAS">AUTOMÁTICAS</option>
@@ -1561,7 +1471,7 @@ const decimalParaHorasMinutos = (decimal) => {
 
             <div className="form-group">
               <label htmlFor="modulo">MÓDULO:</label>
-              <select id="modulo" name="modulo" value={form.modulo} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
+              <select id="modulo" name="modulo" value={form.modulo} onChange={onChange}>
                 <option value="">SELECCIONE...</option>
                 <option value="MODULO 1">MÓDULO 1</option>
                 <option value="MODULO 2">MÓDULO 2</option>
@@ -1587,11 +1497,7 @@ const decimalParaHorasMinutos = (decimal) => {
           </div>
 
           <div className="cabecera2">
-            <div style={getResponsiveStyle(
-              { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" },
-              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" },
-              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" }
-            )}>
+            <div className="grid-2cols">
               <div className="form-group">
                 <label htmlFor="responsable">RESPONSABLE:</label>
                 <input
@@ -1601,10 +1507,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   name="responsable"
                   value={form.responsable || ""}
                   disabled={!form.modulo}
-                  style={getResponsiveStyle(
-                    { padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "12px" },
-                    { padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "14px" }
-                  )}
+                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed" }}
                 />
               </div>
 
@@ -1617,24 +1520,17 @@ const decimalParaHorasMinutos = (decimal) => {
                   name="supervisor"
                   value={form.supervisor || ""}
                   disabled={!form.modulo}
-                  style={getResponsiveStyle(
-                    { padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize:"12px" },
-                    { padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", width: "100%", backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize:"14px" }
-                  )}
+                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed" }}
                 />
               </div>
             </div>
           </div>
         
           <div className="cabecera2">
-            <div style={getResponsiveStyle(
-              { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" },
-              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" },
-              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" }
-            )}>
+            <div className="grid-2cols">
               <div className="form-group">
                 <label htmlFor="personal_asignado">PERSONAL ASIGNADO: </label>
-                <select id="personal_asignado" name="personal_asignado" value={form.personal_asignado} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}>
+                <select id="personal_asignado" name="personal_asignado" value={form.personal_asignado} onChange={onChange}>
                   <option value="">SELECCIONA EL PERSONAL ASIGNADO...</option>
                   <option value="8">8</option>
                   <option value="10">10</option>
@@ -1645,22 +1541,18 @@ const decimalParaHorasMinutos = (decimal) => {
               {form.personal_asignado === "OTRO" && (
                 <div className="form-group">
                   <label htmlFor="personal_otro">INGRESE CANTIDAD:</label>
-                  <input type="number" id="personal_otro" name="personal_otro" min="1" max="20" placeholder="INGRESA LA CANTIDAD DEL PERSONAL. EJ: 15" value={form.personal_otro} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
+                  <input type="number" id="personal_otro" name="personal_otro" min="1" max="20" placeholder="INGRESA LA CANTIDAD DEL PERSONAL. EJ: 15" value={form.personal_otro} onChange={onChange} />
                 </div>
               )}
               <div className="form-group">
                 <label>PERSONAL PRESENTE: </label>
-                <input placeholder="INGRESA LA CANTIDAD DEL PERSONAL PRESENTE..." type="number" id="personal_presente" name="personal_presente" min="0" max="20" value={form.personal_presente} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
+                <input placeholder="INGRESA LA CANTIDAD DEL PERSONAL PRESENTE..." type="number" id="personal_presente" name="personal_presente" min="0" max="20" value={form.personal_presente} onChange={onChange} />
               </div>
             </div>
           </div>
 
           <div className="cabecera3">
-            <div style={getResponsiveStyle(
-              { display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "20px" },
-              { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" },
-              { display: "grid", gridTemplateColumns: "1fr", gap: "12px" }
-            )}>
+            <div className="grid-6cols">
               <div className="form-group">
                 <label htmlFor="codigo_producto">REFERENCIA:</label>
                 <input
@@ -1668,28 +1560,27 @@ const decimalParaHorasMinutos = (decimal) => {
                   name="codigo_producto"
                   value={form.codigo_producto}
                   onChange={onChange}
-                  style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="descripcion">DESCRIPCIÓN:</label>
-                <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={onChange} className="input-disabled" style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
+                <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={onChange} className="input-disabled" />
               </div>
               <div className="form-group">
                 <label htmlFor="hora_planificada">TIEMPO: </label>
-                <input htmlFor="number" id="hora_planificada" name="hora_planificada" value={form.hora_planificada} onChange={onChange} className="input-disabled" placeholder="Se calculará automaticamente" readOnly style={getResponsiveStyle({fontSize: "16px"}, {fontSize: "18px", padding:"12px"})}/>
+                <input htmlFor="number" id="hora_planificada" name="hora_planificada" value={form.hora_planificada} onChange={onChange} className="input-disabled" placeholder="Se calculará automaticamente" readOnly />
               </div>
               <div className="form-group">
                 <label htmlFor="cantidad_planificada">CANTIDAD PLANIFICADA:</label>
-                <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
+                <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" />
               </div>
               <div className="form-group">
                 <label htmlFor="lotePrincipal">LOTE MAESTRO:</label>
-                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})} />
+                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} />
               </div>
               <div className="form-group">
                 <label htmlFor="loteSecundario" >N°:</label>
-                <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} style={getResponsiveStyle({fontSize:"12px"}, {fontSize:"14px", padding:"12px"})}/>
+                <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} />
               </div>
             </div>
           </div>
@@ -1723,12 +1614,8 @@ const decimalParaHorasMinutos = (decimal) => {
             )}
             
             {insumos.map((item, index) => (
-              <div key={item.id || index} style={getResponsiveStyle(
-                { display: "grid", width: "950px", gridTemplateColumns: "2.0fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px", alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", boxSizing: "border-box" },
-                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "20px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" },
-                { display: "grid", gridTemplateColumns: "1fr", gap: "12px", marginBottom: "20px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" }
-              )}>
-                <div>
+              <div key={item.id || index} className="insumo-item">
+                <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> CÓDIGO DEL INSUMO: </label>
                   <input className="input-uppercase"
                          type="text" 
@@ -1745,54 +1632,33 @@ const decimalParaHorasMinutos = (decimal) => {
                           buscarDescripcionInsumo(item.tipo_insumo, index);
                           cargarDescripcionLoteInsumo(index, item.tipo_insumo);
                          }}
-                         style={getResponsiveStyle(
-                           { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize:"10px" },
-                           { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize:"14px" }
-                         )}/>
+                         />
                 </div>
 
-                <div>
+                <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> DESCRIPCIÓN: </label>
-                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={getResponsiveStyle(
-                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", color: "#495057", fontSize:"10px" },
-                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#e9ecef", color: "#495057", fontSize:"14px" }
-                  )}/>
+                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={{ backgroundColor: "#e9ecef" }}/>
                 </div>
 
-                <div>
+                <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}>CANTIDAD: </label>
-                  <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000"
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"9.5px" },
-                      { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
-                    )} placeholder="EJ: 10"/>
+                  <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000" placeholder="EJ: 10"/>
                 </div>
 
-                <div>
+                <div className="insumo-field">
                   <label style={{display: "block", marginBottom: "5px", fontSize: "10px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
-                  <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)}
-                  style={getResponsiveStyle(
-                    { width: "100%", padding: "8px", border:"1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
-                    { width: "100%", padding: "12px", border:"1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
-                  )} />
+                  <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)} />
                 </div>
-                <div>
+                <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> LOTE: </label>
-                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} style={getResponsiveStyle(
-                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
-                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
-                  )} placeholder="N° DE LOTE"/>
+                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} placeholder="N° DE LOTE"/>
                 </div>
 
-                <div>
+                <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> ENTREGA: </label>
                   <select
                     value={item.entrega}
                     onChange={(e) => actualizarInsumo(index, "entrega", e.target.value)}
-                    style={getResponsiveStyle(
-                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
-                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
-                  )}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
@@ -1809,12 +1675,9 @@ const decimalParaHorasMinutos = (decimal) => {
                   </select>
                 </div>
 
-                <div>
+                <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> RECEPCIÓN: </label>
-                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={getResponsiveStyle(
-                    { width: "100%", padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"10px" },
-                    { width: "100%", padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize:"14px" }
-                  )}>
+                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)}>
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     <option value="Vaca Guanatasig Carolina Estefania">Vaca Guanatasig Carolina Estefania</option>
                     {integrantes.map((integrante, idx) => (
@@ -1825,12 +1688,8 @@ const decimalParaHorasMinutos = (decimal) => {
                   </select>
                 </div>
 
-                <div>
-                  <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", color: "transparent" }}> ACCIÓN: </label>
-                  <button type="button" onClick={() => eliminarInsumo(index)} style={getResponsiveStyle(
-                    { padding: "8px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "10px" },
-                    { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", minHeight: "44px" }
-                  )}>
+                <div className="insumo-field-action">
+                  <button type="button" onClick={() => eliminarInsumo(index)} className="btn-delete">
                     ❌
                   </button>
                 </div>
@@ -1842,10 +1701,6 @@ const decimalParaHorasMinutos = (decimal) => {
                 type="button"
                 className="btn"
                 onClick={agregarInsumo}
-                style={getResponsiveStyle(
-                  { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold" },
-                  { padding: "14px 24px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "18px", fontWeight: "bold", minHeight: "48px" }
-                )}
               >
                 ➕ Agregar Nuevo Insumo
               </button>
@@ -1877,20 +1732,12 @@ const decimalParaHorasMinutos = (decimal) => {
             )}
             
             {reposicionNoConforme.map((item, index) => (
-              <div key={item.id || index} style={getResponsiveStyle(
-                { display: "grid", width: "950px", gridTemplateColumns: "2.4fr 4.5fr 1.4fr 1.2fr 2fr 2.8fr 2.8fr auto", gap: "10px", marginBottom: "15px", alignItems: "center", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6" },
-                { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "15px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" },
-                { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "15px", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", width: "100%" }
-              )}>
-                <div>
+              <div key={item.id || index} className="no-conforme-item">
+                <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>CÓDIGO DEL INSUMO:</label>
                   <select
                     value={item.codigo_insumo || ""}
                     onChange={(e) => actualizarReposicionNoConforme(index, "codigo_insumo", e.target.value)}
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
-                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
-                    )}
                   >
                     <option value="">SELECCIONE...</option>
                     {_listaNoConforme.map((insumo, idx) => (
@@ -1901,84 +1748,61 @@ const decimalParaHorasMinutos = (decimal) => {
                   </select>
                 </div>
                 
-                <div>
+                <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>DESCRIPCIÓN:</label>
                   <input 
                     type="text" 
                     value={item.descripcion_insumo || ""} 
                     readOnly
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize: "11px", backgroundColor: "#e9ecef" },
-                      { width: "100%", padding: "12px", fontSize: "14px", backgroundColor: "#e9ecef" }
-                    )}
+                    style={{ backgroundColor: "#e9ecef" }}
                   />
                 </div>
                 
-                <div>
+                <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>CANTIDAD:</label>
                   <input 
                     type="number" 
                     value={item.cantidad} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "cantidad", e.target.value)}
                     placeholder="EJ: 10"
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
-                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
-                    )}
                   />
                 </div>
                 
-                <div>
+                <div className="no-conforme-field">
                   <label style={{fontSize: "11px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
                   <input
                     type="text"
                     value={item.descrip_cant_insumo}
                     onChange={(e)=> actualizarReposicionNoConforme(index, "descrip_cant_insumo", e.target.value)}
                     placeholder="EJ: UDS"
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize:"11px", borderRadius:"4px" },
-                      { width: "100%", padding: "12px", fontSize:"14px", borderRadius:"4px" }
-                    )}
                   />
                 </div>
                 
-                <div>
+                <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>LOTE:</label>
                   <input 
                     type="text" 
                     value={item.lote} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "lote", e.target.value)}
                     placeholder="N° LOTE"
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
-                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
-                    )}
                   />
                 </div>
                 
-                <div>
+                <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>ENTREGA:</label>
                   <input 
                     type="text" 
                     value={item.entrega} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "entrega", e.target.value)}
                     placeholder="QUIÉN ENTREGA"
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
-                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
-                    )}
                   />
                 </div>
                 
-                <div>
+                <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>RECEPCIÓN:</label>
                   <select 
                     value={item.recepcion} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "recepcion", e.target.value)}
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "6px", fontSize: "11px", borderRadius: "4px" },
-                      { width: "100%", padding: "12px", fontSize: "14px", borderRadius: "4px" }
-                    )}
                   >
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     {integrantes.map((integrante, idx) => (
@@ -1989,14 +1813,11 @@ const decimalParaHorasMinutos = (decimal) => {
                   </select>
                 </div>
                 
-                <div>
+                <div className="no-conforme-field-action">
                   <button 
                     type="button" 
                     onClick={() => eliminarNoConforme(index)}
-                    style={getResponsiveStyle(
-                      { padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "11px" },
-                      { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", minHeight: "44px" }
-                    )}
+                    className="btn-delete"
                   >
                     ❌
                   </button>
@@ -2007,10 +1828,7 @@ const decimalParaHorasMinutos = (decimal) => {
             <button 
               type="button" 
               onClick={agregarNoConforme}
-              style={getResponsiveStyle(
-                { padding: "8px 15px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", marginTop: "10px" },
-                { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", marginTop: "10px", minHeight: "44px" }
-              )}
+              className="btn-add"
             >
               ➕ AGREGAR INSUMO NO CONFORME
             </button>
@@ -2034,59 +1852,47 @@ const decimalParaHorasMinutos = (decimal) => {
               background: #f8fafc;
               border-radius: 10px;
               border: 1px solid #e2e8f0;
-              flex-wrap: nowrap;        
-              overflow-x: auto;         
+              flex-wrap: wrap;
             }
             .etiqueta-field {
-              flex: 0 0 auto;           
-              min-width: 180px;         
+              flex: 1;
+              min-width: 180px;
             }
             .etiqueta-field label {
               display: block;
-              font-size: 10px;          
+              font-size: 10px;
               font-weight: 600;
               color: #4b5563;
-              margin-bottom: 4px;       
+              margin-bottom: 4px;
             }
             .etiqueta-field input,
             .etiqueta-field select {
               width: 100%;
-              padding: 6px 10px;        
-              border-radius: 6px;       
+              padding: 6px 10px;
+              border-radius: 6px;
               border: 1px solid #d1d5db;
               font-size: 11px;
               background: white;
             }
-            .etiqueta-field input:focus,
-            .etiqueta-field select:focus {
-              outline: none;
-              border-color: #3b82f6;
-              box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-            }
             .btn-delete {
-              padding: 6px;             
+              padding: 6px;
               background: #e74c3c;
               color: white;
               border: none;
-              border-radius: 6px;       
+              border-radius: 6px;
               cursor: pointer;
-              width: 34px;              
-              height: 34px;             
+              width: 34px;
+              height: 34px;
               display: flex;
               align-items: center;
               justify-content: center;
-              transition: all 0.2s;
-              flex-shrink: 0;
-            }
-            .btn-delete:hover {
-              background: #c0392b;
             }
             .btn-add {
-              padding: 8px 16px;        
+              padding: 8px 16px;
               background: #28a745;
               color: white;
               border: none;
-              border-radius: 6px;       
+              border-radius: 6px;
               cursor: pointer;
               font-size: 11px;
               font-weight: 500;
@@ -2094,31 +1900,24 @@ const decimalParaHorasMinutos = (decimal) => {
               align-items: center;
               gap: 6px;
             }
-            .btn-add:hover {
-              background: #218838;
+            @media (max-width: 768px) {
+              .etiqueta-grid {
+                flex-direction: column;
+                align-items: stretch;
+              }
+              .btn-delete {
+                width: 100%;
+              }
             }
-  
-            /* Scroll horizontal para pantallas pequeñas */
-            @media (max-width: 1200px) {
-            .etiqueta-grid {
-              overflow-x: auto;
-              -webkit-overflow-scrolling: touch;
-            }
-            .btn-delete {
-              margin-top: 0;
-              width: 34px;
-            }
-          }
-          `}</style>
+            `}</style>
 
             {etiquetas.map((item, index) => (
-              <div key={index} className="etiqueta-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
-                <div className="etiqueta-field" style={{ flex: 1.2 }}>
+              <div key={index} className="etiqueta-grid">
+                <div className="etiqueta-field">
                   <label>ETIQUETA</label>
                   <select 
                     value={item.descripcion_etiqueta} 
                     onChange={(e) => actualizarEtiqueta(index, "descripcion_etiqueta", e.target.value)}
-                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="ETIQUETA ADHESIVA PARA CAJA MASTER">ETIQUETA ADHESIVA PARA CAJA MASTER</option>
@@ -2128,7 +1927,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   </select>
                 </div>
 
-                <div className="etiqueta-field" style={{ flex: 0.5 }}>
+                <div className="etiqueta-field">
                   <label>CANTIDAD</label>
                   <input 
                     placeholder="INGRESA LA CANTIDAD DE LA ETIQUETA.."
@@ -2138,16 +1937,14 @@ const decimalParaHorasMinutos = (decimal) => {
                     step="any"
                     value={item.cantidad_etiqueta ?? ""} 
                     onChange={(e) => actualizarEtiqueta(index, "cantidad_etiqueta", e.target.value)}
-                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   />
                 </div>
 
-                <div className="etiqueta-field" style={{ flex: 1.2 }}>
+                <div className="etiqueta-field">
                   <label>ENTREGA</label>
                   <select
                     value={item.entrega_etiqueta}
                     onChange={(e)=> actualizarEntregaEtiqueta(index,"entrega_etiqueta", e.target.value)}
-                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
@@ -2156,13 +1953,12 @@ const decimalParaHorasMinutos = (decimal) => {
                   </select>
                 </div>
 
-                <div className="etiqueta-field" style={{ flex: 1 }}>
+                <div className="etiqueta-field">
                   <label>RECEPCIÓN</label>
                   <input 
                     value={item.recepcion_etiqueta ?? ""} 
                     onChange={(e) => actualizarEtiqueta(index, "recepcion_etiqueta", e.target.value)} 
                     placeholder="INGRESA EL NOMBRE QUE RECIBE..."
-                    style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   />
                 </div>
 
@@ -2171,25 +1967,20 @@ const decimalParaHorasMinutos = (decimal) => {
                   className="btn-delete"
                   onClick={() => eliminarEtiqueta(index)} 
                   title="Eliminar etiqueta"
-                  style={isGalaxyTabA ? { width: "100%", marginTop: "10px", minHeight: "44px" } : {}}
                 >
                   🗑️
                 </button>
               </div>
             ))}
 
-            <button type="button" className="btn-add" onClick={agregarEtiqueta} style={isGalaxyTabA ? { fontSize: "14px", padding: "14px 20px", minHeight: "48px" } : {}}>
+            <button type="button" className="btn-add" onClick={agregarEtiqueta}>
               <span style={{ fontSize: "18px" }}>➕</span> AGREGAR ETIQUETA
             </button>
           </div> 
         </div>
         
         {/* SECCIÓN DE DOS COLUMNAS: CANTIDADES IZQUIERDA | CONFECCIÓN DERECHA */}
-        <div style={getResponsiveStyle(
-          { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" },
-          { display: "grid", gridTemplateColumns: "1fr", gap: "20px", marginBottom: "20px" },
-          { display: "grid", gridTemplateColumns: "1fr", gap: "20px", marginBottom: "20px" }
-        )}>
+        <div className="two-columns">
         
           {/* COLUMNA DERECHA - CONFECCIÓN Y AUTOMÁTICAS */}
           <div>
@@ -2198,11 +1989,7 @@ const decimalParaHorasMinutos = (decimal) => {
             </div>
             <div className="card" style={{ padding: "15px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                <div style={getResponsiveStyle(
-                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
-                )}>
+                <div className="grid-2cols-small">
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="hora_inicio" style={{ fontWeight: "bold", marginBottom: "5px", display: "block" }}>H. INICIO:</label>
                     <input 
@@ -2211,10 +1998,6 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="hora_inicio" 
                       value={form.hora_inicio} 
                       onChange={onChange} 
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
-                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "14px" }
-                      )}
                     />
                   </div>
 
@@ -2226,19 +2009,11 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="hora_fin" 
                       value={form.hora_fin} 
                       onChange={onChange} 
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da" },
-                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "14px" }
-                      )}
                     />
                   </div>
                 </div>
 
-                <div style={getResponsiveStyle(
-                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
-                )}>
+                <div className="grid-2cols-small">
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="destino" style={{ fontWeight: "bold", marginBottom: "5px", display: "block" }}>PARA:</label>
                     <select 
@@ -2246,10 +2021,6 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="destino" 
                       value={form.destino} 
                       onChange={onChange} 
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                      )}
                     >
                       <option value="">SELECCIONE EL DESTINATARIO...</option>
                       <option value="CLIENTE">CLIENTE</option>
@@ -2259,17 +2030,13 @@ const decimalParaHorasMinutos = (decimal) => {
 
                   {form.destino === "CLIENTE" && (
                     <div className="form-group" style={{ marginBottom: "0" }}>
-                      <label htmlFor="n_cliente" style={{ fontWeight: "bold", marginBottom: "5px", display: "block", fontSize:"11px"}}>N. CLIENTE:</label>
+                      <label htmlFor="n_cliente" style={{ fontWeight: "bold", marginBottom: "5px", display: "block"}}>N. CLIENTE:</label>
                       <input 
                         type="text" 
                         id="n_cliente" 
                         name="n_cliente" 
                         value={form.n_cliente} 
                         onChange={onChange} 
-                        style={getResponsiveStyle(
-                          { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                          { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                        )}
                         placeholder="INGRESA EL NOMBRE DEL CLIENTE..."
                       />
                     </div>
@@ -2277,11 +2044,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   {form.destino !== "CLIENTE" && <div></div>}
                 </div>
 
-                <div style={getResponsiveStyle(
-                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
-                )}>
+                <div>
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="esteril" style={{ fontWeight: "bold", marginBottom: "5px", display: "block"}}>ESTÉRIL:</label>
                     <select 
@@ -2289,10 +2052,6 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="esteril" 
                       value={form.esteril} 
                       onChange={onChange} 
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"11px" },
-                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                      )}
                     >
                       <option value="">SELECCIONE...</option>
                       <option value="SÍ">SÍ</option>
@@ -2301,11 +2060,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   </div>
                 </div>
 
-                <div style={getResponsiveStyle(
-                  { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: "10px" }
-                )}>
+                <div className="grid-2cols-small">
                   <div className="form-group" style={{ marginBottom: "0" }}>
                     <label htmlFor="leyenda" style={{ fontWeight: "bold", marginBottom: "5px", display: "block" }}>LEYENDA:</label>
                     <select 
@@ -2313,10 +2068,6 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="leyenda" 
                       value={form.leyenda} 
                       onChange={onChange} 
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                      )}
                     >
                       <option value="">SELECCIONE...</option>
                       <option value="SÍ">SÍ</option>
@@ -2331,10 +2082,6 @@ const decimalParaHorasMinutos = (decimal) => {
                         name="leyenda_si" 
                         value={form.leyenda_si} 
                         onChange={onChange} 
-                        style={getResponsiveStyle(
-                          { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                          { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                        )}
                       >
                         <option value="">SELECCIONE EL TIPO DE LEYENDA...</option>
                         <option value="IESS">IESS</option>
@@ -2355,10 +2102,6 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="leyenda_otra" 
                       value={form.leyenda_otra} 
                       onChange={onChange} 
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                        { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                      )}
                       placeholder="INGRESA LA LEYENDA..."
                     />
                   </div>
@@ -2375,56 +2118,44 @@ const decimalParaHorasMinutos = (decimal) => {
             <div className="card" style={{ padding: "15px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
                 <div className="form-group" style={{ marginBottom: "0" }}>
-                  <label htmlFor="cantidad_elaborado" style={{ fontWeight: "bold", marginBottom: "5px", display: "block", fontSize:"12px" }}>ELABORADO:</label>
+                  <label htmlFor="cantidad_elaborado" style={{ fontWeight: "bold", marginBottom: "5px", display: "block"}}>ELABORADO:</label>
                   <input 
                     type="number" 
                     id="cantidad_elaborado" 
                     name="cantidad_elaborado" 
                     value={form.cantidad_elaborado} 
                     onChange={onChange} 
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "12px" },
-                      { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize: "14px" }
-                    )}
                     placeholder="INGRESA LA CANTIDAD ELABORADA DEL PRODUCTO..."
                   />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: "0" }}>
-                  <label htmlFor="cantidad_proceso" style={{ fontWeight: "bold", marginBottom: "5px", display: "block", fontSize:"12px" }}>PROCESO:</label>
+                  <label htmlFor="cantidad_proceso" style={{ fontWeight: "bold", marginBottom: "5px", display: "block"}}>PROCESO:</label>
                   <input 
                     type="number" 
                     id="cantidad_proceso" 
                     name="cantidad_proceso" 
                     value={form.cantidad_proceso} 
                     onChange={onChange} 
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                      { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                    )}
                     placeholder="SE CALCULA AUTOMÁTICAMENTE..."
                     readOnly
                   />
                 </div>
                 
                 <div className="form-group" style={{ marginBottom: "0" }}>
-                  <label htmlFor="cantidad_merma" style={{ fontWeight: "bold", marginBottom: "5px", display: "block", fontSize:"12px" }}>MERMA:</label>
+                  <label htmlFor="cantidad_merma" style={{ fontWeight: "bold", marginBottom: "5px", display: "block"}}>MERMA:</label>
                   <input 
                     type="text" 
                     id="cantidad_merma" 
                     name="cantidad_merma" 
                     value={form.cantidad_merma} 
                     onChange={onChange} 
-                    style={getResponsiveStyle(
-                      { width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"12px" },
-                      { width: "100%", padding: "12px", borderRadius: "4px", border: "1px solid #ced4da", fontSize:"14px" }
-                    )}
                     placeholder="INGRESA LA CANTIDAD DE LA MERMA..."
                   />
                 </div>
                 <div className="form-group">
                   <label htmlFor="fecha_final_producto" >FECHA FINAL DE PRODUCTO TERMINADO:</label>
-                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={getResponsiveStyle({fontSize:"14px"}, {fontSize:"16px", padding:"12px"})}/>
+                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} />
                 </div>
               </div>
             </div>
@@ -2448,44 +2179,33 @@ const decimalParaHorasMinutos = (decimal) => {
               background: #f8fafc;
               border-radius: 10px;
               border: 1px solid #e2e8f0;
-              flex-wrap: nowrap;  
-              overflow-x: auto;   
+              flex-wrap: wrap;
             }
             .maquinaria-field {
-              flex: 0 0 auto;     
-              min-width: 180px;   
+              flex: 1;
+              min-width: 180px;
             }
             .maquinaria-field label{
               display: block;
-              font-size: 10px;    
+              font-size: 10px;
               font-weight: 600;
               color: #4b5563;
               margin-bottom: 4px;
             }
             .maquinaria-field input,
             .maquinaria-field select {
-              width: 100%;        
-              padding: 6px 10px;  
+              width: 100%;
+              padding: 6px 10px;
               border-radius: 6px;
               border: 1px solid #d1d5db;
               font-size: 11px;
               background: white;
             }
-            .maquinaria-field input:focus,
-            .maquinaria-field select:focus {
-              outline: none;
-              border-color: #3b82f6;
-              box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-            }
             .numeros-maquina{
-              display: flex;                  
-              flex-direction: column;             
+              display: flex;
+              flex-direction: column;
               gap: 10px;
-              align-items: flex-end;
-              flex-wrap: nowrap;               
-            }
-            .numeros-maquina .maquinaria-field {
-              min-width: 150px;                
+              flex: 2;
             }
             .btn-delete {
               padding: 6px;
@@ -2499,11 +2219,6 @@ const decimalParaHorasMinutos = (decimal) => {
               display: flex;
               align-items: center;
               justify-content: center;
-              transition: all 0.2s;
-              flex-shrink: 0;
-            }
-            .btn-delete:hover {
-              background: #c0392b;
             }
             .btn-add {
               padding: 8px 16px;
@@ -2519,25 +2234,22 @@ const decimalParaHorasMinutos = (decimal) => {
               gap: 6px;
               margin-top: 10px;
             }
-            .btn-add:hover {
-              background: #218838;
-            }
-  
-            /* Scroll horizontal para pantallas pequeñas */
-            @media (max-width: 1400px) {
+            @media (max-width: 768px) {
               .maquinaria-grid {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
+                flex-direction: column;
+                align-items: stretch;
+              }
+              .btn-delete {
+                width: 100%;
               }
             }
-          `}</style>
+            `}</style>
             {maquinarias.map((item, index)=>(
-              <div key={index} className="maquinaria-grid" style={isGalaxyTabA ? { width: "100%" } : {}}>
-                <div className="maquinaria-field" style={{ flex: 1.2 }}>
+              <div key={index} className="maquinaria-grid">
+                <div className="maquinaria-field">
                   <label>NOMBRE DE LA MAQUINARÍA:</label>
                   <select value={item.maquinaria}
                           onChange={(e)=> actualizarMaquinaria(index, "maquinaria", e.target.value)}
-                          style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="RECTA">RECTA</option>
@@ -2573,9 +2285,9 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="M. VERTICALES MANUALES">M. VERTICALES MANUALES</option>
                   </select>
                 </div>
-                <div className="maquinaria-field" style={{ maxWidth: isGalaxyTabA ? "100%" : "180px" }}>
+                <div className="maquinaria-field">
                   <label>CANTIDAD DE MAQUINARIA:</label>
-                  <input type="text" min="1" value={item.cantidad_maquinaria} onChange={(e)=> actualizarMaquinaria(index, "cantidad_maquinaria", e.target.value)} style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}/>
+                  <input type="text" min="1" value={item.cantidad_maquinaria} onChange={(e)=> actualizarMaquinaria(index, "cantidad_maquinaria", e.target.value)}/>
                 </div>
                 
                 {item.numero_maquinaria?.length > 0 &&(
@@ -2588,7 +2300,6 @@ const decimalParaHorasMinutos = (decimal) => {
                           value={numero}
                           onChange={(e) => actualizarNumeroMaquinaria(index, idxNumero, e.target.value)}
                           placeholder="INGRESA EL NÚMERO DE LA MAQUINARIA"
-                          style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}
                         />
                       </div>
                     ))}  
@@ -2598,13 +2309,12 @@ const decimalParaHorasMinutos = (decimal) => {
                   className="btn-delete"
                   onClick={()=> eliminarMaquinaria(index)}
                   title="Eliminar Maquinaria"
-                  style={isGalaxyTabA ? { width: "100%", marginTop: "10px", minHeight: "44px" } : {}}
                 >
                   🗑️
                 </button>
               </div>
             ))}
-            <button type="button" className="btn-add" onClick={agregarMaquinaria} style={isGalaxyTabA ? { fontSize: "14px", padding: "14px 20px", minHeight: "48px" } : {}}>
+            <button type="button" className="btn-add" onClick={agregarMaquinaria}>
               <span style={{fontSize: "18px"}}>➕</span> AGREGAR MAQUINARIA
             </button>
           </div>
@@ -2616,25 +2326,17 @@ const decimalParaHorasMinutos = (decimal) => {
 </div>
 
 <div className="card">
-  {/* Input para agregar actividad manualmente - SIEMPRE visible para EQE (independientemente de si hay actividades o no) */}
+  {/* Input para agregar actividad manualmente - SIEMPRE visible para EQE */}
   {mostrarCheckboxes && (
-    <div style={getResponsiveStyle(
-      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", gap: "10px", alignItems: "flex-end" },
-      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
-      { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
-    )}>
+    <div className="actividad-manual-panel">
       <div style={{ flex: 1 }}>
-        <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1565c0" }}>
+        <label style={{ display: "block", fontWeight: "600", marginBottom: "5px", color: "#1565c0" }}>
           AGREGAR ACTIVIDAD MANUALMENTE:
         </label>
         <input
           type="text"
           id="nuevaActividadManual"
           placeholder="Escribe una nueva actividad y presiona Agregar..."
-          style={getResponsiveStyle(
-            { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "12px", fontWeight: "500", backgroundColor: "white" },
-            { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "14px", fontWeight: "500", backgroundColor: "white" }
-          )}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               const nuevaActividad = e.target.value.trim().toUpperCase();
@@ -2664,10 +2366,7 @@ const decimalParaHorasMinutos = (decimal) => {
             alert("⚠️ Por favor escribe una actividad");
           }
         }}
-        style={getResponsiveStyle(
-          { padding: "10px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
-          { padding: "12px 20px", backgroundColor: "#1565c0", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "44px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
-        )}
+        className="btn-add-actividad"
       >
         <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
       </button>
@@ -2678,37 +2377,20 @@ const decimalParaHorasMinutos = (decimal) => {
   {mostrarCheckboxes && listaActividadesEQE.length > 0 && (
     <>
       <div style={{ marginBottom: "20px" }}>
-        <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px" }}>
+        <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px" }}>
           SELECCIONE LAS ACTIVIDADES QUE SE VAN A REALIZAR:
         </label>
 
-        <div style={getResponsiveStyle(
-          { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" },
-          { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" },
-          { display: "grid", gridTemplateColumns: "1fr", gap: "12px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #dee2e6", maxHeight: "400px", overflowY: "auto" }
-        )}>
+        <div className="actividades-grid">
           {listaActividadesEQE.map((actividad, index) => (
-            <label key={index} style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: "10px",
-              padding: isGalaxyTabA ? "12px" : "8px",
-              cursor: "pointer",
-              backgroundColor: actividadesSeleccionadas[actividad] ? "#e3f2fd" : "transparent",
-              borderRadius: "4px",
-              transition: "background-color 0.2s",
-              justifyContent: "space-between"
-            }}>
+            <label key={index} className={`actividad-item ${actividadesSeleccionadas[actividad] ? 'selected' : ''}`}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
                 <input
                   type="checkbox"
                   checked={actividadesSeleccionadas[actividad] || false}
                   onChange={() => toggleActividad(actividad)}
-                  style={{ width: isGalaxyTabA ? "22px" : "18px", height: isGalaxyTabA ? "22px" : "18px", cursor: "pointer" }}
                 />
-                <span style={{ fontSize: isGalaxyTabA ? "16px" : "14px", fontWeight: actividadesSeleccionadas[actividad] ? "500" : "normal" }}>
-                  {actividad}
-                </span>
+                <span>{actividad}</span>
               </div>
               {!actividadesGlobalesEQE.includes(actividad) && (
                 <button
@@ -2724,17 +2406,7 @@ const decimalParaHorasMinutos = (decimal) => {
                       });
                     }
                   }}
-                  style={{
-                    padding: "4px 8px",
-                    backgroundColor: "#dc3545",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "11px",
-                    minHeight: "30px"
-                  }}
-                  title="Eliminar actividad"
+                  className="btn-small-delete"
                 >
                   🗑️
                 </button>
@@ -2743,15 +2415,15 @@ const decimalParaHorasMinutos = (decimal) => {
           ))}
         </div>
         
-        <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", fontSize: isGalaxyTabA ? "14px" : "12px" }}>
+        <div className="actividades-counter">
           <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
         </div>
       </div>
 
       {/* MOSTRAR RESUMEN DE ACTIVIDADES SELECCIONADAS PARA EQE */}
       {Object.keys(actividadesSeleccionadas).filter(act => actividadesSeleccionadas[act]).length > 0 && (
-        <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-          <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", fontSize: isGalaxyTabA ? "16px" : "14px", color: "#2563eb" }}>
+        <div className="resumen-actividades">
+          <label style={{ fontWeight: "bold", display: "block", marginBottom: "15px", color: "#2563eb" }}>
             RESUMEN DE ACTIVIDADES SELECCIONADAS:
           </label>
           
@@ -2773,78 +2445,43 @@ const decimalParaHorasMinutos = (decimal) => {
               }, 0);
               
               return (
-                <div key={`resumen-eqe-${index}`} style={{ 
-                  marginBottom: "15px", 
-                  padding: "15px", 
-                  border: "1px solid #dee2e6", 
-                  borderRadius: "8px",
-                  backgroundColor: "#ffffff",
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-                }}>
-                  <div style={getResponsiveStyle(
-                    { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "15px", alignItems: "center" },
-                    { display: "grid", gridTemplateColumns: "1fr", gap: "12px", alignItems: "center" },
-                    { display: "grid", gridTemplateColumns: "1fr", gap: "12px", alignItems: "center" }
-                  )}>
-                    <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "16px" : "14px", color: "#1f2937" }}>
+                <div key={`resumen-eqe-${index}`} className="resumen-actividad-card">
+                  <div className="resumen-actividad-header">
+                    <div className="resumen-actividad-titulo">
                       {actividad.trim()}
                       
                       {integrantesConActividad.length > 0 && (
-                        <span style={{ 
-                          marginLeft: "10px", 
-                          fontSize: isGalaxyTabA ? "12px" : "11px", 
-                          color: "#28a745",
-                          backgroundColor: "#d4edda",
-                          padding: "2px 8px",
-                          borderRadius: "12px",
-                          display: "inline-block"
-                        }}>
+                        <span className="integrantes-badge">
                           {integrantesConActividad.length} INTEGRANTE(S)
                         </span>
                       )}
                     </div>
                     
-                    <div>
-                      <label style={{ fontSize: isGalaxyTabA ? "12px" : "11px", color: "#495057", display: "block", marginBottom: "5px" }}>
-                        PLANIFICADA:
-                      </label>
-                      <input
-                        type="number"
-                        value={totalPlanificado}
-                        readOnly
-                        style={getResponsiveStyle(
-                          { width: "100%", padding: "8px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" },
-                          { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "14px", fontWeight: "bold", color: "#0f5132" }
-                        )}
-                      />
-                    </div>
+                    <div className="resumen-actividad-cantidades">
+                      <div>
+                        <label>PLANIFICADA:</label>
+                        <input
+                          type="number"
+                          value={totalPlanificado}
+                          readOnly
+                          className="planificada-input"
+                        />
+                      </div>
 
-                    <div>
-                      <label style={{ fontSize: isGalaxyTabA ? "12px" : "11px", color: "#495057", display: "block", marginBottom: "5px" }}>
-                        ELABORADA:
-                      </label>
-                      <input
-                        type="number"
-                        value={totalElaborado}
-                        readOnly
-                        style={getResponsiveStyle(
-                          { width: "100%", padding: "8px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' },
-                          { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "14px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }
-                        )}
-                      />
+                      <div>
+                        <label>ELABORADA:</label>
+                        <input
+                          type="number"
+                          value={totalElaborado}
+                          readOnly
+                          className={`elaborada-input ${totalElaborado < totalPlanificado ? 'warning' : 'success'}`}
+                        />
+                      </div>
                     </div>
                   </div>
                   
                   {integrantesConActividad.length === 0 && (
-                    <div style={{
-                      marginTop: "12px",
-                      padding: "10px",
-                      backgroundColor: "#fff3cd",
-                      borderRadius: "6px",
-                      fontSize: isGalaxyTabA ? "12px" : "11px",
-                      color: "#856404",
-                      textAlign: "center"
-                    }}>
+                    <div className="warning-message">
                       ⚠️ Aún no hay integrantes asignados a esta actividad. Ve a la sección "INTEGRANTES Y ACTIVIDADES" para asignar.
                     </div>
                   )}
@@ -2858,16 +2495,7 @@ const decimalParaHorasMinutos = (decimal) => {
   
   {/* Mensaje cuando NO hay actividades para EQE */}
   {mostrarCheckboxes && listaActividadesEQE.length === 0 && (
-    <div style={{
-      padding: "20px",
-      textAlign: "center",
-      backgroundColor: "#fff3cd",
-      border: "1px solid #ffeeba",
-      borderRadius: "8px",
-      color: "#856404",
-      fontSize: isGalaxyTabA ? "14px" : "12px",
-      marginTop: "15px"
-    }}>
+    <div className="empty-actividades-message">
       ⚠️ No se encontraron actividades para el producto {form.codigo_producto}. 
       Puedes agregar actividades manualmente en el campo de arriba.
     </div>
@@ -2887,86 +2515,49 @@ const decimalParaHorasMinutos = (decimal) => {
     }, 0);
 
     return (
-      <div key={`actividad-${index}`} style={{ 
-        marginBottom: "20px", 
-        padding: "15px", 
-        border: "1px solid #dee2e6", 
-        borderRadius: "8px",
-        backgroundColor: "#f8f9fa",
-        position: "relative"
-      }}>
+      <div key={`actividad-${index}`} className="actividad-normal-card">
         <button
           type="button"
           onClick={() => eliminarDetalleActividad(index)}
-          title="Eliminar actividad"
-          style={getResponsiveStyle(
-            { position: "absolute", top: "10px", right: "10px", padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" },
-            { position: "absolute", top: "10px", right: "10px", padding: "10px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold", minHeight: "44px" }
-          )}
+          className="btn-eliminar-actividad"
         >
           ❌ Eliminar
         </button>
-        <div style={getResponsiveStyle(
-          { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" },
-          { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" },
-          { display: "grid", gridTemplateColumns: "1fr", gap: "15px", alignItems: "center", paddingRight: "0" }
-        )}>
-          <div style={{ fontWeight: "bold", fontSize: isGalaxyTabA ? "18px" : "16px" }}>
+        <div className="actividad-normal-header">
+          <div className="actividad-normal-titulo">
             {actividad.trim()}
             {integrantesConActividad.length > 0 && (
-              <span style={{ 
-                marginLeft: "10px", 
-                fontSize: isGalaxyTabA ? "14px" : "12px", 
-                color: "#28a745",
-                backgroundColor: "#d4edda",
-                padding: "2px 8px",
-                borderRadius: "12px"
-              }}>
+              <span className="integrantes-badge">
                 {integrantesConActividad.length} INTEGRANTE(S)
               </span>
             )}
           </div>
           
-          <div>
-            <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
-              PLANIFICADA TOTAL:
-            </label>
-            <input
-              type="number"
-              value={totalPlanificado}
-              readOnly
-              style={getResponsiveStyle(
-                { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" },
-                { width: "100%", padding: "12px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "14px", fontWeight: "bold", color: "#0f5132" }
-              )}
-            />
-          </div>
+          <div className="actividad-normal-cantidades">
+            <div>
+              <label>PLANIFICADA TOTAL:</label>
+              <input
+                type="number"
+                value={totalPlanificado}
+                readOnly
+                className="planificada-input"
+              />
+            </div>
 
-          <div>
-            <label style={{ fontSize: isGalaxyTabA ? "14px" : "12px", color: "#495057", display: "block", marginBottom: "5px" }}>
-              ELABORADA TOTAL:
-            </label>
-            <input
-              type="number"
-              value={totalElaborado}
-              readOnly
-              style={getResponsiveStyle(
-                { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' },
-                { width: "100%", padding: "12px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "14px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }
-              )}
-            />
+            <div>
+              <label>ELABORADA TOTAL:</label>
+              <input
+                type="number"
+                value={totalElaborado}
+                readOnly
+                className={`elaborada-input ${totalElaborado < totalPlanificado ? 'warning' : 'success'}`}
+              />
+            </div>
           </div>
         </div>
 
         {integrantesConActividad.length > 0 && (
-          <div style={{
-            marginTop: "10px",
-            padding: "10px",
-            backgroundColor: "#e9ecef",
-            border: "1px solid #ced4da",
-            borderRadius: "4px",
-            fontSize: isGalaxyTabA ? "14px" : "12px"
-          }}>
+          <div className="distribucion-info">
             <strong>DISTRIBUCIÓN:</strong> {integrantesConActividad.length} integrantes × horas variables
             {totalPlanificado > 0 && (
               <> | <strong>AVANCE:</strong> {Math.round((totalElaborado/totalPlanificado)*100)}%</>
@@ -2979,13 +2570,9 @@ const decimalParaHorasMinutos = (decimal) => {
 
   {/* INPUT Y BOTÓN PARA AGREGAR NUEVO DETALLE (solo para productos normales) */}
   {!mostrarCheckboxes && (
-    <div style={getResponsiveStyle(
-      { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", gap: "10px", alignItems: "flex-end" },
-      { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" },
-      { marginTop: "20px", padding: "15px", backgroundColor: "#f8fafc", border: "1px dashed #0284c7", borderRadius: "8px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch" }
-    )}>
+    <div className="nueva-actividad-panel">
       <div style={{ flex: 1 }}>
-        <label style={{ display: "block", fontSize: isGalaxyTabA ? "14px" : "12px", fontWeight: "600", marginBottom: "5px", color: "#1f2937" }}>
+        <label style={{ display: "block", fontWeight: "600", marginBottom: "5px", color: "#1f2937" }}>
           NUEVA ACTIVIDAD:
         </label>
         <input
@@ -2994,19 +2581,12 @@ const decimalParaHorasMinutos = (decimal) => {
           onChange={(e) => setNuevoDetalleActividad(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && agregarDetalleActividad()}
           placeholder="Escribe una nueva actividad y presiona Enter o haz clic en Agregar..."
-          style={getResponsiveStyle(
-            { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "12px", fontWeight: "500" },
-            { width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "14px", fontWeight: "500" }
-          )}
         />
       </div>
       <button
         type="button"
         onClick={agregarDetalleActividad}
-        style={getResponsiveStyle(
-          { padding: "10px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "13px", fontWeight: "600", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "6px" },
-          { padding: "12px 20px", backgroundColor: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: "600", minHeight: "48px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }
-        )}
+        className="btn-add-actividad"
       >
         <span style={{ fontSize: "16px" }}>➕</span> Agregar Actividad
       </button>
@@ -3024,20 +2604,9 @@ const decimalParaHorasMinutos = (decimal) => {
             <label> NOMBRES Y CARGOS DE INTEGRANTES CON SUS ACTIVIDADES: </label>
             
             {integrantes.map((integrante, integranteIndex) => (
-              <div key={integrante.id ?? integranteIndex} style={{ 
-                marginBottom: "30px", 
-                padding: "20px", 
-                border: "1px solid #dee2e6", 
-                borderRadius: "8px",
-                backgroundColor: integranteIndex % 2 === 0 ? "#f8f9fa" : "#ffffff",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-              }}>
-                <div style={getResponsiveStyle(
-                  { display: "grid", gridTemplateColumns: "auto 2fr 1fr auto", gap: 10, marginBottom: 20, alignItems: "center", backgroundColor: "#e9ecef", padding: "10px", borderRadius: "6px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 20, backgroundColor: "#e9ecef", padding: "10px", borderRadius: "6px" },
-                  { display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 20, backgroundColor: "#e9ecef", padding: "10px", borderRadius: "6px" }
-                )}>
-                  <span style={{ fontSize: isGalaxyTabA ? "20px" : "16px", textAlign: "center" }}>👤</span>
+              <div key={integrante.id ?? integranteIndex} className="integrante-card">
+                <div className="integrante-header">
+                  <span className="integrante-icon">👤</span>
           
                   <input 
                     type="text" 
@@ -3066,19 +2635,11 @@ const decimalParaHorasMinutos = (decimal) => {
                       });
                     }}
                     placeholder="ESCRIBE EL NOMBRE DEL INTEGRANTE..."
-                    style={getResponsiveStyle(
-                      { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "16px" },
-                      { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "18px" }
-                    )}
                   />
             
                   <select
                     value={integrante.cargo}
                     onChange={(e) => actualizarCargoIntegrante(integranteIndex, e.target.value)}
-                    style={getResponsiveStyle(
-                      { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", cursor: "pointer" },
-                      { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", cursor: "pointer", fontSize: "14px" }
-                    )}
                   >
                     <option value="LÍDER">LÍDER</option>
                     <option value="COSTURERA/O">COSTURERA/O</option>
@@ -3090,25 +2651,14 @@ const decimalParaHorasMinutos = (decimal) => {
                   <button 
                     type="button" 
                     onClick={() => eliminarIntegrante(integranteIndex)} 
-                    title="Eliminar integrante"
-                    style={getResponsiveStyle(
-                      { padding: "8px 12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" },
-                      { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", minHeight: "44px", fontSize: "14px" }
-                    )}
+                    className="btn-eliminar-integrante"
                   >
                     ❌ ELIMINAR
                   </button>
                 </div>
 
                 {integrante.cargo === "OTRO" && (
-                  <div style={{
-                    padding:"10px",
-                    marginLeft: isGalaxyTabA ? "0" : "30px",
-                    marginBottom: "15px",
-                    backgroundColor: "#fff3cd",
-                    border: "1px solid #ffeeba",
-                    borderRadius: "4px"
-                  }}>
+                  <div className="cargo-otro-input">
                     <input
                       type="text"
                       value={integrante.cargoOtro || ""}
@@ -3122,33 +2672,16 @@ const decimalParaHorasMinutos = (decimal) => {
                         setIntegrantes(nuevosIntegrantes);
                       }}
                       placeholder="ESCRIBA EL CARGO CORRESPONDIENTE"
-                      style={getResponsiveStyle(
-                        { width: "100%", padding: "8px", border: "1px solid #007bff", borderRadius: "4px", fontSize: "14px" },
-                        { width: "100%", padding: "12px", border: "1px solid #007bff", borderRadius: "4px", fontSize: "16px" }
-                      )}  
                       autoFocus
                     />
                   </div>
                 )}
 
-                <div style={{ marginLeft: isGalaxyTabA ? "0" : "20px" }}>
-                  <h4 style={{ 
-                    marginBottom: "15px", 
-                    fontSize: isGalaxyTabA ? "18px" : "16px", 
-                    color: "#495057",
-                    borderBottom: "2px solid #28a745",
-                    paddingBottom: "5px",
-                    display: "inline-block"
-                  }}>
-                    Actividades asignadas:
-                  </h4>
+                <div className="actividades-asignadas">
+                  <h4>Actividades asignadas:</h4>
           
                   {(actividadesIntegrantes[`integrante_${integranteIndex}`]?.actividades || []).map((actividad, actividadIndex) => (
-                    <div key={actividadIndex} style={getResponsiveStyle(
-                      { display: "grid", gridTemplateColumns: "1.2fr 0.6fr 0.8fr 0.8fr 1.6fr auto", gap: "10px", marginBottom: "10px", alignItems: "center", backgroundColor: "#f5f5f5", padding: "10px", borderRadius: "4px", border: "1px solid #dee2e6" },
-                      { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "10px", backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "4px", border: "1px solid #dee2e6" },
-                      { display: "grid", gridTemplateColumns: "1fr", gap: "10px", marginBottom: "10px", backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "4px", border: "1px solid #dee2e6" }
-                    )}>
+                    <div key={actividadIndex} className="actividad-asignada-row">
                       <select
                         value={actividad.actividad}
                         onChange={async (e) => {
@@ -3168,9 +2701,9 @@ const decimalParaHorasMinutos = (decimal) => {
                               const cantidadBase = response.data.cantidad_por_hora;
                               setActividadesConHoras(prev => {
                                 const nuevas = [...prev];
-                                const index = nuevas.findIndex(a => a.actividad === actividadSeleccionada);
-                                if (index >= 0) {
-                                  nuevas[index] = { ...nuevas[index], cantidad_base: cantidadBase };
+                                const idx = nuevas.findIndex(a => a.actividad === actividadSeleccionada);
+                                if (idx >= 0) {
+                                  nuevas[idx] = { ...nuevas[idx], cantidad_base: cantidadBase };
                                 } else {
                                   nuevas.push({ actividad: actividadSeleccionada, cantidad_base: cantidadBase });
                                 }
@@ -3181,10 +2714,6 @@ const decimalParaHorasMinutos = (decimal) => {
                             }
                           }
                         }}
-                        style={getResponsiveStyle(
-                          { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", fontSize: "11px" },
-                          { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", fontSize: "14px" }
-                        )}
                       >
                         <option value="">SELECCIONE ACTIVIDAD...</option>
                         {mostrarCheckboxes 
@@ -3207,7 +2736,6 @@ const decimalParaHorasMinutos = (decimal) => {
                         placeholder="HH:MM"
                         readOnly={!manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base}
                         onChange={(e) => {
-                        // Solo permitir edición manual si no está bloqueado
                         const esBloqueado = !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && 
                          actividad.cantidad_planificada && 
                          actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base;
@@ -3220,13 +2748,7 @@ const decimalParaHorasMinutos = (decimal) => {
                         }));
                       }
                     }}
-                    style={{
-                      ...getResponsiveStyle(
-                        { padding: "8px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "11px", fontWeight: "bold", backgroundColor: !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "#e9ecef" : "#ffffff" },
-                        { padding: "12px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "14px", fontWeight: "bold", backgroundColor: !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "#e9ecef" : "#ffffff" }
-                      ),
-                      cursor: !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "not-allowed" : "text"
-                    }}
+                    className={!manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "readonly-field" : ""}
                     />
 
                       <input
@@ -3241,7 +2763,6 @@ const decimalParaHorasMinutos = (decimal) => {
     
                           let horasPersona = '';
                           if (!esManualHoras && cantidadPlanificada && cantidadBase) {
-                          // Usar la función externa decimalParaHorasMinutos
                             horasPersona = decimalParaHorasMinutos(parseFloat(cantidadPlanificada) / cantidadBase);
                           } else if (esManualHoras) {
                             horasPersona = actividad.horas_persona;
@@ -3254,10 +2775,7 @@ const decimalParaHorasMinutos = (decimal) => {
                           }
                         }}
                         placeholder="CANT. PLANIF."
-                        style={getResponsiveStyle(
-                          { padding: "8px", border: "1px solid #28a745", borderRadius: "4px", width: "100%", fontSize: "11px", fontWeight: "bold" },
-                          { padding: "12px", border: "1px solid #28a745", borderRadius: "4px", width: "100%", fontSize: "14px", fontWeight: "bold" }
-                        )}
+                        className="planificada-input"
                       />
 
                       <input
@@ -3268,10 +2786,6 @@ const decimalParaHorasMinutos = (decimal) => {
                           actualizarActividadIntegrante(integranteIndex, actividadIndex, "cantidad_elaborada", e.target.value);
                         }}
                         placeholder="CANT. ELABOR."
-                        style={getResponsiveStyle(
-                          { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", width: "100%", fontSize: "11px" },
-                          { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", width: "100%", fontSize: "14px" }
-                        )}
                       />
 
                       <textarea 
@@ -3281,19 +2795,12 @@ const decimalParaHorasMinutos = (decimal) => {
                         onChange={(e) => {
                           actualizarActividadIntegrante(integranteIndex, actividadIndex, "observaciones_integrante", e.target.value);
                         }}
-                        style={getResponsiveStyle(
-                          { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "11px" },
-                          { padding: "12px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "14px" }
-                        )}
                       />
 
                       <button
                         type="button"
                         onClick={() => eliminarActividadDeIntegrante(integranteIndex, actividadIndex)}
-                        style={getResponsiveStyle(
-                          { padding: "8px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px" },
-                          { padding: "12px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", minHeight: "44px" }
-                        )}
+                        className="btn-small-delete"
                       >
                         🗑️
                       </button>
@@ -3303,10 +2810,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   <button
                     type="button"
                     onClick={() => agregarActividadAIntegrante(integranteIndex)}
-                    style={getResponsiveStyle(
-                      { marginTop: "15px", padding: "10px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold" },
-                      { marginTop: "15px", padding: "12px 20px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold", minHeight: "48px", width: "100%" }
-                    )}
+                    className="btn-agregar-actividad"
                   >
                     ➕ AGREGAR ACTIVIDAD A {integrante.nombre ? integrante.nombre.split(' ')[0] : 'INTEGRANTE'}
                   </button>
@@ -3314,15 +2818,11 @@ const decimalParaHorasMinutos = (decimal) => {
               </div>
             ))}
         
-            <div style={{ marginTop: "20px", textAlign: "center" }}>
+            <div className="text-center">
               <button 
                 type="button" 
                 className="btn" 
                 onClick={agregarIntegrante}
-                style={getResponsiveStyle(
-                  { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold" },
-                  { padding: "14px 24px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "18px", fontWeight: "bold", minHeight: "48px" }
-                )}
               >
                 ➕ Agregar Nuevo Integrante
               </button>
@@ -3335,11 +2835,11 @@ const decimalParaHorasMinutos = (decimal) => {
         </div>
         <div className="cabecera4">
           <div className="form-group">
-            <textarea placeholder="INGRESA LAS OBSERVACIONES QUE TENGAS PARA EL REGISTRO... (OPCIONAL)" className="textObs" id="observaciones" name="observaciones" rows={4} value={form.observaciones} onChange={onChange} style={isGalaxyTabA ? { fontSize: "14px", padding: "12px" } : {}}/>
+            <textarea placeholder="INGRESA LAS OBSERVACIONES QUE TENGAS PARA EL REGISTRO... (OPCIONAL)" className="textObs" id="observaciones" name="observaciones" rows={4} value={form.observaciones} onChange={onChange} />
           </div>
         </div>
         
-        <button type="submit" className="btn-guardar" style={isGalaxyTabA ? { padding: "16px", fontSize: "16px", minHeight: "56px" } : {}}>
+        <button type="submit" className="btn-guardar">
           GUARDAR REGISTRO DE PRODUCCIÓN
         </button>
       </form>
