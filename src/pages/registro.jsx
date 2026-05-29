@@ -1437,6 +1437,20 @@ useEffect(() => {
     pdf.save("registro.pdf");
   }*/}
 
+  // Agrega esta función ANTES del return, junto a las otras funciones
+const decimalParaHorasMinutos = (decimal) => {
+  if (isNaN(decimal) || decimal <= 0) return '';
+  const horas = Math.floor(decimal);
+  const minutos = Math.round((decimal - horas) * 60);
+  if (minutos >= 60) {
+    return `${horas + 1}:00`;
+  }
+  if (minutos === 0) {
+    return `${horas}:00`;
+  }
+  return `${horas}:${minutos.toString().padStart(2, '0')}`;
+};
+
   return (
     <div 
       id="formulario" 
@@ -3188,21 +3202,32 @@ useEffect(() => {
                       </select>
 
                       <input
-                        type="number"
+                        type="text"
                         value={actividad.horas_persona || ''}
-                        placeholder="HORAS"
+                        placeholder="HH:MM"
+                        readOnly={!manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base}
                         onChange={(e) => {
+                        // Solo permitir edición manual si no está bloqueado
+                        const esBloqueado = !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && 
+                         actividad.cantidad_planificada && 
+                         actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base;
+    
+                        if (!esBloqueado) {
                           actualizarActividadIntegrante(integranteIndex, actividadIndex, "horas_persona", e.target.value);
                           setManualHorasPersona(prev => ({
-                            ...prev,
-                            [`${integranteIndex}_${actividadIndex}`]: true
-                          }));
-                        }}
-                        style={getResponsiveStyle(
-                          { padding: "8px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "11px", fontWeight: "bold", backgroundColor: "#e9ecef" },
-                          { padding: "12px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "14px", fontWeight: "bold", backgroundColor: "#e9ecef" }
-                        )}
-                      />
+                          ...prev,
+                          [`${integranteIndex}_${actividadIndex}`]: true
+                        }));
+                      }
+                    }}
+                    style={{
+                      ...getResponsiveStyle(
+                        { padding: "8px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "11px", fontWeight: "bold", backgroundColor: !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "#e9ecef" : "#ffffff" },
+                        { padding: "12px", border: "1px solid #007bff", borderRadius: "4px", width: "100%", fontSize: "14px", fontWeight: "bold", backgroundColor: !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "#e9ecef" : "#ffffff" }
+                      ),
+                      cursor: !manualHorasPersona[`${integranteIndex}_${actividadIndex}`] && actividad.cantidad_planificada && actividadesConHoras.find(a => a.actividad === actividad.actividad)?.cantidad_base ? "not-allowed" : "text"
+                    }}
+                    />
 
                       <input
                         type="number"
@@ -3213,13 +3238,17 @@ useEffect(() => {
                           const actividadBase = actividadesConHoras.find(a => a.actividad === actividad.actividad);
                           const cantidadBase = parseFloat(actividadBase?.cantidad_base);
                           const esManualHoras = manualHorasPersona[`${integranteIndex}_${actividadIndex}`];
-                          
-                          const horasPersona = !esManualHoras && cantidadPlanificada && cantidadBase
-                            ? (parseFloat(cantidadPlanificada) / cantidadBase).toFixed(2)
-                            : (esManualHoras ? actividad.horas_persona : '');
+    
+                          let horasPersona = '';
+                          if (!esManualHoras && cantidadPlanificada && cantidadBase) {
+                          // Usar la función externa decimalParaHorasMinutos
+                            horasPersona = decimalParaHorasMinutos(parseFloat(cantidadPlanificada) / cantidadBase);
+                          } else if (esManualHoras) {
+                            horasPersona = actividad.horas_persona;
+                          }
 
                           actualizarActividadIntegrante(integranteIndex, actividadIndex, "cantidad_planificada", cantidadPlanificada);
-                          
+    
                           if (!esManualHoras && horasPersona) {
                             actualizarActividadIntegrante(integranteIndex, actividadIndex, "horas_persona", horasPersona);
                           }

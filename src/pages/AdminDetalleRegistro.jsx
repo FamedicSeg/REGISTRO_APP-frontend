@@ -7,7 +7,14 @@ import "../styles/detallesRegistro.css";
 
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
   const handleChange = (e) => {
-    onChange(campo, e.target.value);
+    let valor = e.target.value;
+    // Convertir a mayúsculas para ciertos campos
+    if (campo === 'codigo_producto' || campo === 'responsable' || campo === 'supervisor' || 
+    campo === 'cliente' || campo === 'lotePrincipal' || campo === 'loteSecundario' || 
+    type === 'text' || type === 'textarea') {
+      valor = valor.toUpperCase();
+    }
+    onChange(campo, valor);
   };
 
   return (
@@ -23,11 +30,12 @@ const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, o
             borderRadius: 8,
             border: "1px solid #d1d5db",
             width: "100%",
-            fontSize: 14
+            fontSize: 14,
+            textTransform: "uppercase"
           }}
         />
       ) : (
-        <div style={{ background: "#f3f4f6", padding: "8px 12px", borderRadius: 8, fontSize: 14 }}>
+        <div style={{ background: "#f3f4f6", padding: "8px 12px", borderRadius: 8, fontSize: 14, whiteSpace: "pre-wrap", textTransform: 'uppercase' }}>
           {value || "-"}
         </div>
       )}
@@ -70,10 +78,34 @@ const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, o
   );
 };
 
-// Componente para item de array - Simplificado CON PRESERVACIÓN DE CAMPOS
-const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdicion, puedeEditar }) => {
+// Componente para item de array - CON AUTOMATIZACIÓN
+const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdicion, puedeEditar, listaInsumos = [] }) => {
+  const [loadingDesc, setLoadingDesc] = useState(false);
+
   const handleChange = (campo, valor) => {
-    onUpdate(index, campo, valor);
+    let valorFinal = valor.toUpperCase();
+    // Convertir a mayúsculas campos de texto
+    if (campo === 'tipo_insumo' || campo === 'descripcion_insumo' || campo === 'lote_insumo' ||
+        campo === 'entrega' || campo === 'recepcion' || campo === 'codigo_insumo' ||
+        campo === 'descrip_cant_insumo' || campo === 'lote') {
+      valorFinal = valor.toUpperCase();
+    }
+    onUpdate(index, campo, valorFinal);
+  };
+
+  const buscarDescripcion = async (codigo) => {
+    if (!codigo || codigo.trim() === "") return;
+    setLoadingDesc(true);
+    try {
+      const { data } = await api.get("/productos/detalle", {
+        params: { codigo: codigo.trim() }
+      });
+      onUpdate(index, "descripcion_insumo", data?.descripcion?.toUpperCase() || "");
+    } catch (error) {
+      console.error("Error obteniendo descripción:", error);
+    } finally {
+      setLoadingDesc(false);
+    }
   };
 
   return (
@@ -115,29 +147,60 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
               {campo.replace(/_/g, ' ').toUpperCase()}
             </label>
             {modoEdicion && puedeEditar ? (
-              <input
-                value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
-                onChange={(e) => handleChange(campo, e.target.value)}
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 6,
-                  border: "1px solid #d1d5db",
-                  width: "100%",
-                  fontSize: 13
-                }}
-                placeholder={`Ingresa ${campo}`}
-              />
+              campo === 'tipo_insumo' || campo === 'codigo_insumo' ? (
+                <>
+                  <input
+                    list={`insumos-list-${index}`}
+                    value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                    onChange={(e) => handleChange(campo, e.target.value)}
+                    onBlur={() => buscarDescripcion(item[campo])}
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                      width: "100%",
+                      fontSize: 13,
+                      textTransform: "uppercase"
+                    }}
+                    placeholder={`Ingresa ${campo}`}
+                  />
+                  <datalist id={`insumos-list-${index}`}>
+                    <option value="">SELECCIONE UN INSUMO...</option>
+                    {listaInsumos.map(insumo => (
+                      <option key={insumo.codigo || insumo} value={insumo.codigo || insumo}>
+                        {insumo.codigo || insumo} - {insumo.descripcion || ""}
+                      </option>
+                    ))}
+                  </datalist>
+                </>
+              ) : (
+                <input
+                  value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    border: "1px solid #d1d5db",
+                    width: "100%",
+                    fontSize: 13,
+                    textTransform: campo === 'descripcion_insumo' ? 'uppercase' : 'none'
+                  }}
+                  placeholder={`Ingresa ${campo}`}
+                />
+              )
             ) : (
               <div style={{
                 padding: "6px 10px",
                 background: "white",
                 borderRadius: 6,
                 border: "1px solid #e5e7eb",
-                fontSize: 13
+                fontSize: 13,
+                textTransform: 'uppercase'
               }}>
                 {item[campo] !== undefined && item[campo] !== null ? item[campo] : "-"}
               </div>
             )}
+            {loadingDesc && <span style={{ fontSize: 10, color: "#666" }}>Cargando...</span>}
           </div>
         ))}
       </div>
@@ -155,7 +218,8 @@ const ArrayDisplay = ({
   onItemsChange,
   camposEditables = [],
   renderItem,
-  backgroundColor = "#ffffff"
+  backgroundColor = "#ffffff",
+  listaInsumos = []
 }) => {
   const agregarItem = useCallback(() => {
     const nuevoItem = {
@@ -232,6 +296,7 @@ const ArrayDisplay = ({
                 onDelete={eliminarItem}
                 modoEdicion={modoEdicion}
                 puedeEditar={puedeEditar}
+                listaInsumos={listaInsumos}
               />
             ) : (
               <div key={item.id || `item-${index}`} style={{ 
@@ -267,6 +332,9 @@ export default function AdminDetalleRegistro() {
   const [modoEdicion, setModoEdicion] = useState(modoInicial);
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [listaInsumos, setListaInsumos] = useState([]);
+  const [actividadesConHoras, _setActividadesConHoras] = useState([]);
+  const [manualHorasPersona, setManualHorasPersona] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const rol = user?.rol || "";
@@ -306,6 +374,53 @@ export default function AdminDetalleRegistro() {
     { value: "OTRA", label: "OTRA" }
   ];
 
+  // Función para convertir decimal a HH:MM
+  const decimalParaHorasMinutos = (decimal) => {
+    if (isNaN(decimal) || decimal <= 0) return '';
+    const horas = Math.floor(decimal);
+    const minutos = Math.round((decimal - horas) * 60);
+    if (minutos >= 60) return `${horas + 1}:00`;
+    if (minutos === 0) return `${horas}:00`;
+    return `${horas}:${minutos.toString().padStart(2, '0')}`;
+  };
+
+  // Función para cargar cantidad por hora de actividad
+  const cargarCantidadPorHora = useCallback(async (actividad) => {
+    if (!actividad) return null;
+    try {
+      const response = await api.get("/actividad/cantidadPorHora", {
+        params: { actividad }
+      });
+      return response.data.cantidad_por_hora;
+    } catch (error) {
+      console.error("Error cargando cantidad base:", error);
+      return null;
+    }
+  }, []);
+
+  // Función para cargar insumos por producto
+  const cargarInsumosPorProducto = useCallback(async (codigoProducto) => {
+    if (!codigoProducto || codigoProducto.length < 3) {
+      setListaInsumos([]);
+      return;
+    }
+    try {
+      const { data } = await api.get("/insumos/producto", {
+        params: { codigo: codigoProducto },
+      });
+      let lista = [];
+      if (data && Array.isArray(data.insumos)) {
+        lista = data.insumos;
+      } else if (Array.isArray(data)) {
+        lista = data;
+      }
+      setListaInsumos(lista);
+    } catch (error) {
+      console.error("Error cargando insumos:", error);
+      setListaInsumos([]);
+    }
+  }, []);
+
   const getPanelRoute = useCallback(() => {
     switch(rol) {
       case "SUPERVISOR": return "/supervisor";
@@ -316,20 +431,13 @@ export default function AdminDetalleRegistro() {
     }
   }, [rol]);
 
-  const puedeEditar = useMemo(() => 
-    rol === "LÍDER",
-  [rol]);
-
-  const puedeEliminar = useMemo(() => 
-    rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
-  [rol]);
-
+  const puedeEditar = useMemo(() => rol === "LÍDER", [rol]);
+  const puedeEliminar = useMemo(() => rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN", [rol]);
   const isSupervisor = rol === "SUPERVISOR";
-  const _isAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const estadoPendienteAnalista = registro?.estado === "pendiente_ANALISTA_PRODUCCION";
   const estadoAprobado = registro?.estado?.includes("aprobado");
 
-  // Función para formatear texto a mayúsculas manteniendo espacios
+  // Función para formatear texto a mayúsculas
   const formatearMayusculas = (texto) => {
     if (!texto) return texto;
     return texto.toUpperCase();
@@ -338,15 +446,7 @@ export default function AdminDetalleRegistro() {
   // Función para parsear arrays que vienen como JSON strings
   const parsearArrays = (datos) => {
     const datosLimpios = { ...datos };
-
-    // Arrays que pueden venir como JSON strings
-    const camposArray = [
-      'insumos',
-      'etiquetas',
-      'integrantes',
-      'reposicion_no_conforme',
-      'maquinarias'
-    ];
+    const camposArray = ['insumos', 'etiquetas', 'integrantes', 'reposicion_no_conforme', 'maquinarias'];
 
     camposArray.forEach(campo => {
       if (datosLimpios[campo]) {
@@ -371,31 +471,27 @@ export default function AdminDetalleRegistro() {
       }
     });
 
-    // Manejar detalles_actividades - Mantener como array de strings
+    // Manejar detalles_actividades
     if (datosLimpios.detalles_actividades) {
       if (typeof datosLimpios.detalles_actividades === 'string') {
-        // Si es un string JSON válido
         if (datosLimpios.detalles_actividades.startsWith('[') || datosLimpios.detalles_actividades.startsWith('{')) {
           try {
             const parsed = JSON.parse(datosLimpios.detalles_actividades);
             datosLimpios.detalles_actividades = Array.isArray(parsed) ? parsed : [parsed];
           } catch (error) {
-            // Si no es JSON, dividir por líneas y convertir a mayúsculas
             datosLimpios.detalles_actividades = datosLimpios.detalles_actividades
               .split('\n')
               .map(d => formatearMayusculas(d.trim()))
               .filter(d => d);
-              console.error('Error parseando detalles_actividades, se tratará como texto plano:', error);
+            console.error('Error parseando detalles_actividades:', error);
           }
         } else {
-          // Texto plano con saltos de línea - convertir a mayúsculas
           datosLimpios.detalles_actividades = datosLimpios.detalles_actividades
             .split('\n')
             .map(d => formatearMayusculas(d.trim()))
             .filter(d => d);
         }
       } else if (Array.isArray(datosLimpios.detalles_actividades)) {
-        // Convertir cada elemento a mayúsculas
         datosLimpios.detalles_actividades = datosLimpios.detalles_actividades.map(d => 
           typeof d === 'string' ? formatearMayusculas(d.trim()) : d
         );
@@ -415,7 +511,6 @@ export default function AdminDetalleRegistro() {
           datosLimpios.actividades_por_integrante = {};
         }
       }
-      // Si es array, convertir a objeto
       if (Array.isArray(datosLimpios.actividades_por_integrante)) {
         const obj = {};
         datosLimpios.actividades_por_integrante.forEach((item, idx) => {
@@ -423,23 +518,13 @@ export default function AdminDetalleRegistro() {
         });
         datosLimpios.actividades_por_integrante = obj;
       }
-      // Asegurar que cada integrante tenga su array de actividades y convertir nombres a mayúsculas
       if (typeof datosLimpios.actividades_por_integrante === 'object') {
         Object.keys(datosLimpios.actividades_por_integrante).forEach(key => {
           const integrante = datosLimpios.actividades_por_integrante[key];
           if (integrante) {
-            // Convertir nombre a mayúsculas
-            if (integrante.nombre) {
-              integrante.nombre = formatearMayusculas(integrante.nombre);
-            }
-            // Convertir cargo a mayúsculas
-            if (integrante.cargo) {
-              integrante.cargo = formatearMayusculas(integrante.cargo);
-            }
-            if (!integrante.actividades) {
-              integrante.actividades = [];
-            }
-            // Convertir nombres de actividades a mayúsculas
+            if (integrante.nombre) integrante.nombre = formatearMayusculas(integrante.nombre);
+            if (integrante.cargo) integrante.cargo = formatearMayusculas(integrante.cargo);
+            if (!integrante.actividades) integrante.actividades = [];
             integrante.actividades = integrante.actividades.map(act => ({
               ...act,
               actividad: act.actividad ? formatearMayusculas(act.actividad) : act.actividad
@@ -460,12 +545,12 @@ export default function AdminDetalleRegistro() {
         setCargando(true);
         const res = await api.get(`/registros/${id}`);
         const datosRegistro = res.data.registro || res.data;
-
-        // Parsear todos los arrays que vienen como JSON strings
         const datosParsados = parsearArrays(datosRegistro);
-
         setRegistro(datosParsados);
-        setForm(JSON.parse(JSON.stringify(datosParsados))); // Deep copy para evitar referencias
+        setForm(JSON.parse(JSON.stringify(datosParsados)));
+        if (datosParsados.codigo_producto) {
+          await cargarInsumosPorProducto(datosParsados.codigo_producto);
+        }
       } catch(error) {
         console.error("Error cargando registro:", error);
         alert("Error al cargar el registro");
@@ -474,7 +559,7 @@ export default function AdminDetalleRegistro() {
       }
     };
     cargarRegistro();
-  }, [id]);
+  }, [id, cargarInsumosPorProducto]);
 
   useEffect(() => {
     if (modoInicial && !puedeEditar && registro) {
@@ -483,10 +568,16 @@ export default function AdminDetalleRegistro() {
     }
   }, [modoInicial, puedeEditar, registro, id, navigate]);
 
+  // Cargar insumos cuando cambia el código de producto
+  useEffect(() => {
+    if (form.codigo_producto) {
+      cargarInsumosPorProducto(form.codigo_producto);
+    }
+  }, [form.codigo_producto, cargarInsumosPorProducto]);
+
   const handleChange = useCallback((campo, valor) => {
     setForm(prev => {
       const nuevoForm = { ...prev, [campo]: valor };
-      // Cuando se editen lotePrincipal o loteSecundario, recalcular loteUnido
       if (campo === 'lotePrincipal' || campo === 'loteSecundario') {
         nuevoForm.loteUnido = (nuevoForm.lotePrincipal || "") + (nuevoForm.loteSecundario || "");
       }
@@ -525,11 +616,8 @@ export default function AdminDetalleRegistro() {
   const prepararDatosParaEnvio = useCallback((estadoFinal) => {
     const estadoAEnviar = estadoFinal ?? (registro.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro.estado);
     
-    // Preparar detalles_actividades - asegurar que sea un array
     let detallesParaEnviar = form.detalles_actividades;
-    if (!detallesParaEnviar) {
-      detallesParaEnviar = [];
-    }
+    if (!detallesParaEnviar) detallesParaEnviar = [];
     if (!Array.isArray(detallesParaEnviar)) {
       if (typeof detallesParaEnviar === 'string') {
         try {
@@ -541,10 +629,8 @@ export default function AdminDetalleRegistro() {
         detallesParaEnviar = [];
       }
     }
-    // Convertir a JSON string para enviar
     detallesParaEnviar = JSON.stringify(detallesParaEnviar);
     
-    // Preparar actividades_por_integrante para enviar como JSON string
     let actividadesParaEnviar = form.actividades_por_integrante;
     if (typeof actividadesParaEnviar === 'object') {
       actividadesParaEnviar = JSON.stringify(actividadesParaEnviar);
@@ -562,13 +648,13 @@ export default function AdminDetalleRegistro() {
       reposicion_no_conforme: validarArray(form.reposicion_no_conforme),
       maquinarias: validarArray(form.maquinarias),
       detalles_actividades: detallesParaEnviar,
-      actividades_por_integrante: actividadesParaEnviar
+      actividades_por_integrante: actividadesParaEnviar,
+      observaciones: form.observaciones
     };
   }, [form, registro, user.rol, user.nombre, validarArray]);
 
   const actualizarEstadoRegistro = async (nuevoEstado, confirmMessage) => {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
-
     try {
       setGuardando(true);
       const datosAEnviar = prepararDatosParaEnvio(nuevoEstado);
@@ -580,31 +666,19 @@ export default function AdminDetalleRegistro() {
         setForm(JSON.parse(JSON.stringify(datosParsados)));
         alert(`Registro actualizado a ${nuevoEstado}`);
       } else {
-        throw new Error("Respuesta inesperada del servidor. Por favor revisa");
+        throw new Error("Respuesta inesperada del servidor");
       }
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      let mensajeError = "Error al actualizar el estado";
-      if (error.response) {
-        mensajeError = error.response.data?.error || mensajeError;
-      } else if (error.request) {
-        mensajeError = "No se recibió respuesta del servidor";
-      } else {
-        mensajeError = error.message;
-      }
-      alert(mensajeError);
+      alert("Error al actualizar el estado");
     } finally {
       setGuardando(false);
     }
   };
 
   const eliminarRegistro = async () => {
-    const confirmar = window.confirm(
-      "⚠️ ¿Está seguro que desea eliminar este registro?\n\nEsta acción no se puede deshacer."
-    );
-
+    const confirmar = window.confirm("⚠️ ¿Está seguro que desea eliminar este registro?\n\nEsta acción no se puede deshacer.");
     if (!confirmar) return;
-
     try {
       setGuardando(true);
       const response = await api.delete(`/registros/${id}`);
@@ -616,15 +690,7 @@ export default function AdminDetalleRegistro() {
       }
     } catch (error) {
       console.error("Error eliminando registro:", error);
-      let mensajeError = "Error al eliminar el registro";
-      if (error.response) {
-        mensajeError = error.response.data?.error || mensajeError;
-      } else if (error.request) {
-        mensajeError = "No se recibió respuesta del servidor";
-      } else {
-        mensajeError = error.message;
-      }
-      alert(mensajeError);
+      alert("Error al eliminar el registro");
     } finally {
       setGuardando(false);
     }
@@ -634,9 +700,6 @@ export default function AdminDetalleRegistro() {
     try {
       setGuardando(true);
       const datosAEnviar = prepararDatosParaEnvio();
-
-      console.log("Datos a guardar:", datosAEnviar);
-
       const response = await api.put(`/registros/${id}`, datosAEnviar);
       if (response.status === 200) {
         const datosActualizados = response.data.registro || response.data;
@@ -650,35 +713,23 @@ export default function AdminDetalleRegistro() {
       }
     } catch (error) {
       console.error("Error detallado:", error);
-      let mensajeError = "Error al guardar cambios";
-      if (error.response) {
-        mensajeError = error.response.data?.error || mensajeError;
-      } else if (error.request) {
-        mensajeError = "No se recibió respuesta del servidor";
-      } else {
-        mensajeError = error.message;
-      }
-      alert(mensajeError);
+      alert("Error al guardar cambios");
     } finally {
       setGuardando(false);
     }
   };
 
-  // Función para actualizar un detalle de actividad manteniendo mayúsculas
   const actualizarDetalleActividad = (index, nuevoValor) => {
     const nuevosDetalles = [...(form.detalles_actividades || [])];
-    // Convertir a mayúsculas automáticamente
     nuevosDetalles[index] = nuevoValor.toUpperCase();
     handleArrayChange("detalles_actividades", nuevosDetalles);
   };
 
-  // Función para agregar una nueva actividad en mayúsculas
   const agregarNuevaActividad = () => {
     const nuevosDetalles = [...(form.detalles_actividades || []), ""];
     handleArrayChange("detalles_actividades", nuevosDetalles);
   };
 
-  // Función para eliminar una actividad
   const eliminarDetalleActividad = (index) => {
     const nuevosDetalles = (form.detalles_actividades || []).filter((_, i) => i !== index);
     handleArrayChange("detalles_actividades", nuevosDetalles);
@@ -713,7 +764,6 @@ export default function AdminDetalleRegistro() {
 
   return (
     <div className="registro-container" style={{ padding: 30, maxWidth: 1400, margin: "0 auto" }}>
-      {/* Header */}
       <header>
         <div className="logo-left">
           <img src={logo_safemed} alt="logo" className="logo" />
@@ -799,9 +849,10 @@ export default function AdminDetalleRegistro() {
         onItemsChange={handleArrayChange}
         camposEditables={["tipo_insumo", "descripcion_insumo", "cantidad_insumo", "lote_insumo", "entrega", "recepcion"]}
         backgroundColor="#3498db"
+        listaInsumos={listaInsumos}
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
-            <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
+            <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
             <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               <span>Cantidad: {i.cantidad_insumo}</span>
               <span>Lote: {i.lote_insumo}</span>
@@ -825,9 +876,10 @@ export default function AdminDetalleRegistro() {
         onItemsChange={handleArrayChange}
         camposEditables={["codigo_insumo", "descripcion_insumo", "cantidad", "descrip_cant_insumo", "lote", "entrega", "recepcion"]}
         backgroundColor="#3498db"
+        listaInsumos={listaInsumos}
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
-            <div style={{ fontWeight: 600, marginBottom: 5 }}>{i.codigo_insumo} — {i.descripcion_insumo}</div>
+            <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{i.codigo_insumo} — {i.descripcion_insumo}</div>
             <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               <span>Cantidad: {i.cantidad} {i.descrip_cant_insumo}</span>
               <span>Lote: {i.lote}</span>
@@ -849,11 +901,11 @@ export default function AdminDetalleRegistro() {
         puedeEditar={puedeEditar}
         items={modoEdicion ? (form.etiquetas || []) : (registro.etiquetas || [])}
         onItemsChange={handleArrayChange}
-        camposEditables={["descripcion_etiqueta", "cantidad_etiqueta", "observacion_etiqueta", "entrega_etiqueta", "recepcion_etiqueta"]}
+        camposEditables={["descripcion_etiqueta", "cantidad_etiqueta", "entrega_etiqueta", "recepcion_etiqueta"]}
         backgroundColor="#3498db"
         renderItem={(e) => (
           <div style={{ fontSize: 14 }}>
-            <div style={{ fontWeight: 600, marginBottom: 5 }}>{e.descripcion_etiqueta}</div>
+            <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{e.descripcion_etiqueta}</div>
             <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               <span>Cantidad: {e.cantidad_etiqueta}</span>
               <span>Entrega: {e.entrega_etiqueta}</span>
@@ -864,12 +916,7 @@ export default function AdminDetalleRegistro() {
       />
 
       {/* DOS COLUMNAS: CANTIDAD PRODUCTO Y CONFECCIÓN Y AUTOMÁTICAS */}
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "1fr 1fr", 
-        gap: "20px",
-        marginBottom: "20px"
-      }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
         
         {/* COLUMNA DERECHA - CONFECCIÓN Y AUTOMÁTICAS */}
         <div>
@@ -916,17 +963,10 @@ export default function AdminDetalleRegistro() {
             <h3>CANTIDAD PRODUCTO</h3>
           </div>
           <div className="card" style={{ padding: "15px" }}>
-            <div style={{ 
-              display: "flex", 
-              flexDirection: "column", 
-              gap: "15px" 
-            }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               <Campo label="ELABORADO" campo="cantidad_elaborado" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_elaborado} onChange={handleChange} />
-              
               <Campo label="PROCESO" campo="cantidad_proceso" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_proceso} onChange={handleChange} />
-              
               <Campo label="MERMA" campo="cantidad_merma" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_merma} onChange={handleChange} />
-              
               <Campo label="FECHA FINAL DE PRODUCTO TERMINADO" campo="fecha_final_producto" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha_final_producto} onChange={handleChange} />
             </div>
           </div>
@@ -943,7 +983,7 @@ export default function AdminDetalleRegistro() {
           
           const actualizarMaquinaria = (index, campo, valor) => {
             const nuevos = [...maqList];
-            nuevos[index] = { ...nuevos[index], [campo]: valor };
+            nuevos[index] = { ...nuevos[index], [campo]: campo === 'maquinaria' ? valor.toUpperCase() : valor };
             handleArrayChange("maquinarias", nuevos);
           };
 
@@ -953,12 +993,7 @@ export default function AdminDetalleRegistro() {
           };
 
           const agregarMaquinaria = () => {
-            const nuevos = [...maqList, { 
-              id: Date.now(),
-              maquinaria: "", 
-              cantidad_maquinaria: "", 
-              numero_maquinaria: [] 
-            }];
+            const nuevos = [...maqList, { id: Date.now(), maquinaria: "", cantidad_maquinaria: "", numero_maquinaria: [] }];
             handleArrayChange("maquinarias", nuevos);
           };
 
@@ -1003,9 +1038,9 @@ export default function AdminDetalleRegistro() {
                     <div>
                       <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>MAQUINARIA</span>
                       {modoEdicion && puedeEditar ? (
-                        <input type="text" value={m.maquinaria || ""} onChange={(e) => actualizarMaquinaria(i, "maquinaria", e.target.value)} style={{ marginTop: 4, padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 14 }} placeholder="Ej: Máquina de coser" />
+                        <input type="text" value={m.maquinaria || ""} onChange={(e) => actualizarMaquinaria(i, "maquinaria", e.target.value)} style={{ marginTop: 4, padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 14, textTransform: "uppercase" }} placeholder="Ej: Máquina de coser" />
                       ) : (
-                        <div style={{ marginTop: 4, fontSize: 15, fontWeight: 500 }}>{m.maquinaria || "-"}</div>
+                        <div style={{ marginTop: 4, fontSize: 15, fontWeight: 500, textTransform: "uppercase" }}>{m.maquinaria || "-"}</div>
                       )}
                     </div>
                     <div>
@@ -1034,7 +1069,7 @@ export default function AdminDetalleRegistro() {
         })()}
       </div>
 
-      {/* DETALLES DE ACTIVIDADES - VERSIÓN CORREGIDA CON MAYÚSCULAS Y ESPACIOS */}
+      {/* DETALLES DE ACTIVIDADES */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
         <h3>DETALLES DE ACTIVIDADES</h3>
       </div>
@@ -1054,7 +1089,6 @@ export default function AdminDetalleRegistro() {
             }
           }
 
-          // Asegurar que cada detalle sea un string
           detalles = detalles.map(d => typeof d === 'string' ? d : String(d || ''));
 
           if (detalles.length === 0) {
@@ -1111,95 +1145,23 @@ export default function AdminDetalleRegistro() {
                 }, 0);
 
                 return (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: "16px",
-                      background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
-                      border: "1px solid #7dd3fc",
-                      borderRadius: 8,
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-                      position: "relative"
-                    }}
-                  >
+                  <div key={idx} style={{ padding: "16px", background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)", border: "1px solid #7dd3fc", borderRadius: 8, boxShadow: "0 2px 4px rgba(0,0,0,0.04)", position: "relative" }}>
                     {modoEdicion && puedeEditar && (
-                      <button
-                        onClick={() => eliminarDetalleActividad(idx)}
-                        style={{
-                          position: "absolute",
-                          top: 10,
-                          right: 10,
-                          background: "#ef4444",
-                          border: "none",
-                          color: "white",
-                          cursor: "pointer",
-                          width: 24,
-                          height: 24,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          zIndex: 10
-                        }}
-                        title="Eliminar actividad"
-                      >
-                        ✕
-                      </button>
+                      <button onClick={() => eliminarDetalleActividad(idx)} style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }} title="Eliminar actividad">✕</button>
                     )}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-                      <div style={{ 
-                        minWidth: 28, 
-                        height: 28, 
-                        background: "#0284c7", 
-                        color: "white",
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: 600,
-                        fontSize: 12,
-                        flexShrink: 0
-                      }}>
-                        {idx + 1}
-                      </div>
+                      <div style={{ minWidth: 28, height: 28, background: "#0284c7", color: "white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>{idx + 1}</div>
                       <div style={{ flex: 1 }}>
                         {modoEdicion && puedeEditar ? (
-                          <input 
-                            type="text" 
-                            value={detalle} 
-                            onChange={(e) => actualizarDetalleActividad(idx, e.target.value)}
-                            style={{ 
-                              width: "100%", 
-                              padding: "8px 12px", 
-                              borderRadius: 6, 
-                              border: "1px solid #d1d5db", 
-                              fontSize: 15, 
-                              fontWeight: 600, 
-                              color: "#0c4a6e",
-                              textTransform: "uppercase"
-                            }}
-                            placeholder="EJ: CORTADO DE MANGAS"
-                          />
+                          <input type="text" value={detalle} onChange={(e) => actualizarDetalleActividad(idx, e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 15, fontWeight: 600, color: "#0c4a6e", textTransform: "uppercase" }} placeholder="EJ: CORTADO DE MANGAS" />
                         ) : (
-                          <div style={{ fontSize: 15, color: "#0c4a6e", fontWeight: 600, wordBreak: "break-word", textTransform: "uppercase" }}> 
-                            {detalle}
-                          </div>
+                          <div style={{ fontSize: 15, color: "#0c4a6e", fontWeight: 600, wordBreak: "break-word", textTransform: "uppercase" }}>{detalle}</div>
                         )}
                       </div>
                     </div>
-                    <div style={{ 
-                      display: "grid", 
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 12,
-                      paddingLeft: 40,
-                      fontSize: 13
-                    }}>
-                      <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}>
-                        <span style={{ color: "#1e40af", fontWeight: 600 }}>Planificada:</span> <span style={{ color: "#0c4a6e" }}>{totalPlanificado > 0 ? totalPlanificado : "-"}</span>
-                      </div>
-                      <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}>
-                        <span style={{ color: "#1e40af", fontWeight: 600 }}>Elaborada:</span> <span style={{ color: "#0c4a6e" }}>{totalElaborado > 0 ? totalElaborado : "-"}</span>
-                      </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, paddingLeft: 40, fontSize: 13 }}>
+                      <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}><span style={{ color: "#1e40af", fontWeight: 600 }}>Planificada:</span> <span style={{ color: "#0c4a6e" }}>{totalPlanificado > 0 ? totalPlanificado : "-"}</span></div>
+                      <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}><span style={{ color: "#1e40af", fontWeight: 600 }}>Elaborada:</span> <span style={{ color: "#0c4a6e" }}>{totalElaborado > 0 ? totalElaborado : "-"}</span></div>
                     </div>
                   </div>
                 );
@@ -1215,10 +1177,8 @@ export default function AdminDetalleRegistro() {
       </div>
       <div className="card" style={cardStyle}>
         {(() => {
-          // Obtener los datos actuales
           let rawData = modoEdicion ? form.actividades_por_integrante : registro.actividades_por_integrante;
           
-          // Parsear si es string
           if (typeof rawData === 'string') {
             try {
               rawData = JSON.parse(rawData);
@@ -1228,25 +1188,39 @@ export default function AdminDetalleRegistro() {
             }
           }
           
-          // Asegurar que es un objeto
           if (!rawData || typeof rawData !== 'object' || Array.isArray(rawData)) {
             rawData = {};
           }
           
-          // Obtener lista de integrantes con sus actividades
           const listaIntegrantes = Object.values(rawData).filter(i => i && i.nombre);
           
-          // Función para actualizar una actividad específica
-          const actualizarActividad = (integranteKey, actividadIndex, campo, valor) => {
+          const actualizarActividad = async (integranteKey, actividadIndex, campo, valor) => {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
             const integrante = nuevaData[integranteKey];
             if (integrante && integrante.actividades && integrante.actividades[actividadIndex]) {
-              integrante.actividades[actividadIndex][campo] = valor;
+              let valorFormateado = valor;
+              if (campo === 'actividad') {
+                valorFormateado = valor.toUpperCase();
+              } else if (campo === 'cantidad_planificada') {
+                // Calcular horas automáticamente
+                const actividad = integrante.actividades[actividadIndex].actividad;
+                if (actividad && valor) {
+                  const cantidadBase = await cargarCantidadPorHora(actividad);
+                  const esManual = manualHorasPersona[`${integranteKey}_${actividadIndex}`];
+                  if (!esManual && cantidadBase) {
+                    const decimal = parseFloat(valor) / cantidadBase;
+                    const horasCalculadas = decimalParaHorasMinutos(decimal);
+                    if (horasCalculadas) {
+                      integrante.actividades[actividadIndex]['horas_persona'] = horasCalculadas;
+                    }
+                  }
+                }
+              }
+              integrante.actividades[actividadIndex][campo] = valorFormateado;
               handleActividadesPorIntegranteChange(nuevaData);
             }
           };
           
-          // Función para agregar una nueva actividad a un integrante
           const agregarActividadAIntegrante = (integranteKey) => {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
             if (!nuevaData[integranteKey].actividades) {
@@ -1262,14 +1236,12 @@ export default function AdminDetalleRegistro() {
             handleActividadesPorIntegranteChange(nuevaData);
           };
           
-          // Función para eliminar una actividad
           const eliminarActividad = (integranteKey, actividadIndex) => {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
             nuevaData[integranteKey].actividades = nuevaData[integranteKey].actividades.filter((_, i) => i !== actividadIndex);
             handleActividadesPorIntegranteChange(nuevaData);
           };
           
-          // Función para actualizar el nombre de la actividad
           const actualizarNombreActividad = (integranteKey, actividadIndex, nuevoNombre) => {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
             if (nuevaData[integranteKey]?.actividades?.[actividadIndex]) {
@@ -1283,21 +1255,7 @@ export default function AdminDetalleRegistro() {
               <div style={{ marginTop: 25, textAlign: "center", padding: 20, background: "#f9fafb", borderRadius: 8 }}>
                 <p style={{ color: "#6b7280", margin: 0 }}>No hay actividades registradas por integrante</p>
                 {modoEdicion && puedeEditar && (
-                  <button 
-                    onClick={() => {
-                      const nuevasActividades = { ...rawData };
-                      const nuevoKey = Date.now();
-                      nuevasActividades[nuevoKey] = {
-                        nombre: "NUEVO INTEGRANTE",
-                        cargo: "",
-                        actividades: []
-                      };
-                      handleActividadesPorIntegranteChange(nuevasActividades);
-                    }}
-                    style={{ marginTop: 12, padding: "6px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}
-                  >
-                    + Agregar Integrante
-                  </button>
+                  <button onClick={() => { const nuevasActividades = { ...rawData }; const nuevoKey = Date.now(); nuevasActividades[nuevoKey] = { nombre: "NUEVO INTEGRANTE", cargo: "", actividades: [] }; handleActividadesPorIntegranteChange(nuevasActividades); }} style={{ marginTop: 12, padding: "6px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12 }}>+ Agregar Integrante</button>
                 )}
               </div>
             );
@@ -1305,46 +1263,27 @@ export default function AdminDetalleRegistro() {
           
           return (
             <div style={{ marginTop: 25, display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Botón para agregar nuevo integrante */}
               {modoEdicion && puedeEditar && (
                 <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
-                  <button 
-                    onClick={() => {
-                      const nuevasActividades = { ...rawData };
-                      const nuevoKey = Date.now();
-                      nuevasActividades[nuevoKey] = {
-                        nombre: "NUEVO INTEGRANTE",
-                        cargo: "",
-                        actividades: []
-                      };
-                      handleActividadesPorIntegranteChange(nuevasActividades);
-                    }}
-                    style={{ padding: "8px 16px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", gap: 5 }}
-                  >
-                    <span style={{ fontSize: 18 }}>+</span> Agregar Integrante
-                  </button>
+                  <button onClick={() => { const nuevasActividades = { ...rawData }; const nuevoKey = Date.now(); nuevasActividades[nuevoKey] = { nombre: "NUEVO INTEGRANTE", cargo: "", actividades: [] }; handleActividadesPorIntegranteChange(nuevasActividades); }} style={{ padding: "8px 16px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500, fontSize: 13, display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 18 }}>+</span> Agregar Integrante</button>
                 </div>
               )}
               
               {listaIntegrantes.map((integrante) => {
-                // Encontrar la key original del integrante
                 const integranteKey = Object.keys(rawData).find(key => rawData[key] === integrante);
                 
-                // Actualizar nombre del integrante
                 const actualizarNombreIntegrante = (nuevoNombre) => {
                   const nuevaData = JSON.parse(JSON.stringify(rawData));
                   nuevaData[integranteKey].nombre = nuevoNombre.toUpperCase();
                   handleActividadesPorIntegranteChange(nuevaData);
                 };
                 
-                // Actualizar cargo del integrante
                 const actualizarCargoIntegrante = (nuevoCargo) => {
                   const nuevaData = JSON.parse(JSON.stringify(rawData));
                   nuevaData[integranteKey].cargo = nuevoCargo.toUpperCase();
                   handleActividadesPorIntegranteChange(nuevaData);
                 };
                 
-                // Eliminar integrante
                 const eliminarIntegrante = () => {
                   const nuevaData = JSON.parse(JSON.stringify(rawData));
                   delete nuevaData[integranteKey];
@@ -1354,67 +1293,13 @@ export default function AdminDetalleRegistro() {
                 return (
                   <div key={integranteKey} style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", position: "relative" }}>
                     {modoEdicion && puedeEditar && (
-                      <button
-                        onClick={eliminarIntegrante}
-                        style={{
-                          position: "absolute",
-                          top: 10,
-                          right: 10,
-                          background: "#ef4444",
-                          border: "none",
-                          color: "white",
-                          cursor: "pointer",
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          zIndex: 10,
-                          fontSize: 12
-                        }}
-                        title="Eliminar integrante"
-                      >
-                        ✕
-                      </button>
+                      <button onClick={eliminarIntegrante} style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, fontSize: 12 }} title="Eliminar integrante">✕</button>
                     )}
                     <div style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)", padding: "12px 20px", color: "white" }}>
                       {modoEdicion && puedeEditar ? (
                         <>
-                          <input
-                            type="text"
-                            value={integrante.nombre || ""}
-                            onChange={(e) => actualizarNombreIntegrante(e.target.value)}
-                            style={{
-                              width: "100%",
-                              padding: "6px 10px",
-                              borderRadius: 6,
-                              border: "none",
-                              fontSize: 16,
-                              fontWeight: 600,
-                              marginBottom: 8,
-                              backgroundColor: "rgba(255,255,255,0.9)",
-                              color: "#1e3a5f",
-                              textTransform: "uppercase"
-                            }}
-                            placeholder="NOMBRE DEL INTEGRANTE"
-                          />
-                          <input
-                            type="text"
-                            value={integrante.cargo || ""}
-                            onChange={(e) => actualizarCargoIntegrante(e.target.value)}
-                            style={{
-                              width: "100%",
-                              padding: "4px 8px",
-                              borderRadius: 6,
-                              border: "none",
-                              fontSize: 13,
-                              backgroundColor: "rgba(255,255,255,0.7)",
-                              color: "#1e3a5f",
-                              textTransform: "uppercase"
-                            }}
-                            placeholder="CARGO"
-                          />
+                          <input type="text" value={integrante.nombre || ""} onChange={(e) => actualizarNombreIntegrante(e.target.value.toUpperCase())} style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "none", fontSize: 16, fontWeight: 600, marginBottom: 8, backgroundColor: "rgba(255,255,255,0.9)", color: "#1e3a5f", textTransform: "uppercase" }} placeholder="NOMBRE DEL INTEGRANTE" />
+                          <input type="text" value={integrante.cargo || ""} onChange={(e) => actualizarCargoIntegrante(e.target.value.toUpperCase())} style={{ width: "100%", padding: "4px 8px", borderRadius: 6, border: "none", fontSize: 13, backgroundColor: "rgba(255,255,255,0.7)", color: "#1e3a5f", textTransform: "uppercase" }} placeholder="CARGO" />
                         </>
                       ) : (
                         <>
@@ -1426,12 +1311,7 @@ export default function AdminDetalleRegistro() {
                     <div style={{ padding: 16, overflowX: "auto" }}>
                       {modoEdicion && puedeEditar && (
                         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-                          <button
-                            onClick={() => agregarActividadAIntegrante(integranteKey)}
-                            style={{ padding: "4px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}
-                          >
-                            <span style={{ fontSize: 14 }}>+</span> Agregar Actividad
-                          </button>
+                          <button onClick={() => agregarActividadAIntegrante(integranteKey)} style={{ padding: "4px 12px", background: "#4B5563", color: "white", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 14 }}>+</span> Agregar Actividad</button>
                         </div>
                       )}
                       <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -1446,88 +1326,65 @@ export default function AdminDetalleRegistro() {
                           </tr>
                         </thead>
                         <tbody>
-                          {integrante.actividades?.map((act, actIdx) => (
-                            <tr key={actIdx} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                              <td style={{ padding: 10, fontSize: 13 }}>
-                                {modoEdicion && puedeEditar ? (
-                                  <input
-                                    type="text"
-                                    value={act.actividad || ""}
-                                    onChange={(e) => actualizarNombreActividad(integranteKey, actIdx, e.target.value)}
-                                    style={{ width: "100%", padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textTransform: "uppercase" }}
-                                    placeholder="ACTIVIDAD"
-                                  />
-                                ) : (
-                                  <span style={{ textTransform: "uppercase" }}>{act.actividad || "-"}</span>
-                                )}
-                               </td>
-                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                                {modoEdicion && puedeEditar ? (
-                                  <input
-                                    type="number"
-                                    value={act.horas_persona || ""}
-                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'horas_persona', e.target.value)}
-                                    style={{ width: 60, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
-                                  />
-                                ) : (
-                                  (act.horas_persona || "") + "hrs"
-                                )}
-                               </td>
-                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                                {modoEdicion && puedeEditar ? (
-                                  <input
-                                    type="number"
-                                    value={act.cantidad_planificada || ""}
-                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_planificada', e.target.value)}
-                                    style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
-                                  />
-                                ) : (
-                                  act.cantidad_planificada || ""
-                                )}
-                               </td>
-                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                                {modoEdicion && puedeEditar ? (
-                                  <input
-                                    type="number"
-                                    value={act.cantidad_elaborada || ""}
-                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', e.target.value)}
-                                    style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
-                                  />
-                                ) : (
-                                  act.cantidad_elaborada || ""
-                                )}
-                               </td>
-                              <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
-                                {modoEdicion && puedeEditar ? (
-                                  <input
-                                    type="text"
-                                    value={act.observaciones_integrante || ''}
-                                    onChange={(e) => actualizarActividad(integranteKey, actIdx, 'observaciones_integrante', e.target.value)}
-                                    style={{ width: 150, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
-                                  />
-                                ) : (
-                                  act.observaciones_integrante || '-'
-                                )}
-                               </td>
-                              {modoEdicion && puedeEditar && (
-                                <td style={{ padding: 10, textAlign: "center" }}>
-                                  <button
-                                    onClick={() => eliminarActividad(integranteKey, actIdx)}
-                                    style={{ background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", fontSize: 12 }}
-                                    title="Eliminar actividad"
-                                  >
-                                    ✕
-                                  </button>
+                          {integrante.actividades?.map((act, actIdx) => {
+                            const esManual = manualHorasPersona[`${integranteKey}_${actIdx}`];
+                            const tieneDatosExcel = actividadesConHoras.find(a => a.actividad === act.actividad)?.cantidad_base;
+                            const estaBloqueado = !esManual && act.cantidad_planificada && tieneDatosExcel;
+                            
+                            return (
+                              <tr key={actIdx} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                                <td style={{ padding: 10, fontSize: 13 }}>
+                                  {modoEdicion && puedeEditar ? (
+                                    <select value={act.actividad || ""} onChange={(e) => actualizarNombreActividad(integranteKey, actIdx, e.target.value.toUpperCase())} style={{ width: "100%", padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}>
+                                      <option value="">SELECCIONE...</option>
+                                      {Array.isArray(form.detalles_actividades) && form.detalles_actividades.map((detalle, idx) => (
+                                        <option key={idx} value={detalle}>{detalle}</option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <span style={{ textTransform: "uppercase" }}>{act.actividad || "-"}</span>
+                                  )}
                                 </td>
-                              )}
-                            </tr>
-                          ))}
+                                <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                  {modoEdicion && puedeEditar ? (
+                                    <input type="text" value={act.horas_persona || ""} placeholder="HH:MM" readOnly={estaBloqueado} onChange={(e) => { actualizarActividad(integranteKey, actIdx, 'horas_persona', e.target.value); setManualHorasPersona(prev => ({ ...prev, [`${integranteKey}_${actIdx}`]: true })); }} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center", backgroundColor: estaBloqueado ? "#e9ecef" : "white", cursor: estaBloqueado ? "not-allowed" : "text" }} />
+                                  ) : (
+                                    (act.horas_persona || "") + "hrs"
+                                  )}
+                                </td>
+                                <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                  {modoEdicion && puedeEditar ? (
+                                    <input type="number" value={act.cantidad_planificada || ""} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_planificada', e.target.value)} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }} />
+                                  ) : (
+                                    act.cantidad_planificada || ""
+                                  )}
+                                </td>
+                                <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                  {modoEdicion && puedeEditar ? (
+                                    <input type="number" value={act.cantidad_elaborada || ""} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', e.target.value)} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }} />
+                                  ) : (
+                                    act.cantidad_elaborada || ""
+                                  )}
+                                </td>
+                                <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
+                                  {modoEdicion && puedeEditar ? (
+                                    <input type="text" value={act.observaciones_integrante || ''} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'observaciones_integrante', e.target.value.toUpperCase())} style={{ width: 150, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textTransform: "uppercase" }} />
+                                  ) : (
+                                    act.observaciones_integrante || '-'
+                                  )}
+                                </td>
+                                {modoEdicion && puedeEditar && (
+                                  <td style={{ padding: 10, textAlign: "center" }}>
+                                    <button onClick={() => eliminarActividad(integranteKey, actIdx)} style={{ background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", fontSize: 12 }} title="Eliminar actividad">✕</button>
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })}
                           {(!integrante.actividades || integrante.actividades.length === 0) && (
                             <tr>
-                              <td colSpan={modoEdicion && puedeEditar ? 6 : 5} style={{ padding: 20, textAlign: "center", color: "#6b7280" }}>
-                                No hay actividades asignadas
-                              </td>
-                             </tr>
+                              <td colSpan={modoEdicion && puedeEditar ? 6 : 5} style={{ padding: 20, textAlign: "center", color: "#6b7280" }}>No hay actividades asignadas</td>
+                            </tr>
                           )}
                         </tbody>
                       </table>
@@ -1567,7 +1424,19 @@ export default function AdminDetalleRegistro() {
         <h3>OBSERVACIONES</h3>
       </div>
       <div className="card" style={cardStyle}>
-        <Campo label="" campo="observaciones" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.observaciones} onChange={handleChange} />
+        < textarea
+          value={form.observaciones || ""}
+          onChange={(e) => handleChange("observaciones", e.target.value.toUpperCase())} // ✅ .toUpperCase()
+          style={{
+            padding: "8px 12px",
+            borderRadius: 8,
+            border: "1px solid #d1d5db",
+            width: "100%",
+            fontSize: 14,
+            whiteSpace: "pre-wrap",
+            wordWrap: "break-word",
+            textTransform: "uppercase"
+          }}/>
       </div>
 
       {/* ESTADO Y MOTIVO DE RECHAZO */}
@@ -1584,81 +1453,41 @@ export default function AdminDetalleRegistro() {
         </div>
       )}
       
-      {/* BOTONES DE ACCIÓN - MODIFICADO PARA PERMITIR EDICIÓN EN ESTADO RECHAZADO */}
+      {/* BOTONES DE ACCIÓN */}
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
         {estadoAprobado ? (
-          <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
-            Ver
-          </button>
+          <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>Ver</button>
         ) : (
           <>
-            {/* Botón Editar Registro - AHORA también visible para estado "rechazado" */}
             {puedeEditar && !modoEdicion && (registro?.estado === "pendiente_SUPERVISOR" || registro?.estado === "rechazado") && (
-              <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>
-                ✏️ Editar Registro
-              </button>
+              <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>✏️ Editar Registro</button>
             )}
             
-            {/* Mostrar el botón deshabilitado solo para otros estados que NO sean pendiente_SUPERVISOR ni rechazado */}
             {puedeEditar && !modoEdicion && registro?.estado !== "pendiente_SUPERVISOR" && registro?.estado !== "rechazado" && (
-              <button 
-                className="btn2" 
-                style={{ 
-                  padding: "12px 24px", 
-                  fontWeight: 600, 
-                  fontSize: 15, 
-                  background: "#9ca3af", 
-                  cursor: "not-allowed",
-                  opacity: 0.6
-                }} 
-                disabled 
-                title="Solo se pueden editar registros en estado Pendiente Supervisor o Rechazado"
-              >
-                ✏️ Editar Registro
-              </button>
+              <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15, background: "#9ca3af", cursor: "not-allowed", opacity: 0.6 }} disabled title="Solo se pueden editar registros en estado Pendiente Supervisor o Rechazado">✏️ Editar Registro</button>
             )}
 
             {modoEdicion && puedeEditar && (
               <>
-                <button className="btn-guardar2" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>
-                  {guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}
-                </button>
-                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(JSON.parse(JSON.stringify(registro))); }}>
-                  ❌ Cancelar
-                </button>
+                <button className="btn-guardar2" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>{guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}</button>
+                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(JSON.parse(JSON.stringify(registro))); }}>❌ Cancelar</button>
               </>
             )}
 
             {isSupervisor && !modoEdicion && (
               <>
-                <button className="btn" style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }}
-                  onClick={() => actualizarEstadoRegistro("pendiente_ANALISTA_PRODUCCION")}
-                  disabled={estadoPendienteAnalista || guardando}
-                >
-                  ✅ Verificar
-                </button>
-                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }}
-                  onClick={() => actualizarEstadoRegistro("rechazado")}
-                  disabled={estadoPendienteAnalista || guardando}
-                >
-                  ❌ Rechazar
-                </button>
+                <button className="btn" style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }} onClick={() => actualizarEstadoRegistro("pendiente_ANALISTA_PRODUCCION")} disabled={estadoPendienteAnalista || guardando}>✅ Verificar</button>
+                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }} onClick={() => actualizarEstadoRegistro("rechazado")} disabled={estadoPendienteAnalista || guardando}>❌ Rechazar</button>
               </>
             )}
 
             {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
-              <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
-                🗑️ Eliminar Registro
-              </button>
+              <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>🗑️ Eliminar Registro</button>
             )}
             {puedeEliminar && !modoEdicion && registro.estado !== "pendiente_SUPERVISOR" && (
-              <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">
-                🗑️ Eliminar Registro
-              </button>
+              <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">🗑️ Eliminar Registro</button>
             )}
-            <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
-              ← Volver al Panel
-            </button>
+            <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>← Volver al Panel</button>
           </>
         )}
       </div>
