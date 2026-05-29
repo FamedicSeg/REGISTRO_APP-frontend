@@ -392,7 +392,6 @@ export default function PanelRol() {
 
                       {/* RECHAZAR - SUPERVISOR en pendiente_SUPERVISOR, ANALISTA en pendiente_ANALISTA */}
                       {(
-                        (esSupervisor && esEstadoPendienteSupervisor(r.estado)) ||
                         (esAnalista && esEstadoPendienteAnalista(r.estado))
                       ) && (
                         <button

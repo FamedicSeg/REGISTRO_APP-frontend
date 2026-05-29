@@ -4,6 +4,7 @@ import { api } from "../services/api";
 import logo_safemed from "../assets/logo_safemed.jpg";
 import logo3 from "../assets/logo3.png";
 import "../styles/detallesRegistro.css";
+import ModalRechazo from "./ModalRechazo";
 
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
   const handleChange = (e) => {
@@ -83,7 +84,7 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
   const [loadingDesc, setLoadingDesc] = useState(false);
 
   const handleChange = (campo, valor) => {
-    let valorFinal = valor.toUpperCase();
+    let valorFinal = valor;
     // Convertir a mayúsculas campos de texto
     if (campo === 'tipo_insumo' || campo === 'descripcion_insumo' || campo === 'lote_insumo' ||
         campo === 'entrega' || campo === 'recepcion' || campo === 'codigo_insumo' ||
@@ -335,6 +336,9 @@ export default function AdminDetalleRegistro() {
   const [listaInsumos, setListaInsumos] = useState([]);
   const [actividadesConHoras, _setActividadesConHoras] = useState([]);
   const [manualHorasPersona, setManualHorasPersona] = useState({});
+  
+  // Estados para el modal de rechazo
+  const [modalRechazoOpen, setModalRechazoOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
   const rol = user?.rol || "";
@@ -434,7 +438,9 @@ export default function AdminDetalleRegistro() {
   const puedeEditar = useMemo(() => rol === "LÍDER", [rol]);
   const puedeEliminar = useMemo(() => rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN", [rol]);
   const isSupervisor = rol === "SUPERVISOR";
+  const isAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const estadoPendienteAnalista = registro?.estado === "pendiente_ANALISTA_PRODUCCION";
+  const estadoPendienteSupervisor = registro?.estado === "pendiente_SUPERVISOR";
   const estadoAprobado = registro?.estado?.includes("aprobado");
 
   // Función para formatear texto a mayúsculas
@@ -613,7 +619,7 @@ export default function AdminDetalleRegistro() {
     })) : [];
   }, []);
 
-  const prepararDatosParaEnvio = useCallback((estadoFinal) => {
+  const prepararDatosParaEnvio = useCallback((estadoFinal, motivoRechazo = null) => {
     const estadoAEnviar = estadoFinal ?? (registro.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro.estado);
     
     let detallesParaEnviar = form.detalles_actividades;
@@ -649,15 +655,16 @@ export default function AdminDetalleRegistro() {
       maquinarias: validarArray(form.maquinarias),
       detalles_actividades: detallesParaEnviar,
       actividades_por_integrante: actividadesParaEnviar,
-      observaciones: form.observaciones
+      observaciones: form.observaciones,
+      motivo_rechazo: motivoRechazo
     };
   }, [form, registro, user.rol, user.nombre, validarArray]);
 
-  const actualizarEstadoRegistro = async (nuevoEstado, confirmMessage) => {
+  const actualizarEstadoRegistro = async (nuevoEstado, confirmMessage, motivoRechazo = null) => {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
     try {
       setGuardando(true);
-      const datosAEnviar = prepararDatosParaEnvio(nuevoEstado);
+      const datosAEnviar = prepararDatosParaEnvio(nuevoEstado, motivoRechazo);
       const response = await api.put(`/registros/${id}`, datosAEnviar);
       if (response.status === 200) {
         const datosActualizados = response.data.registro || response.data;
@@ -716,6 +723,21 @@ export default function AdminDetalleRegistro() {
       alert("Error al guardar cambios");
     } finally {
       setGuardando(false);
+    }
+  };
+
+  // Función que se ejecuta después de rechazar
+  const handleRechazado = async () => {
+    setModalRechazoOpen(false);
+    // Recargar los datos del registro
+    try {
+      const res = await api.get(`/registros/${id}`);
+      const datosRegistro = res.data.registro || res.data;
+      const datosParsados = parsearArrays(datosRegistro);
+      setRegistro(datosParsados);
+      setForm(JSON.parse(JSON.stringify(datosParsados)));
+    } catch (error) {
+      console.error("Error recargando registro:", error);
     }
   };
 
@@ -1424,9 +1446,10 @@ export default function AdminDetalleRegistro() {
         <h3>OBSERVACIONES</h3>
       </div>
       <div className="card" style={cardStyle}>
-        < textarea
+        <textarea
           value={form.observaciones || ""}
-          onChange={(e) => handleChange("observaciones", e.target.value.toUpperCase())} // ✅ .toUpperCase()
+          onChange={(e) => handleChange("observaciones", e.target.value.toUpperCase())}
+          rows={4}
           style={{
             padding: "8px 12px",
             borderRadius: 8,
@@ -1435,8 +1458,12 @@ export default function AdminDetalleRegistro() {
             fontSize: 14,
             whiteSpace: "pre-wrap",
             wordWrap: "break-word",
-            textTransform: "uppercase"
-          }}/>
+            textTransform: "uppercase",
+            fontFamily: "inherit",
+            resize: "vertical"
+          }}
+          placeholder="INGRESA LAS OBSERVACIONES... (PRESIONA ENTER PARA SALTOS DE LÍNEA)"
+        />
       </div>
 
       {/* ESTADO Y MOTIVO DE RECHAZO */}
@@ -1445,7 +1472,7 @@ export default function AdminDetalleRegistro() {
           <h3 style={{ ...sectionTitleStyle, color: "#991b1b", borderBottomColor: "#fecaca" }}>⚠️ INFORMACIÓN DE RECHAZO</h3>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontWeight: 600, marginBottom: 8, color: "#991b1b", fontSize: 14 }}>Motivo del Rechazo:</div>
-            <div style={{ padding: 12, background: "white", borderRadius: 8, color: "#7f1d1d", fontSize: 14 }}>{registro.motivo_rechazo}</div>
+            <div style={{ padding: 12, background: "white", borderRadius: 8, color: "#7f1d1d", fontSize: 14, whiteSpace: "pre-wrap" }}>{registro.motivo_rechazo}</div>
           </div>
           {registro.rechazado_por && (
             <div style={{ fontSize: 13, color: "#b91c1c" }}>Rechazado por: <strong>{registro.rechazado_por}</strong> - {new Date(registro.fecha_rechazo).toLocaleString()}</div>
@@ -1459,11 +1486,11 @@ export default function AdminDetalleRegistro() {
           <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>Ver</button>
         ) : (
           <>
-            {puedeEditar && !modoEdicion && (registro?.estado === "pendiente_SUPERVISOR" || registro?.estado === "rechazado") && (
+            {puedeEditar && !modoEdicion && (estadoPendienteSupervisor || registro?.estado === "rechazado") && (
               <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>✏️ Editar Registro</button>
             )}
             
-            {puedeEditar && !modoEdicion && registro?.estado !== "pendiente_SUPERVISOR" && registro?.estado !== "rechazado" && (
+            {puedeEditar && !modoEdicion && !estadoPendienteSupervisor && registro?.estado !== "rechazado" && (
               <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15, background: "#9ca3af", cursor: "not-allowed", opacity: 0.6 }} disabled title="Solo se pueden editar registros en estado Pendiente Supervisor o Rechazado">✏️ Editar Registro</button>
             )}
 
@@ -1474,23 +1501,54 @@ export default function AdminDetalleRegistro() {
               </>
             )}
 
-            {isSupervisor && !modoEdicion && (
-              <>
-                <button className="btn" style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }} onClick={() => actualizarEstadoRegistro("pendiente_ANALISTA_PRODUCCION")} disabled={estadoPendienteAnalista || guardando}>✅ Verificar</button>
-                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444", display: "flex", alignItems: "center", gap: 5, cursor: estadoPendienteAnalista || guardando ? "not-allowed" : "pointer", opacity: estadoPendienteAnalista || guardando ? 0.6 : 1 }} onClick={() => actualizarEstadoRegistro("rechazado")} disabled={estadoPendienteAnalista || guardando}>❌ Rechazar</button>
-              </>
+            {/* Botón Rechazar para SUPERVISOR y ANALISTA con modal */}
+            {((isSupervisor && estadoPendienteSupervisor) || (isAnalista && estadoPendienteAnalista)) && !modoEdicion && (
+              <button
+                className="btn"
+                style={{ padding: "12px 24px", background: "#ef4444", display: "flex", alignItems: "center", gap: 5, cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.6 : 1 }}
+                onClick={() => setModalRechazoOpen(true)}
+                disabled={guardando}
+              >
+                ❌ Rechazar
+              </button>
             )}
 
-            {puedeEliminar && !modoEdicion && registro.estado === "pendiente_SUPERVISOR" && (
-              <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>🗑️ Eliminar Registro</button>
+            {isSupervisor && !modoEdicion && estadoPendienteSupervisor && (
+              <button 
+                className="btn" 
+                style={{ padding: "12px 24px", background: "#10b981", display: "flex", alignItems: "center", gap: 5, cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.6 : 1 }} 
+                onClick={() => actualizarEstadoRegistro("pendiente_ANALISTA_PRODUCCION", "¿Verificar este registro?")}
+                disabled={guardando}
+              >
+                ✅ Verificar
+              </button>
             )}
-            {puedeEliminar && !modoEdicion && registro.estado !== "pendiente_SUPERVISOR" && (
-              <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente">🗑️ Eliminar Registro</button>
+
+            {puedeEliminar && !modoEdicion && estadoPendienteSupervisor && (
+              <button className="btn" style={{ padding: "12px 24px", display: "flex", alignItems: "center", gap: 5 }} onClick={eliminarRegistro}>
+                🗑️ Eliminar Registro
+              </button>
             )}
-            <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>← Volver al Panel</button>
+            {puedeEliminar && !modoEdicion && !estadoPendienteSupervisor && (
+              <button className="btn" style={{ padding: "12px 24px", opacity: 0.6, display: "flex", alignItems: "center", gap: 5 }} disabled title="Solo se pueden eliminar registros en estado Pendiente Supervisor">
+                🗑️ Eliminar Registro
+              </button>
+            )}
+            <button className="btn3" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>
+              ← Volver al Panel
+            </button>
           </>
         )}
       </div>
+
+      {/* Modal de Rechazo */}
+      <ModalRechazo
+        isOpen={modalRechazoOpen}
+        onClose={() => setModalRechazoOpen(false)}
+        registroId={id}
+        onRechazado={handleRechazado}
+        usuario={user}
+      />
     </div>
   );
 }
