@@ -1635,7 +1635,7 @@ const decimalParaHorasMinutos = (decimal) => {
             )}
             
             {!loadingInsumos && insumos.length > 0 && (
-              <div style={{ marginBottom: "15px", color: "#000", fontWeight: "bold", fontSize: "12px"}}>
+              <div style={{ marginBottom: "15px", color: "#000", fontWeight: "bold", fontSize: "10px"}}>
                 {insumos.length} INSUMO(S) CARGADO(S)
               </div>
             )}
@@ -1661,26 +1661,27 @@ const decimalParaHorasMinutos = (decimal) => {
                           buscarDescripcionInsumo(item.tipo_insumo, index);
                           cargarDescripcionLoteInsumo(index, item.tipo_insumo);
                          }}
+                         style={{fontSize: "10.5px" }} 
                          />
                 </div>
 
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> DESCRIPCIÓN: </label>
-                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={{ backgroundColor: "#e9ecef" }}/>
+                  <input type="text" value={item.descripcion_insumo || ""} readOnly style={{ backgroundColor: "#e9ecef", fontSize: "10.5px" }}/>
                 </div>
 
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}>CANTIDAD: </label>
-                  <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000" placeholder="EJ: 10"/>
+                  <input type="number" step="any" value={item.cantidad_insumo || ""} onChange={(e) => actualizarInsumo(index, "cantidad_insumo", e.target.value)} min="0" max="100000" placeholder="EJ: 10" style={{fontSize: "10.5px" }}/>
                 </div>
 
                 <div className="insumo-field">
                   <label style={{display: "block", marginBottom: "5px", fontSize: "10px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
-                  <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)} />
+                  <input type="text" value={item.descrip_cant_insumo || ""} onChange={(e)=> actualizarInsumo(index,"descrip_cant_insumo", e.target.value)} style={{fontSize: "10.5px" }} />
                 </div>
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> LOTE: </label>
-                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} placeholder="N° DE LOTE"/>
+                  <input type="text" value={item.lote_insumo || ""} onChange={(e) => actualizarInsumo(index, "lote_insumo", e.target.value)} placeholder="N° DE LOTE" style={{fontSize: "10.5px" }} />
                 </div>
 
                 <div className="insumo-field">
@@ -1706,7 +1707,7 @@ const decimalParaHorasMinutos = (decimal) => {
 
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> RECEPCIÓN: </label>
-                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)}>
+                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{fontSize: "10.5px" }}>
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     <option value="Vaca Guanatasig Carolina Estefania">Vaca Guanatasig Carolina Estefania</option>
                     {integrantes.map((integrante, idx) => (
