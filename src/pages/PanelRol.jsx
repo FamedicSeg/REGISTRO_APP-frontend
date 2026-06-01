@@ -25,7 +25,7 @@ export default function PanelRol() {
   const rol = user?.rol || "";
 
   const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
-  const esSupervisor = rol === "SUPERVISOR";
+  const _esSupervisor = rol === "SUPERVISOR";
   const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
 
   const puedeEliminar = useMemo(() => 
@@ -151,7 +151,7 @@ export default function PanelRol() {
     nav("/login");
   };
 
-  const verificar = async (id) => {
+  const _verificar = async (id) => {
     if (!window.confirm("¿Verificar este registro?")) return;
     try {
       await api.put(`/registros/${id}/verificar`, {
@@ -370,7 +370,7 @@ export default function PanelRol() {
                         </button>
                       )}
 
-                      {/* VERIFICAR - Solo SUPERVISOR en estado pendiente_SUPERVISOR */}
+                      {/* VERIFICAR - Solo SUPERVISOR en estado pendiente_SUPERVISOR 
                       {esSupervisor && esEstadoPendienteSupervisor(r.estado) && (
                         <button
                           className="panel-btn panel-btn-warning"
@@ -378,7 +378,7 @@ export default function PanelRol() {
                         >
                           ✓ Verificar
                         </button>
-                      )}
+                      )}*/}
 
                       {/* APROBAR - Solo ANALISTA en estado pendiente_ANALISTA */}
                       {esAnalista && esEstadoPendienteAnalista(r.estado) && (
