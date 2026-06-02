@@ -1701,6 +1701,10 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="ANA MARIA PINCAY RUIZ">ANA MARIA PINCAY RUIZ</option>
                     <option value="ERIKA MARISELA SUNTAXI PAUCAR">ERIKA MARISELA SUNTAXI PAUCAR</option>
                     <option value="NATALY SILVANA TIPAN GUALOTUÑA">NATALY SILVANA TIPAN GUALOTUÑA</option>
+                    <option value="BONILLA TASHIGUANO ANTONY FABRICIO">ANTONY FABRICIO BONILLA TASHIGUANO</option>
+                    <option value="CHILUISA MONTALUISA MARIBEL ELIZABETH">MARIBEL ELIZABETH CHILUISA MONTALUISA</option>
+                    <option value="SUNTAXI SUNTASIG CHRISTIAN GIOVANNI">CHRISTIAN GIOVANNI SUNTAXI SUNTASIG</option>
+                    <option value="SIMBAÑA MAILA LUIS GUSTAVO">LUIS GUSTAVO SIMBAÑA MAILA</option>
                     <option value="CAROLINA ESTEFANIA VACA GUANATASIG">CAROLINA ESTEFANIA VACA GUANATASIG</option>
                   </select>
                 </div>

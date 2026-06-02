@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import "../styles/login.css";
-import { toUpperCase } from "../utils/textUtils";
+import { _toUpperCase } from "../utils/textUtils";
 
 export default function Login() {
   const [usuarios, setUsuarios] = useState([]);
