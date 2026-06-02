@@ -818,7 +818,7 @@ export default function AdminDetalleRegistro() {
       cargarActividadesNormales();
     }
 
-    // Pre-llenar insumos desde el backend
+    // Pre-llenar insumos desde el backend solo si no hay insumos ya guardados
     const cargarInsumosPreLlenados = async () => {
       try {
         const { data } = await api.get("/insumos/producto", { params: { codigo: codigo_producto } });
@@ -826,17 +826,21 @@ export default function AdminDetalleRegistro() {
         if (data && Array.isArray(data.insumos)) lista = data.insumos;
         else if (Array.isArray(data)) lista = data;
         if (lista.length > 0) {
-          const nuevosInsumos = lista.map((insumo, index) => ({
-            id: Date.now() + index,
-            tipo_insumo: insumo.codigo || insumo,
-            descripcion_insumo: insumo.descripcion || "",
-            cantidad_insumo: insumo.cantidad || "",
-            descrip_cant_insumo: insumo.unidad_medida || "",
-            lote_insumo: "",
-            entrega: "",
-            recepcion: "",
-          }));
-          setForm(p => ({ ...p, insumos: nuevosInsumos }));
+          setForm(p => {
+            // Si ya hay insumos guardados, no sobreescribir
+            if (Array.isArray(p.insumos) && p.insumos.length > 0) return p;
+            const nuevosInsumos = lista.map((insumo, index) => ({
+              id: Date.now() + index,
+              tipo_insumo: insumo.codigo || insumo,
+              descripcion_insumo: insumo.descripcion || "",
+              cantidad_insumo: insumo.cantidad || "",
+              descrip_cant_insumo: insumo.unidad_medida || "",
+              lote_insumo: "",
+              entrega: "",
+              recepcion: "",
+            }));
+            return { ...p, insumos: nuevosInsumos };
+          });
         }
       } catch {
         // no sobreescribir si falla
