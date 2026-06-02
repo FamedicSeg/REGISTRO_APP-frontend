@@ -252,10 +252,10 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                   style={selectStyle}
                 >
                   <option value="">SELECCIONE...</option>
-                  <option value="Vaca Guanatasig Carolina Estefania">VACA GUANATASIG CAROLINA ESTEFANIA</option>
+                  <option value="VACA GUANATASIG CAROLINA ESTEFANIA">VACA GUANATASIG CAROLINA ESTEFANIA</option>
                   {integrantesForm.map((integrante, idx) => (
                     integrante?.nombre ? (
-                      <option key={idx} value={integrante.nombre}>{integrante.nombre.toUpperCase()}</option>
+                      <option key={idx} value={integrante.nombre.toUpperCase()}>{integrante.nombre.toUpperCase()}</option>
                     ) : null
                   ))}
                 </select>
@@ -476,11 +476,11 @@ export default function AdminDetalleRegistro() {
   };
 
   // Función para cargar cantidad por hora de actividad
-  const cargarCantidadPorHora = useCallback(async (actividad) => {
+  const cargarCantidadPorHora = useCallback(async (actividad, codigo) => {
     if (!actividad) return null;
     try {
       const response = await api.get("/actividad/cantidadPorHora", {
-        params: { actividad }
+        params: { actividad, codigo }
       });
       return response.data.cantidad_por_hora;
     } catch (error) {

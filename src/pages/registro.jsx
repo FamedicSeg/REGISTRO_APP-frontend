@@ -2898,8 +2898,8 @@ const decimalParaHorasMinutos = (decimal) => {
                           }));
                           if (actividadSeleccionada) {
                             try {
-                              const response = await api.get("/actividad/cantidadPorHora", {
-                                params: { actividad: actividadSeleccionada }
+                               const response = await api.get("/actividad/cantidadPorHora", {
+                                params: { actividad: actividadSeleccionada, codigo: form.codigo_producto }
                               });
                               const cantidadBase = response.data.cantidad_por_hora;
                               setActividadesConHoras(prev => {
