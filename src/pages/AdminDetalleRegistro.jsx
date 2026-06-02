@@ -80,12 +80,41 @@ const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, o
 };
 
 // Componente para item de array - CON AUTOMATIZACIÓN
-const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdicion, puedeEditar, listaInsumos = [] }) => {
+const ENTREGA_OPTIONS = [
+  "BRYAN ALEXANDER CAJAMARCA BONILLA",
+  "JUAN ANIBAL CHASIPANTA ALQUINGA",
+  "CARLA MICAELA CHUQUIMARCA FERNANDEZ",
+  "JEREMY JOEL COLUMBA COLCHA",
+  "GABRIELA SOLANGE COLUMBA IZA",
+  "ANA LUCIA GUAMAN PILATUÑA",
+  "MANUEL ALEJANDRO PERUGACHE QUIMBIURCO",
+  "ANA MARIA PINCAY RUIZ",
+  "ERIKA MARISELA SUNTAXI PAUCAR",
+  "NATALY SILVANA TIPAN GUALOTUÑA",
+  "CAROLINA ESTEFANIA VACA GUANATASIG",
+];
+
+// Componente para item de etiquetas array - CON AUTOMATIZACIÓN
+const ETIQUETAS_ENTREGA_OPTIONS = [
+  "BRYAN ALEXANDER CAJAMARCA BONILLA",
+  "ANA LUCIA GUAMAN PILATUÑA",
+  "NATALY SILVANA TIPAN GUALOTUÑA"
+]
+
+const ETIQUETAS_OPTIONS = [
+  "ETIQUETA ADHESIVA PARA CAJA MASTER",
+  "ETIQUETA IMPRESA EN FUNDA",
+  "ETIQUETA DE PAPEL INDIVIDUAL",
+  "ETIQUETA CON NOMBRE DE CLIENTE"
+]
+
+
+const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdicion, puedeEditar, listaInsumos = [], integrantesForm = [] }) => {
   const [loadingDesc, setLoadingDesc] = useState(false);
+  const [loadingLote, setLoadingLote] = useState(false);
 
   const handleChange = (campo, valor) => {
     let valorFinal = valor;
-    // Convertir a mayúsculas campos de texto
     if (campo === 'tipo_insumo' || campo === 'descripcion_insumo' || campo === 'lote_insumo' ||
         campo === 'entrega' || campo === 'recepcion' || campo === 'codigo_insumo' ||
         campo === 'descrip_cant_insumo' || campo === 'lote') {
@@ -109,37 +138,35 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
     }
   };
 
+  const buscarLote = async (codigo) => {
+    if (!codigo || codigo.trim() === "") return;
+    const codigoLimpio = codigo.trim();
+    const isNoAplica = /^(CF|RCTEL|BCD|TAB|FPQ)/i.test(codigoLimpio);
+    if (isNoAplica) {
+      onUpdate(index, "lote_insumo", "NO APLICA");
+      return;
+    }
+    setLoadingLote(true);
+    try {
+      const { data } = await api.get("/insumos/lote", { params: { codigo: codigoLimpio } });
+      if (data.error) { onUpdate(index, "lote_insumo", `Error: ${data.error}`); return; }
+      const lote = typeof data === 'string' ? data : (data.lote || "Sin lote disponible");
+      onUpdate(index, "lote_insumo", lote);
+    } catch (err) {
+      if (err.response?.status === 404) onUpdate(index, "lote_insumo", "Insumo no encontrado");
+      else onUpdate(index, "lote_insumo", "Error al buscar lote");
+    } finally {
+      setLoadingLote(false);
+    }
+  };
+
+  const inputStyle = { padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 13, textTransform: "uppercase" };
+  const selectStyle = { padding: "6px 10px", borderRadius: 6, border: "1px solid #d1d5db", width: "100%", fontSize: 12, backgroundColor: "white" };
+
   return (
-    <div style={{
-      marginBottom: 15,
-      padding: 15,
-      background: "#f9fafb",
-      borderRadius: 8,
-      position: "relative",
-      border: "1px solid #e5e7eb"
-    }}>
+    <div style={{ marginBottom: 15, padding: 15, background: "#f9fafb", borderRadius: 8, position: "relative", border: "1px solid #e5e7eb" }}>
       {modoEdicion && puedeEditar && (
-        <button
-          onClick={() => onDelete(index)}
-          style={{
-            position: "absolute",
-            top: 10,
-            right: 10,
-            background: "#ef4444",
-            border: "none",
-            color: "white",
-            cursor: "pointer",
-            width: 24,
-            height: 24,
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-          title="Eliminar"
-        >
-          ✕
-        </button>
+        <button onClick={() => onDelete(index)} style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }} title="Eliminar">✕</button>
       )}
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: `repeat(auto-fit, minmax(180px, 1fr))` }}>
         {camposEditables.map(campo => (
@@ -154,15 +181,11 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                     list={`insumos-list-${index}`}
                     value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
                     onChange={(e) => handleChange(campo, e.target.value)}
-                    onBlur={() => buscarDescripcion(item[campo])}
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 6,
-                      border: "1px solid #d1d5db",
-                      width: "100%",
-                      fontSize: 13,
-                      textTransform: "uppercase"
+                    onBlur={() => {
+                      buscarDescripcion(item[campo]);
+                      buscarLote(item[campo]);
                     }}
+                    style={inputStyle}
                     placeholder={`Ingresa ${campo}`}
                   />
                   <datalist id={`insumos-list-${index}`}>
@@ -174,34 +197,85 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                     ))}
                   </datalist>
                 </>
+              ) : campo === 'lote_insumo' || campo === 'lote' ? (
+                <div style={{ position: "relative" }}>
+                  <input
+                    value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                    onChange={(e) => handleChange(campo, e.target.value)}
+                    style={{ ...inputStyle, backgroundColor: loadingLote ? "#f3f4f6" : "white" }}
+                    placeholder={loadingLote ? "Cargando lote..." : "Lote"}
+                    readOnly={loadingLote}
+                  />
+                  {loadingLote && <span style={{ position: "absolute", right: 8, top: 8, fontSize: 10, color: "#6b7280" }}>⏳</span>}
+                </div>
+              ) :  campo === 'descripcion_etiqueta' ? (
+                <select
+                  value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                  style={selectStyle}
+                >
+                  <option value="">SELECCIONE...</option>
+                  {ETIQUETAS_OPTIONS.map(nombre => (
+                    <option key={nombre} value={nombre}>{nombre}</option>
+                  ))}
+                </select>
+              ) : campo === 'entrega' || campo === 'entrega_insumo' ? (
+                <select
+                  value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                  style={selectStyle}
+                >
+                  <option value="">SELECCIONE...</option>
+                  {ENTREGA_OPTIONS.map(nombre => (
+                    <option key={nombre} value={nombre}>{nombre}</option>
+                  ))}
+                </select>
+              ) : campo === 'entrega_etiqueta' ? (
+                <select
+                  value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                  style={selectStyle}
+                >
+                  <option value="">SELECCIONE...</option>
+                  {ETIQUETAS_ENTREGA_OPTIONS.map(nombre => (
+                    <option key={nombre} value={nombre}>{nombre}</option>
+                  ))}
+                </select>
+              ) : campo === 'recepcion' || campo === 'recepcion_insumo' ? (
+                <select
+                  value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                  style={selectStyle}
+                >
+                  <option value="">SELECCIONE...</option>
+                  <option value="Vaca Guanatasig Carolina Estefania">VACA GUANATASIG CAROLINA ESTEFANIA</option>
+                  {integrantesForm.map((integrante, idx) => (
+                    integrante?.nombre ? (
+                      <option key={idx} value={integrante.nombre}>{integrante.nombre.toUpperCase()}</option>
+                    ) : null
+                  ))}
+                </select>
+              ) :campo === 'recepcion_etiqueta' ? (
+                <input
+                  value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
+                  onChange={(e) => handleChange(campo, e.target.value)}
+                  style={{ ...inputStyle, textTransform: campo === 'recepcion_etiqueta' ? 'uppercase' : 'none' }}
+                  placeholder={`Ingresa ${campo}`}
+                />
               ) : (
                 <input
                   value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
                   onChange={(e) => handleChange(campo, e.target.value)}
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 6,
-                    border: "1px solid #d1d5db",
-                    width: "100%",
-                    fontSize: 13,
-                    textTransform: campo === 'descripcion_insumo' ? 'uppercase' : 'none'
-                  }}
+                  style={{ ...inputStyle, textTransform: campo === 'descripcion_insumo' ? 'uppercase' : 'none' }}
                   placeholder={`Ingresa ${campo}`}
                 />
               )
             ) : (
-              <div style={{
-                padding: "6px 10px",
-                background: "white",
-                borderRadius: 6,
-                border: "1px solid #e5e7eb",
-                fontSize: 13,
-                textTransform: 'uppercase'
-              }}>
+              <div style={{ padding: "6px 10px", background: "white", borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 13, textTransform: 'uppercase' }}>
                 {item[campo] !== undefined && item[campo] !== null ? item[campo] : "-"}
               </div>
             )}
-            {loadingDesc && <span style={{ fontSize: 10, color: "#666" }}>Cargando...</span>}
+            {loadingDesc && campo === 'descripcion_insumo' && <span style={{ fontSize: 10, color: "#666" }}>Cargando descripción...</span>}
           </div>
         ))}
       </div>
@@ -220,7 +294,8 @@ const ArrayDisplay = ({
   camposEditables = [],
   renderItem,
   backgroundColor = "#ffffff",
-  listaInsumos = []
+  listaInsumos = [],
+  integrantesForm = []
 }) => {
   const agregarItem = useCallback(() => {
     const nuevoItem = {
@@ -298,6 +373,7 @@ const ArrayDisplay = ({
                 modoEdicion={modoEdicion}
                 puedeEditar={puedeEditar}
                 listaInsumos={listaInsumos}
+                integrantesForm={integrantesForm}
               />
             ) : (
               <div key={item.id || `item-${index}`} style={{ 
@@ -336,6 +412,13 @@ export default function AdminDetalleRegistro() {
   const [listaInsumos, setListaInsumos] = useState([]);
   const [actividadesConHoras, _setActividadesConHoras] = useState([]);
   const [manualHorasPersona, setManualHorasPersona] = useState({});
+
+  // Estados para automatización (igual que registro.jsx)
+  const [cantidadBaseProducto, setCantidadBaseProducto] = useState("0");
+  const [manualCantidadPlanificada, setManualCantidadPlanificada] = useState(false);
+  const [_mostrarCheckboxes, setMostrarCheckboxes] = useState(false);
+  const [_listaActividadesEQE, setListaActividadesEQE] = useState([]);
+  const [_actividadesSeleccionadas, setActividadesSeleccionadas] = useState({});
   
   // Estados para el modal de rechazo
   const [modalRechazoOpen, setModalRechazoOpen] = useState(false);
@@ -423,6 +506,30 @@ export default function AdminDetalleRegistro() {
       console.error("Error cargando insumos:", error);
       setListaInsumos([]);
     }
+  }, []);
+
+  // Funciones de cálculo automático (igual que registro.jsx)
+  const calcularProceso = useCallback((planificada, elaborada) => {
+    const plan = Number(planificada) || 0;
+    const elab = Number(elaborada) || 0;
+    if (plan >= elab) return (plan - elab).toString();
+    return "0";
+  }, []);
+
+  const calcularHorasTrabajadas = useCallback((inicio, fin) => {
+    if (!inicio || !fin) return "0";
+    const [horaInicio, minInicio] = inicio.split(':').map(Number);
+    const [horaFin, minFin] = fin.split(':').map(Number);
+    const minutosInicio = horaInicio * 60 + minInicio;
+    const minutosFin = horaFin * 60 + minFin;
+    let diferenciaMinutos = minutosFin - minutosInicio;
+    if (diferenciaMinutos < 0) diferenciaMinutos += 24 * 60;
+    const horasDecimal = diferenciaMinutos / 60;
+    const horasEspeciales = [14, 15, 16, 17, 18, 19, 20];
+    if (horasEspeciales.includes(horaFin) && minFin === 30) {
+      return Math.floor(horasDecimal).toString();
+    }
+    return horasDecimal.toFixed(2);
   }, []);
 
   const getPanelRoute = useCallback(() => {
@@ -565,6 +672,7 @@ export default function AdminDetalleRegistro() {
       }
     };
     cargarRegistro();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, cargarInsumosPorProducto]);
 
   useEffect(() => {
@@ -581,15 +689,212 @@ export default function AdminDetalleRegistro() {
     }
   }, [form.codigo_producto, cargarInsumosPorProducto]);
 
+  // Cargar descripción automáticamente al cambiar código de producto
+  useEffect(() => {
+    if (!modoEdicion) return;
+    const codigo = form.codigo_producto?.trim();
+    if (!codigo || codigo.length < 3) {
+      setForm(p => ({ ...p, descripcion: "" }));
+      return;
+    }
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await api.get("/productos/detalle", { params: { codigo } });
+        setForm(p => ({ ...p, descripcion: data.descripcion || "" }));
+      } catch {
+        setForm(p => ({ ...p, descripcion: "" }));
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [form.codigo_producto, modoEdicion]);
+
+  // Cargar lote principal automáticamente al cambiar código de producto
+  useEffect(() => {
+    if (!modoEdicion) return;
+    const codigo = form.codigo_producto?.trim();
+    if (!codigo || codigo.length < 3) {
+      setForm(p => ({ ...p, lotePrincipal: "" }));
+      return;
+    }
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await api.get("/lote/info", { params: { codigo } });
+        if (data && data.loteInfo !== undefined) {
+          setForm(p => ({ ...p, lotePrincipal: String(data.loteInfo).trim() }));
+        } else {
+          setForm(p => ({ ...p, lotePrincipal: "" }));
+        }
+      } catch {
+        setForm(p => ({ ...p, lotePrincipal: "" }));
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [form.codigo_producto, modoEdicion]);
+
+  // Cargar cantidad base del producto (para calcular cantidad_planificada)
+  useEffect(() => {
+    if (!modoEdicion) return;
+    const codigo = form.codigo_producto?.trim();
+    if (!codigo || codigo.length < 3) {
+      setCantidadBaseProducto("0");
+      return;
+    }
+    const cargarCantidadBase = async () => {
+      try {
+        const { data } = await api.get("/cantidades/producto", { params: { codigo } });
+        const nuevaBase = data.meta || "0";
+        setCantidadBaseProducto(nuevaBase);
+        if (!manualCantidadPlanificada) {
+          setForm(p => ({ ...p, cantidad_planificada: nuevaBase }));
+        }
+      } catch {
+        setCantidadBaseProducto("0");
+      }
+    };
+    cargarCantidadBase();
+  }, [form.codigo_producto, modoEdicion, manualCantidadPlanificada]);
+
+  // Cargar insumos pre-llenados y actividades/procesos al cambiar c\u00f3digo de producto
+  useEffect(() => {
+    if (!modoEdicion) return;
+    const codigo_producto = form.codigo_producto?.trim() || "";
+    if (!codigo_producto || codigo_producto.length < 3) {
+      setMostrarCheckboxes(false);
+      setListaActividadesEQE([]);
+      setActividadesSeleccionadas({});
+      return;
+    }
+
+    const esEQE = codigo_producto.toUpperCase().startsWith("EQE");
+    setMostrarCheckboxes(esEQE);
+
+    if (esEQE) {
+      setListaActividadesEQE([]);
+      setActividadesSeleccionadas({});
+      setForm(p => ({ ...p, detalles_actividades: [] }));
+      const cargarActividadesMaestras = async () => {
+        try {
+          const resProcesos = await api.get("/procesos/producto", { params: { codigo: "EQE-075" } });
+          let actividadesMaestras = [];
+          if (resProcesos.data?.detalles) {
+            actividadesMaestras = resProcesos.data.detalles
+              .split('\n')
+              .filter(act => act.trim() !== '')
+              .map(act => act.trim());
+          }
+          setListaActividadesEQE(actividadesMaestras);
+          const nuevasSelecciones = {};
+          actividadesMaestras.forEach(act => { nuevasSelecciones[act] = false; });
+          setActividadesSeleccionadas(nuevasSelecciones);
+        } catch {
+          setListaActividadesEQE([]);
+          setActividadesSeleccionadas({});
+        }
+      };
+      cargarActividadesMaestras();
+    } else {
+      setListaActividadesEQE([]);
+      setActividadesSeleccionadas({});
+      const cargarActividadesNormales = async () => {
+        try {
+          const resProcesos = await api.get("/procesos/producto", { params: { codigo: codigo_producto } });
+          if (resProcesos.data?.detalles) {
+            const actividades = resProcesos.data.detalles
+              .split('\n')
+              .filter(a => a.trim() !== '')
+              .map(a => a.trim().toUpperCase());
+            setForm(p => ({ ...p, detalles_actividades: actividades }));
+          } else {
+            setForm(p => ({ ...p, detalles_actividades: [] }));
+          }
+        } catch {
+          setForm(p => ({ ...p, detalles_actividades: [] }));
+        }
+      };
+      cargarActividadesNormales();
+    }
+
+    // Pre-llenar insumos desde el backend
+    const cargarInsumosPreLlenados = async () => {
+      try {
+        const { data } = await api.get("/insumos/producto", { params: { codigo: codigo_producto } });
+        let lista = [];
+        if (data && Array.isArray(data.insumos)) lista = data.insumos;
+        else if (Array.isArray(data)) lista = data;
+        if (lista.length > 0) {
+          const nuevosInsumos = lista.map((insumo, index) => ({
+            id: Date.now() + index,
+            tipo_insumo: insumo.codigo || insumo,
+            descripcion_insumo: insumo.descripcion || "",
+            cantidad_insumo: insumo.cantidad || "",
+            descrip_cant_insumo: insumo.unidad_medida || "",
+            lote_insumo: "",
+            entrega: "",
+            recepcion: "",
+          }));
+          setForm(p => ({ ...p, insumos: nuevosInsumos }));
+        }
+      } catch {
+        // no sobreescribir si falla
+      }
+    };
+    cargarInsumosPreLlenados();
+  }, [form.codigo_producto, modoEdicion]);
+
   const handleChange = useCallback((campo, valor) => {
     setForm(prev => {
       const nuevoForm = { ...prev, [campo]: valor };
+
+      // Lote unido automático
       if (campo === 'lotePrincipal' || campo === 'loteSecundario') {
         nuevoForm.loteUnido = (nuevoForm.lotePrincipal || "") + (nuevoForm.loteSecundario || "");
       }
+
+      // Reset al cambiar código de producto
+      if (campo === "codigo_producto") {
+        nuevoForm.hora_inicio = "";
+        nuevoForm.hora_fin = "";
+        nuevoForm.hora_planificada = "0";
+        nuevoForm.cantidad_planificada = "0";
+        setManualCantidadPlanificada(false);
+        setManualHorasPersona({});
+        setActividadesSeleccionadas({});
+      }
+
+      if (campo === "cantidad_planificada") {
+        setManualCantidadPlanificada(true);
+      }
+
+      // Calcular horas trabajadas y cantidad planificada al cambiar horas
+      if (campo === "hora_inicio" || campo === "hora_fin") {
+        const inicio = campo === "hora_inicio" ? valor : prev.hora_inicio;
+        const fin = campo === "hora_fin" ? valor : prev.hora_fin;
+        const horasTrabajadas = calcularHorasTrabajadas(inicio, fin);
+        nuevoForm.hora_planificada = horasTrabajadas;
+
+        if (!manualCantidadPlanificada && cantidadBaseProducto && horasTrabajadas !== "0" && horasTrabajadas !== "0.00") {
+          const base = parseFloat(cantidadBaseProducto);
+          const horas = parseFloat(horasTrabajadas);
+          if (!isNaN(base) && !isNaN(horas) && horas > 0) {
+            nuevoForm.cantidad_planificada = Math.floor(base * horas).toString();
+          } else {
+            nuevoForm.cantidad_planificada = cantidadBaseProducto;
+          }
+        } else if (!manualCantidadPlanificada) {
+          nuevoForm.cantidad_planificada = cantidadBaseProducto;
+        }
+      }
+
+      // Recalcular cantidad_proceso automáticamente
+      if (campo === "cantidad_planificada" || campo === "cantidad_elaborado") {
+        const planificada = campo === "cantidad_planificada" ? valor : prev.cantidad_planificada;
+        const elaborada = campo === "cantidad_elaborado" ? valor : prev.cantidad_elaborado;
+        nuevoForm.cantidad_proceso = calcularProceso(planificada, elaborada);
+      }
+
       return nuevoForm;
     });
-  }, []);
+  }, [calcularHorasTrabajadas, calcularProceso, cantidadBaseProducto, manualCantidadPlanificada]);
 
   const handleArrayChange = useCallback((campo, nuevoArray) => {
     setForm(prev => ({ ...prev, [campo]: nuevoArray }));
@@ -872,6 +1177,7 @@ export default function AdminDetalleRegistro() {
         camposEditables={["tipo_insumo", "descripcion_insumo", "cantidad_insumo", "lote_insumo", "entrega", "recepcion"]}
         backgroundColor="#3498db"
         listaInsumos={listaInsumos}
+        integrantesForm={form.integrantes || []}
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
@@ -925,6 +1231,7 @@ export default function AdminDetalleRegistro() {
         onItemsChange={handleArrayChange}
         camposEditables={["descripcion_etiqueta", "cantidad_etiqueta", "entrega_etiqueta", "recepcion_etiqueta"]}
         backgroundColor="#3498db"
+        integrantesForm={form.integrantes || []}
         renderItem={(e) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{e.descripcion_etiqueta}</div>
@@ -1166,24 +1473,36 @@ export default function AdminDetalleRegistro() {
                   return sum + (isNaN(valor) ? 0 : valor);
                 }, 0);
 
+                const cuadra = totalPlanificado > 0 && totalElaborado >= totalPlanificado;
+                const deficiente = totalPlanificado > 0 && totalElaborado < totalPlanificado;
+                const cardBg = cuadra
+                  ? { background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", border: "1px solid #86efac" }
+                  : deficiente
+                  ? { background: "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)", border: "1px solid #fca5a5" }
+                  : { background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)", border: "1px solid #7dd3fc" };
+                const numBg = cuadra ? "#16a34a" : deficiente ? "#dc2626" : "#0284c7";
+                const planStyle = { background: cuadra ? "#dcfce7" : deficiente ? "#fef2f2" : "#dbeafe", padding: "8px 12px", borderRadius: 6, border: `1px solid ${cuadra ? "#86efac" : deficiente ? "#fca5a5" : "#93c5fd"}` };
+                const elabStyle = { background: cuadra ? "#dcfce7" : deficiente ? "#fee2e2" : "#dbeafe", padding: "8px 12px", borderRadius: 6, border: `1px solid ${cuadra ? "#86efac" : deficiente ? "#fca5a5" : "#93c5fd"}` };
+                const textColor = cuadra ? "#14532d" : deficiente ? "#7f1d1d" : "#0c4a6e";
+                const labelColor = cuadra ? "#166534" : deficiente ? "#991b1b" : "#1e40af";
                 return (
-                  <div key={idx} style={{ padding: "16px", background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)", border: "1px solid #7dd3fc", borderRadius: 8, boxShadow: "0 2px 4px rgba(0,0,0,0.04)", position: "relative" }}>
+                  <div key={idx} style={{ padding: "16px", borderRadius: 8, boxShadow: "0 2px 4px rgba(0,0,0,0.04)", position: "relative", ...cardBg }}>
                     {modoEdicion && puedeEditar && (
                       <button onClick={() => eliminarDetalleActividad(idx)} style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }} title="Eliminar actividad">✕</button>
                     )}
                     <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-                      <div style={{ minWidth: 28, height: 28, background: "#0284c7", color: "white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>{idx + 1}</div>
+                      <div style={{ minWidth: 28, height: 28, background: numBg, color: "white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>{idx + 1}</div>
                       <div style={{ flex: 1 }}>
                         {modoEdicion && puedeEditar ? (
                           <input type="text" value={detalle} onChange={(e) => actualizarDetalleActividad(idx, e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 15, fontWeight: 600, color: "#0c4a6e", textTransform: "uppercase" }} placeholder="EJ: CORTADO DE MANGAS" />
                         ) : (
-                          <div style={{ fontSize: 15, color: "#0c4a6e", fontWeight: 600, wordBreak: "break-word", textTransform: "uppercase" }}>{detalle}</div>
+                          <div style={{ fontSize: 15, color: textColor, fontWeight: 600, wordBreak: "break-word", textTransform: "uppercase" }}>{detalle}</div>
                         )}
                       </div>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, paddingLeft: 40, fontSize: 13 }}>
-                      <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}><span style={{ color: "#1e40af", fontWeight: 600 }}>Planificada:</span> <span style={{ color: "#0c4a6e" }}>{totalPlanificado > 0 ? totalPlanificado : "-"}</span></div>
-                      <div style={{ background: "#dbeafe", padding: "8px 12px", borderRadius: 6, border: "1px solid #93c5fd" }}><span style={{ color: "#1e40af", fontWeight: 600 }}>Elaborada:</span> <span style={{ color: "#0c4a6e" }}>{totalElaborado > 0 ? totalElaborado : "-"}</span></div>
+                      <div style={planStyle}><span style={{ color: labelColor, fontWeight: 600 }}>Planificada:</span> <span style={{ color: textColor }}>{totalPlanificado > 0 ? totalPlanificado : "-"}</span></div>
+                      <div style={elabStyle}><span style={{ color: labelColor, fontWeight: 600 }}>Elaborada:</span> <span style={{ color: textColor }}>{totalElaborado > 0 ? totalElaborado : "-"}</span></div>
                     </div>
                   </div>
                 );
@@ -1313,15 +1632,37 @@ export default function AdminDetalleRegistro() {
                 };
                 
                 return (
-                  <div key={integranteKey} style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "hidden", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", position: "relative" }}>
+                  <div key={integranteKey} style={{ border: "1px solid #e5e7eb", borderRadius: 12, overflow: "visible", background: "#fff", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", position: "relative" }}>
                     {modoEdicion && puedeEditar && (
                       <button onClick={eliminarIntegrante} style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, fontSize: 12 }} title="Eliminar integrante">✕</button>
                     )}
-                    <div style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)", padding: "12px 20px", color: "white" }}>
+                    <div style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)", padding: "12px 20px", color: "white", borderRadius: "12px 12px 0 0" }}>
                       {modoEdicion && puedeEditar ? (
                         <>
-                          <input type="text" value={integrante.nombre || ""} onChange={(e) => actualizarNombreIntegrante(e.target.value.toUpperCase())} style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "none", fontSize: 16, fontWeight: 600, marginBottom: 8, backgroundColor: "rgba(255,255,255,0.9)", color: "#1e3a5f", textTransform: "uppercase" }} placeholder="NOMBRE DEL INTEGRANTE" />
-                          <input type="text" value={integrante.cargo || ""} onChange={(e) => actualizarCargoIntegrante(e.target.value.toUpperCase())} style={{ width: "100%", padding: "4px 8px", borderRadius: 6, border: "none", fontSize: 13, backgroundColor: "rgba(255,255,255,0.7)", color: "#1e3a5f", textTransform: "uppercase" }} placeholder="CARGO" />
+                          <input
+                            list={`integrantes-datalist-${integranteKey}`}
+                            value={integrante.nombre || ""}
+                            onChange={(e) => actualizarNombreIntegrante(e.target.value.toUpperCase())}
+                            style={{ width: "100%", padding: "6px 10px", borderRadius: 6, border: "none", fontSize: 16, fontWeight: 600, marginBottom: 8, backgroundColor: "rgba(255,255,255,0.9)", color: "#1e3a5f", textTransform: "uppercase" }}
+                            placeholder="NOMBRE DEL INTEGRANTE (escribe o selecciona)"
+                          />
+                          <datalist id={`integrantes-datalist-${integranteKey}`}>
+                            {Array.isArray(form.integrantes) && form.integrantes.map((ing, idx) =>
+                              ing?.nombre ? <option key={idx} value={ing.nombre.toUpperCase()}>{ing.nombre.toUpperCase()}</option> : null
+                            )}
+                          </datalist>
+                          <select
+                            value={integrante.cargo || ""}
+                            onChange={(e) => actualizarCargoIntegrante(e.target.value)}
+                            style={{ width: "100%", padding: "4px 8px", borderRadius: 6, border: "none", fontSize: 13, backgroundColor: "rgba(255,255,255,0.85)", color: "#1e3a5f", cursor: "pointer" }}
+                          >
+                            <option value="">SELECCIONE CARGO...</option>
+                            <option value="LÍDER">LÍDER</option>
+                            <option value="COSTURERA/O">COSTURERA/O</option>
+                            <option value="REMATADORA/O">REMATADORA/O</option>
+                            <option value="APRENDÍZ DE COSTURA">APRENDÍZ DE COSTURA</option>
+                            <option value="OTRO">OTRO</option>
+                          </select>
                         </>
                       ) : (
                         <>
