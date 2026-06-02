@@ -697,16 +697,15 @@ export default function AdminDetalleRegistro() {
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo = form.codigo_producto?.trim();
-    if (!codigo || codigo.length < 3) {
-      setForm(p => ({ ...p, descripcion: "" }));
-      return;
-    }
+    if (!codigo || codigo.length < 3) return;
+    // Solo cargar si el usuario cambió el código de producto (descripción vacía)
+    if (form.descripcion) return;
     const t = setTimeout(async () => {
       try {
         const { data } = await api.get("/productos/detalle", { params: { codigo } });
         setForm(p => ({ ...p, descripcion: data.descripcion || "" }));
       } catch {
-        setForm(p => ({ ...p, descripcion: "" }));
+        // no borrar si falla
       }
     }, 400);
     return () => clearTimeout(t);
@@ -716,26 +715,23 @@ export default function AdminDetalleRegistro() {
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo = form.codigo_producto?.trim();
-    if (!codigo || codigo.length < 3) {
-      setForm(p => ({ ...p, lotePrincipal: "" }));
-      return;
-    }
+    if (!codigo || codigo.length < 3) return;
+    // Solo cargar si el lote está vacío (no sobreescribir el ya guardado)
+    if (form.lotePrincipal) return;
     const t = setTimeout(async () => {
       try {
         const { data } = await api.get("/lote/info", { params: { codigo } });
         if (data && data.loteInfo !== undefined) {
           setForm(p => ({ ...p, lotePrincipal: String(data.loteInfo).trim() }));
-        } else {
-          setForm(p => ({ ...p, lotePrincipal: "" }));
         }
       } catch {
-        setForm(p => ({ ...p, lotePrincipal: "" }));
+        // no borrar si falla
       }
     }, 400);
     return () => clearTimeout(t);
   }, [form.codigo_producto, modoEdicion]);
 
-  // Cargar cantidad base del producto (para calcular cantidad_planificada)
+  // Cargar cantidad base del producto (solo para referencia interna, no sobreescribir cantidad_planificada guardada)
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo = form.codigo_producto?.trim();
@@ -748,8 +744,15 @@ export default function AdminDetalleRegistro() {
         const { data } = await api.get("/cantidades/producto", { params: { codigo } });
         const nuevaBase = data.meta || "0";
         setCantidadBaseProducto(nuevaBase);
+        // Solo actualizar cantidad_planificada si está vacía o en cero
         if (!manualCantidadPlanificada) {
-          setForm(p => ({ ...p, cantidad_planificada: nuevaBase }));
+          setForm(p => {
+            const actual = p.cantidad_planificada;
+            if (!actual || actual === "0") {
+              return { ...p, cantidad_planificada: nuevaBase };
+            }
+            return p;
+          });
         }
       } catch {
         setCantidadBaseProducto("0");
@@ -775,7 +778,7 @@ export default function AdminDetalleRegistro() {
     if (esEQE) {
       setListaActividadesEQE([]);
       setActividadesSeleccionadas({});
-      setForm(p => ({ ...p, detalles_actividades: [] }));
+      // No borrar detalles_actividades si ya tiene datos guardados
       const cargarActividadesMaestras = async () => {
         try {
           const resProcesos = await api.get("/procesos/producto", { params: { codigo: "EQE-075" } });
@@ -801,18 +804,30 @@ export default function AdminDetalleRegistro() {
       setActividadesSeleccionadas({});
       const cargarActividadesNormales = async () => {
         try {
+          // Solo cargar actividades si no hay ninguna guardada
+          setForm(p => {
+            const tieneActividades = Array.isArray(p.detalles_actividades)
+              ? p.detalles_actividades.length > 0
+              : (typeof p.detalles_actividades === 'string' && p.detalles_actividades.trim() !== '');
+            if (tieneActividades) return p;
+            return p; // retornar sin modificar, la carga async se hace abajo
+          });
           const resProcesos = await api.get("/procesos/producto", { params: { codigo: codigo_producto } });
           if (resProcesos.data?.detalles) {
             const actividades = resProcesos.data.detalles
               .split('\n')
               .filter(a => a.trim() !== '')
               .map(a => a.trim().toUpperCase());
-            setForm(p => ({ ...p, detalles_actividades: actividades }));
-          } else {
-            setForm(p => ({ ...p, detalles_actividades: [] }));
+            setForm(p => {
+              const tieneActividades = Array.isArray(p.detalles_actividades)
+                ? p.detalles_actividades.length > 0
+                : (typeof p.detalles_actividades === 'string' && p.detalles_actividades.trim() !== '');
+              if (tieneActividades) return p;
+              return { ...p, detalles_actividades: actividades };
+            });
           }
         } catch {
-          setForm(p => ({ ...p, detalles_actividades: [] }));
+          // no borrar si falla
         }
       };
       cargarActividadesNormales();
@@ -1720,7 +1735,7 @@ export default function AdminDetalleRegistro() {
                                   {modoEdicion && puedeEditar ? (
                                     <input type="text" value={act.horas_persona || ""} placeholder="HH:MM" readOnly={estaBloqueado} onChange={(e) => { actualizarActividad(integranteKey, actIdx, 'horas_persona', e.target.value); setManualHorasPersona(prev => ({ ...prev, [`${integranteKey}_${actIdx}`]: true })); }} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center", backgroundColor: estaBloqueado ? "#e9ecef" : "white", cursor: estaBloqueado ? "not-allowed" : "text" }} />
                                   ) : (
-                                    (act.horas_persona || "") + "hrs"
+                                    (act.horas_persona || "") + " hrs"
                                   )}
                                 </td>
                                 <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
