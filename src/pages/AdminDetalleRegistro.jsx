@@ -408,7 +408,7 @@ export default function AdminDetalleRegistro() {
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [listaInsumos, setListaInsumos] = useState([]);
-  const [actividadesConHoras] = useState([]);
+  const [actividadesConHoras, setActividadesConHoras] = useState([]);
   const [manualHorasPersona, setManualHorasPersona] = useState({});
 
   const [cantidadBaseProducto, setCantidadBaseProducto] = useState("0");
@@ -632,6 +632,7 @@ export default function AdminDetalleRegistro() {
             const parsed = JSON.parse(datosLimpios.detalles_actividades);
             datosLimpios.detalles_actividades = Array.isArray(parsed) ? parsed : [parsed];
           } catch (error) {
+            console.error('Error parseando detalles_actividades:', error);
             datosLimpios.detalles_actividades = datosLimpios.detalles_actividades
               .split('\n')
               .map(d => formatearMayusculas(d.trim()))
@@ -735,6 +736,7 @@ export default function AdminDetalleRegistro() {
         const { data } = await api.get("/productos/detalle", { params: { codigo } });
         setForm(p => ({ ...p, descripcion: data.descripcion || "" }));
       } catch {
+        console.error("Error obteniendo descripción para código:", codigo);
       }
     }, 400);
     return () => clearTimeout(t);
@@ -752,6 +754,7 @@ export default function AdminDetalleRegistro() {
           setForm(p => ({ ...p, lotePrincipal: String(data.loteInfo).trim() }));
         }
       } catch {
+        console.error("Error obteniendo lote para código:", codigo);
       }
     }, 400);
     return () => clearTimeout(t);
@@ -841,6 +844,7 @@ export default function AdminDetalleRegistro() {
             });
           }
         } catch {
+          console.error("Error cargando actividades para producto:", codigo_producto);
         }
       };
       cargarActividadesNormales();
@@ -868,7 +872,8 @@ export default function AdminDetalleRegistro() {
             return { ...p, insumos: nuevosInsumos };
           });
         }
-      } catch {
+      } catch (error) {
+        console.error("Error cargando insumos para producto:", codigo_producto, error);
       }
     };
     cargarInsumosPreLlenados();
@@ -1102,6 +1107,42 @@ export default function AdminDetalleRegistro() {
   const eliminarDetalleActividad = (index) => {
     const nuevosDetalles = (form.detalles_actividades || []).filter((_, i) => i !== index);
     handleArrayChange("detalles_actividades", nuevosDetalles);
+  };
+
+  const actualizarActividad = async (integranteKey, actividadIndex, campo, valor) => {
+    const rawData = form.actividades_por_integrante || {};
+    const nuevaData = JSON.parse(JSON.stringify(rawData));
+    const integrante = nuevaData[integranteKey];
+    if (integrante && integrante.actividades && integrante.actividades[actividadIndex]) {
+      let valorFormateado = valor;
+      if (campo === 'actividad') {
+        valorFormateado = valor.toUpperCase();
+      } else if (campo === 'cantidad_planificada') {
+        const actividad = integrante.actividades[actividadIndex].actividad;
+        if (actividad && valor) {
+          const cantidadBase = await cargarCantidadPorHora(actividad, form.codigo_producto);
+          const esManual = manualHorasPersona[`${integranteKey}_${actividadIndex}`];
+          if (!esManual && cantidadBase) {
+            const decimal = parseFloat(valor) / cantidadBase;
+            const horasCalculadas = decimalParaHorasMinutos(decimal);
+            if (horasCalculadas) {
+              integrante.actividades[actividadIndex]['horas_persona'] = horasCalculadas;
+            }
+          }
+        }
+      }
+      integrante.actividades[actividadIndex][campo] = valorFormateado;
+      handleActividadesPorIntegranteChange(nuevaData);
+    }
+  };
+
+  const actualizarNombreActividad = (integranteKey, actividadIndex, nuevoNombre) => {
+    const rawData = form.actividades_por_integrante || {};
+    const nuevaData = JSON.parse(JSON.stringify(rawData));
+    if (nuevaData[integranteKey]?.actividades?.[actividadIndex]) {
+      nuevaData[integranteKey].actividades[actividadIndex].actividad = nuevoNombre.toUpperCase();
+      handleActividadesPorIntegranteChange(nuevaData);
+    }
   };
 
   const cardStyle = useMemo(() => ({
@@ -1556,6 +1597,7 @@ export default function AdminDetalleRegistro() {
             try {
               rawData = JSON.parse(rawData);
             } catch (error) {
+              console.error("Error al parsear actividades_por_integrante:", error);
               rawData = {};
             }
           }
@@ -1565,32 +1607,6 @@ export default function AdminDetalleRegistro() {
           }
           
           const listaIntegrantes = Object.values(rawData).filter(i => i && i.nombre);
-          
-          const actualizarActividad = async (integranteKey, actividadIndex, campo, valor) => {
-            const nuevaData = JSON.parse(JSON.stringify(rawData));
-            const integrante = nuevaData[integranteKey];
-            if (integrante && integrante.actividades && integrante.actividades[actividadIndex]) {
-              let valorFormateado = valor;
-              if (campo === 'actividad') {
-                valorFormateado = valor.toUpperCase();
-              } else if (campo === 'cantidad_planificada') {
-                const actividad = integrante.actividades[actividadIndex].actividad;
-                if (actividad && valor) {
-                  const cantidadBase = await cargarCantidadPorHora(actividad);
-                  const esManual = manualHorasPersona[`${integranteKey}_${actividadIndex}`];
-                  if (!esManual && cantidadBase) {
-                    const decimal = parseFloat(valor) / cantidadBase;
-                    const horasCalculadas = decimalParaHorasMinutos(decimal);
-                    if (horasCalculadas) {
-                      integrante.actividades[actividadIndex]['horas_persona'] = horasCalculadas;
-                    }
-                  }
-                }
-              }
-              integrante.actividades[actividadIndex][campo] = valorFormateado;
-              handleActividadesPorIntegranteChange(nuevaData);
-            }
-          };
           
           const agregarActividadAIntegrante = (integranteKey) => {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
@@ -1611,14 +1627,6 @@ export default function AdminDetalleRegistro() {
             const nuevaData = JSON.parse(JSON.stringify(rawData));
             nuevaData[integranteKey].actividades = nuevaData[integranteKey].actividades.filter((_, i) => i !== actividadIndex);
             handleActividadesPorIntegranteChange(nuevaData);
-          };
-          
-          const actualizarNombreActividad = (integranteKey, actividadIndex, nuevoNombre) => {
-            const nuevaData = JSON.parse(JSON.stringify(rawData));
-            if (nuevaData[integranteKey]?.actividades?.[actividadIndex]) {
-              nuevaData[integranteKey].actividades[actividadIndex].actividad = nuevoNombre.toUpperCase();
-              handleActividadesPorIntegranteChange(nuevaData);
-            }
           };
           
           if (listaIntegrantes.length === 0) {
@@ -1716,7 +1724,7 @@ export default function AdminDetalleRegistro() {
                             <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>ELABOR.</th>
                             <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>OBSERVACIONES</th>
                             {modoEdicion && puedeEditar && <th style={{ padding: 10, textAlign: "center", fontSize: 12 }}>ACCIÓN</th>}
-                          </tr>
+                           </tr>
                         </thead>
                         <tbody>
                           {integrante.actividades?.map((act, actIdx) => {
@@ -1728,7 +1736,44 @@ export default function AdminDetalleRegistro() {
                               <tr key={actIdx} style={{ borderBottom: "1px solid #f3f4f6" }}>
                                 <td style={{ padding: 10, fontSize: 13 }}>
                                   {modoEdicion && puedeEditar ? (
-                                    <select value={act.actividad || ""} onChange={(e) => actualizarNombreActividad(integranteKey, actIdx, e.target.value.toUpperCase())} style={{ width: "100%", padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}>
+                                    <select 
+                                      value={act.actividad || ""} 
+                                      onChange={async (e) => {
+                                        const actividadSeleccionada = e.target.value.toUpperCase();
+                                        actualizarNombreActividad(integranteKey, actIdx, actividadSeleccionada);
+                                        
+                                        setManualHorasPersona(prev => ({
+                                          ...prev,
+                                          [`${integranteKey}_${actIdx}`]: false
+                                        }));
+                                        
+                                        if (actividadSeleccionada && form.codigo_producto) {
+                                          try {
+                                            const response = await api.get("/actividad/cantidadPorHora", {
+                                              params: { 
+                                                actividad: actividadSeleccionada, 
+                                                codigo: form.codigo_producto 
+                                              }
+                                            });
+                                            const cantidadBase = response.data.cantidad_por_hora;
+                                            
+                                            setActividadesConHoras(prev => {
+                                              const nuevas = [...prev];
+                                              const idx = nuevas.findIndex(a => a.actividad === actividadSeleccionada);
+                                              if (idx >= 0) {
+                                                nuevas[idx] = { ...nuevas[idx], cantidad_base: cantidadBase };
+                                              } else {
+                                                nuevas.push({ actividad: actividadSeleccionada, cantidad_base: cantidadBase });
+                                              }
+                                              return nuevas;
+                                            });
+                                          } catch (error) {
+                                            console.error("Error cargando cantidad base:", error);
+                                          }
+                                        }
+                                      }}
+                                      style={{ width: "100%", padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12 }}
+                                    >
                                       <option value="">SELECCIONE...</option>
                                       {Array.isArray(form.detalles_actividades) && form.detalles_actividades.map((detalle, idx) => (
                                         <option key={idx} value={detalle}>{detalle}</option>
@@ -1737,47 +1782,67 @@ export default function AdminDetalleRegistro() {
                                   ) : (
                                     <span style={{ textTransform: "uppercase" }}>{act.actividad || "-"}</span>
                                   )}
-                                </td>
+                                 </td>
                                 <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                   {modoEdicion && puedeEditar ? (
                                     <input type="text" value={act.horas_persona || ""} placeholder="HH:MM" readOnly={estaBloqueado} onChange={(e) => { actualizarActividad(integranteKey, actIdx, 'horas_persona', e.target.value); setManualHorasPersona(prev => ({ ...prev, [`${integranteKey}_${actIdx}`]: true })); }} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center", backgroundColor: estaBloqueado ? "#e9ecef" : "white", cursor: estaBloqueado ? "not-allowed" : "text" }} />
                                   ) : (
                                     (act.horas_persona || "") + " hrs"
                                   )}
-                                </td>
+                                 </td>
                                 <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                   {modoEdicion && puedeEditar ? (
-                                    <input type="number" value={act.cantidad_planificada || ""} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_planificada', e.target.value)} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }} />
+                                    <input 
+                                      type="number" 
+                                      value={act.cantidad_planificada || ""} 
+                                      onChange={(e) => {
+                                        const cantidadPlanificada = e.target.value;
+                                        const actividadBase = actividadesConHoras.find(a => a.actividad === act.actividad);
+                                        const cantidadBase = parseFloat(actividadBase?.cantidad_base);
+                                        const esManualHoras = manualHorasPersona[`${integranteKey}_${actIdx}`];
+                                        
+                                        let horasPersona = '';
+                                        if (!esManualHoras && cantidadPlanificada && cantidadBase) {
+                                          horasPersona = decimalParaHorasMinutos(parseFloat(cantidadPlanificada) / cantidadBase);
+                                        }
+                                        
+                                        actualizarActividad(integranteKey, actIdx, 'cantidad_planificada', cantidadPlanificada);
+                                        if (!esManualHoras && horasPersona) {
+                                          actualizarActividad(integranteKey, actIdx, 'horas_persona', horasPersona);
+                                        }
+                                      }}
+                                      style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }} 
+                                    />
                                   ) : (
                                     act.cantidad_planificada || ""
                                   )}
-                                </td>
+                                 </td>
                                 <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                   {modoEdicion && puedeEditar ? (
                                     <input type="number" value={act.cantidad_elaborada || ""} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', e.target.value)} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }} />
                                   ) : (
                                     act.cantidad_elaborada || ""
                                   )}
-                                </td>
+                                 </td>
                                 <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                   {modoEdicion && puedeEditar ? (
                                     <input type="text" value={act.observaciones_integrante || ''} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'observaciones_integrante', e.target.value.toUpperCase())} style={{ width: 150, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textTransform: "uppercase" }} />
                                   ) : (
                                     act.observaciones_integrante || '-'
                                   )}
-                                </td>
+                                 </td>
                                 {modoEdicion && puedeEditar && (
                                   <td style={{ padding: 10, textAlign: "center" }}>
                                     <button onClick={() => eliminarActividad(integranteKey, actIdx)} style={{ background: "#ef4444", border: "none", color: "white", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", fontSize: 12 }} title="Eliminar actividad">✕</button>
-                                  </td>
+                                   </td>
                                 )}
-                              </tr>
+                               </tr>
                             );
                           })}
                           {(!integrante.actividades || integrante.actividades.length === 0) && (
-                            <tr>
+                             <tr>
                               <td colSpan={modoEdicion && puedeEditar ? 6 : 5} style={{ padding: 20, textAlign: "center", color: "#6b7280" }}>No hay actividades asignadas</td>
-                            </tr>
+                             </tr>
                           )}
                         </tbody>
                       </table>
