@@ -9,7 +9,6 @@ import ModalRechazo from "./ModalRechazo";
 const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, onChange }) => {
   const handleChange = (e) => {
     let valor = e.target.value;
-    // Convertir a mayúsculas para ciertos campos
     if (campo === 'codigo_producto' || campo === 'responsable' || campo === 'supervisor' || 
     campo === 'cliente' || campo === 'lotePrincipal' || campo === 'loteSecundario' || 
     type === 'text' || type === 'textarea') {
@@ -44,7 +43,6 @@ const Campo = ({ label, campo, type = "text", modoEdicion, puedeEditar, value, o
   );
 };
 
-// Componente Select - Versión controlada SIN errores
 const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, onChange }) => {
   const handleChange = (e) => {
     onChange(campo, e.target.value);
@@ -79,7 +77,6 @@ const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, o
   );
 };
 
-// Componente para item de array - CON AUTOMATIZACIÓN
 const ENTREGA_OPTIONS = [
   "BRYAN ALEXANDER CAJAMARCA BONILLA",
   "JUAN ANIBAL CHASIPANTA ALQUINGA",
@@ -98,7 +95,6 @@ const ENTREGA_OPTIONS = [
   "CAROLINA ESTEFANIA VACA GUANATASIG",
 ];
 
-// Componente para item de etiquetas array - CON AUTOMATIZACIÓN
 const ETIQUETAS_ENTREGA_OPTIONS = [
   "BRYAN ALEXANDER CAJAMARCA BONILLA",
   "ANA LUCIA GUAMAN PILATUÑA",
@@ -111,7 +107,6 @@ const ETIQUETAS_OPTIONS = [
   "ETIQUETA DE PAPEL INDIVIDUAL",
   "ETIQUETA CON NOMBRE DE CLIENTE"
 ]
-
 
 const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdicion, puedeEditar, listaInsumos = [], integrantesForm = [] }) => {
   const [loadingDesc, setLoadingDesc] = useState(false);
@@ -212,7 +207,7 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                   />
                   {loadingLote && <span style={{ position: "absolute", right: 8, top: 8, fontSize: 10, color: "#6b7280" }}>⏳</span>}
                 </div>
-              ) :  campo === 'descripcion_etiqueta' ? (
+              ) : campo === 'descripcion_etiqueta' ? (
                 <select
                   value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
                   onChange={(e) => handleChange(campo, e.target.value)}
@@ -259,7 +254,7 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                     ) : null
                   ))}
                 </select>
-              ) :campo === 'recepcion_etiqueta' ? (
+              ) : campo === 'recepcion_etiqueta' ? (
                 <input
                   value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
                   onChange={(e) => handleChange(campo, e.target.value)}
@@ -287,7 +282,6 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
   );
 };
 
-// Componente ArrayDisplay optimizado
 const ArrayDisplay = ({ 
   titulo, 
   datos, 
@@ -414,17 +408,15 @@ export default function AdminDetalleRegistro() {
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [listaInsumos, setListaInsumos] = useState([]);
-  const [actividadesConHoras, _setActividadesConHoras] = useState([]);
+  const [actividadesConHoras] = useState([]);
   const [manualHorasPersona, setManualHorasPersona] = useState({});
 
-  // Estados para automatización (igual que registro.jsx)
   const [cantidadBaseProducto, setCantidadBaseProducto] = useState("0");
   const [manualCantidadPlanificada, setManualCantidadPlanificada] = useState(false);
-  const [_mostrarCheckboxes, setMostrarCheckboxes] = useState(false);
-  const [_listaActividadesEQE, setListaActividadesEQE] = useState([]);
-  const [_actividadesSeleccionadas, setActividadesSeleccionadas] = useState({});
+  const [mostrarCheckboxes, setMostrarCheckboxes] = useState(false);
+  const [listaActividadesEQE, setListaActividadesEQE] = useState([]);
+  const [actividadesSeleccionadas, setActividadesSeleccionadas] = useState({});
   
-  // Estados para el modal de rechazo
   const [modalRechazoOpen, setModalRechazoOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
@@ -465,7 +457,6 @@ export default function AdminDetalleRegistro() {
     { value: "OTRA", label: "OTRA" }
   ];
 
-  // Función para convertir decimal a HH:MM
   const decimalParaHorasMinutos = (decimal) => {
     if (isNaN(decimal) || decimal <= 0) return '';
     const horas = Math.floor(decimal);
@@ -475,7 +466,6 @@ export default function AdminDetalleRegistro() {
     return `${horas}:${minutos.toString().padStart(2, '0')}`;
   };
 
-  // Función para cargar cantidad por hora de actividad
   const cargarCantidadPorHora = useCallback(async (actividad, codigo) => {
     if (!actividad) return null;
     try {
@@ -489,7 +479,6 @@ export default function AdminDetalleRegistro() {
     }
   }, []);
 
-  // Función para cargar insumos por producto
   const cargarInsumosPorProducto = useCallback(async (codigoProducto) => {
     if (!codigoProducto || codigoProducto.length < 3) {
       setListaInsumos([]);
@@ -512,7 +501,6 @@ export default function AdminDetalleRegistro() {
     }
   }, []);
 
-  // Funciones de cálculo automático (igual que registro.jsx)
   const calcularProceso = useCallback((planificada, elaborada) => {
     const plan = Number(planificada) || 0;
     const elab = Number(elaborada) || 0;
@@ -554,13 +542,48 @@ export default function AdminDetalleRegistro() {
   const estadoPendienteSupervisor = registro?.estado === "pendiente_SUPERVISOR";
   const estadoAprobado = registro?.estado?.includes("aprobado");
 
-  // Función para formatear texto a mayúsculas
   const formatearMayusculas = (texto) => {
     if (!texto) return texto;
     return texto.toUpperCase();
   };
 
-  // Función para parsear arrays que vienen como JSON strings
+  const copiarRegistroAForm = useCallback((datosRegistro) => {
+  if (!datosRegistro) return {};
+  const copia = JSON.parse(JSON.stringify(datosRegistro));
+  
+  copia.cantidad_merma = copia.cantidad_merma || "0";
+  copia.cantidad_proceso = copia.cantidad_proceso || "0";
+  copia.cantidad_elaborado = copia.cantidad_elaborado || "0";
+  copia.cantidad_planificada = copia.cantidad_planificada || "0";
+  
+  if (copia.insumos && Array.isArray(copia.insumos)) {
+    copia.insumos = copia.insumos.map(insumo => ({
+      ...insumo,
+      entrega: insumo.entrega || "",
+      recepcion: insumo.recepcion ? insumo.recepcion.toUpperCase() : "",
+    }));
+  } else {
+    copia.insumos = [];
+  }
+  
+  // AÑADE ESTA PARTE PARA REPOSICION_NO_CONFORME
+  if (copia.reposicion_no_conforme && Array.isArray(copia.reposicion_no_conforme)) {
+    copia.reposicion_no_conforme = copia.reposicion_no_conforme.map(item => ({
+      ...item,
+      entrega: item.entrega || "",
+      recepcion: item.recepcion ? item.recepcion.toUpperCase() : "",
+    }));
+  } else {
+    copia.reposicion_no_conforme = [];
+  }
+  
+  if (!copia.etiquetas) copia.etiquetas = [];
+  if (!copia.integrantes) copia.integrantes = [];
+  if (!copia.maquinarias) copia.maquinarias = [];
+  
+  return copia;
+}, []);
+
   const parsearArrays = (datos) => {
     const datosLimpios = { ...datos };
     const camposArray = ['insumos', 'etiquetas', 'integrantes', 'reposicion_no_conforme', 'maquinarias'];
@@ -578,6 +601,13 @@ export default function AdminDetalleRegistro() {
                   : (item.numero_maquinaria ? [item.numero_maquinaria] : [])
               }));
             }
+            if (campo === 'insumos' && Array.isArray(datosLimpios[campo])) {
+              datosLimpios[campo] = datosLimpios[campo].map(item => ({
+                ...item,
+                entrega: item.entrega || "",
+                recepcion: item.recepcion || "",
+              }));
+            }
           } catch (e) {
             console.error(`Error parseando ${campo}:`, e);
             datosLimpios[campo] = [];
@@ -588,7 +618,13 @@ export default function AdminDetalleRegistro() {
       }
     });
 
-    // Manejar detalles_actividades
+    const camposNumericos = ['cantidad_merma', 'cantidad_proceso', 'cantidad_elaborado', 'cantidad_planificada'];
+    camposNumericos.forEach(campo => {
+      if (datosLimpios[campo] === undefined || datosLimpios[campo] === null) {
+        datosLimpios[campo] = "0";
+      }
+    });
+
     if (datosLimpios.detalles_actividades) {
       if (typeof datosLimpios.detalles_actividades === 'string') {
         if (datosLimpios.detalles_actividades.startsWith('[') || datosLimpios.detalles_actividades.startsWith('{')) {
@@ -600,7 +636,6 @@ export default function AdminDetalleRegistro() {
               .split('\n')
               .map(d => formatearMayusculas(d.trim()))
               .filter(d => d);
-            console.error('Error parseando detalles_actividades:', error);
           }
         } else {
           datosLimpios.detalles_actividades = datosLimpios.detalles_actividades
@@ -617,7 +652,6 @@ export default function AdminDetalleRegistro() {
       datosLimpios.detalles_actividades = [];
     }
 
-    // Manejar actividades_por_integrante
     if (datosLimpios.actividades_por_integrante) {
       if (typeof datosLimpios.actividades_por_integrante === 'string') {
         try {
@@ -664,7 +698,7 @@ export default function AdminDetalleRegistro() {
         const datosRegistro = res.data.registro || res.data;
         const datosParsados = parsearArrays(datosRegistro);
         setRegistro(datosParsados);
-        setForm(JSON.parse(JSON.stringify(datosParsados)));
+        setForm(copiarRegistroAForm(datosParsados));
         if (datosParsados.codigo_producto) {
           await cargarInsumosPorProducto(datosParsados.codigo_producto);
         }
@@ -676,7 +710,6 @@ export default function AdminDetalleRegistro() {
       }
     };
     cargarRegistro();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, cargarInsumosPorProducto]);
 
   useEffect(() => {
@@ -686,37 +719,31 @@ export default function AdminDetalleRegistro() {
     }
   }, [modoInicial, puedeEditar, registro, id, navigate]);
 
-  // Cargar insumos cuando cambia el código de producto
   useEffect(() => {
     if (form.codigo_producto) {
       cargarInsumosPorProducto(form.codigo_producto);
     }
   }, [form.codigo_producto, cargarInsumosPorProducto]);
 
-  // Cargar descripción automáticamente al cambiar código de producto
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo = form.codigo_producto?.trim();
     if (!codigo || codigo.length < 3) return;
-    // Solo cargar si el usuario cambió el código de producto (descripción vacía)
     if (form.descripcion) return;
     const t = setTimeout(async () => {
       try {
         const { data } = await api.get("/productos/detalle", { params: { codigo } });
         setForm(p => ({ ...p, descripcion: data.descripcion || "" }));
       } catch {
-        // no borrar si falla
       }
     }, 400);
     return () => clearTimeout(t);
   }, [form.codigo_producto, modoEdicion]);
 
-  // Cargar lote principal automáticamente al cambiar código de producto
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo = form.codigo_producto?.trim();
     if (!codigo || codigo.length < 3) return;
-    // Solo cargar si el lote está vacío (no sobreescribir el ya guardado)
     if (form.lotePrincipal) return;
     const t = setTimeout(async () => {
       try {
@@ -725,13 +752,11 @@ export default function AdminDetalleRegistro() {
           setForm(p => ({ ...p, lotePrincipal: String(data.loteInfo).trim() }));
         }
       } catch {
-        // no borrar si falla
       }
     }, 400);
     return () => clearTimeout(t);
   }, [form.codigo_producto, modoEdicion]);
 
-  // Cargar cantidad base del producto (solo para referencia interna, no sobreescribir cantidad_planificada guardada)
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo = form.codigo_producto?.trim();
@@ -744,7 +769,6 @@ export default function AdminDetalleRegistro() {
         const { data } = await api.get("/cantidades/producto", { params: { codigo } });
         const nuevaBase = data.meta || "0";
         setCantidadBaseProducto(nuevaBase);
-        // Solo actualizar cantidad_planificada si está vacía o en cero
         if (!manualCantidadPlanificada) {
           setForm(p => {
             const actual = p.cantidad_planificada;
@@ -761,7 +785,6 @@ export default function AdminDetalleRegistro() {
     cargarCantidadBase();
   }, [form.codigo_producto, modoEdicion, manualCantidadPlanificada]);
 
-  // Cargar insumos pre-llenados y actividades/procesos al cambiar c\u00f3digo de producto
   useEffect(() => {
     if (!modoEdicion) return;
     const codigo_producto = form.codigo_producto?.trim() || "";
@@ -778,7 +801,6 @@ export default function AdminDetalleRegistro() {
     if (esEQE) {
       setListaActividadesEQE([]);
       setActividadesSeleccionadas({});
-      // No borrar detalles_actividades si ya tiene datos guardados
       const cargarActividadesMaestras = async () => {
         try {
           const resProcesos = await api.get("/procesos/producto", { params: { codigo: "EQE-075" } });
@@ -804,14 +826,6 @@ export default function AdminDetalleRegistro() {
       setActividadesSeleccionadas({});
       const cargarActividadesNormales = async () => {
         try {
-          // Solo cargar actividades si no hay ninguna guardada
-          setForm(p => {
-            const tieneActividades = Array.isArray(p.detalles_actividades)
-              ? p.detalles_actividades.length > 0
-              : (typeof p.detalles_actividades === 'string' && p.detalles_actividades.trim() !== '');
-            if (tieneActividades) return p;
-            return p; // retornar sin modificar, la carga async se hace abajo
-          });
           const resProcesos = await api.get("/procesos/producto", { params: { codigo: codigo_producto } });
           if (resProcesos.data?.detalles) {
             const actividades = resProcesos.data.detalles
@@ -827,13 +841,11 @@ export default function AdminDetalleRegistro() {
             });
           }
         } catch {
-          // no borrar si falla
         }
       };
       cargarActividadesNormales();
     }
 
-    // Pre-llenar insumos desde el backend solo si no hay insumos ya guardados
     const cargarInsumosPreLlenados = async () => {
       try {
         const { data } = await api.get("/insumos/producto", { params: { codigo: codigo_producto } });
@@ -842,7 +854,6 @@ export default function AdminDetalleRegistro() {
         else if (Array.isArray(data)) lista = data;
         if (lista.length > 0) {
           setForm(p => {
-            // Si ya hay insumos guardados, no sobreescribir
             if (Array.isArray(p.insumos) && p.insumos.length > 0) return p;
             const nuevosInsumos = lista.map((insumo, index) => ({
               id: Date.now() + index,
@@ -858,22 +869,34 @@ export default function AdminDetalleRegistro() {
           });
         }
       } catch {
-        // no sobreescribir si falla
       }
     };
     cargarInsumosPreLlenados();
   }, [form.codigo_producto, modoEdicion]);
 
-  const handleChange = useCallback((campo, valor) => {
+  useEffect(() => {
+    if (form.cantidad_planificada !== undefined || form.cantidad_elaborado !== undefined) {
+      const planificada = form.cantidad_planificada || "0";
+      const elaborada = form.cantidad_elaborado || "0";
+      const procesoCalculado = calcularProceso(planificada, elaborada);
+      
+      setForm(prev => {
+        if (prev.cantidad_proceso !== procesoCalculado) {
+          return { ...prev, cantidad_proceso: procesoCalculado };
+        }
+        return prev;
+      });
+    }
+  }, [form.cantidad_planificada, form.cantidad_elaborado, calcularProceso]);
+
+  const handleChange = (campo, valor) => {
     setForm(prev => {
       const nuevoForm = { ...prev, [campo]: valor };
 
-      // Lote unido automático
       if (campo === 'lotePrincipal' || campo === 'loteSecundario') {
         nuevoForm.loteUnido = (nuevoForm.lotePrincipal || "") + (nuevoForm.loteSecundario || "");
       }
 
-      // Reset al cambiar código de producto
       if (campo === "codigo_producto") {
         nuevoForm.hora_inicio = "";
         nuevoForm.hora_fin = "";
@@ -888,7 +911,6 @@ export default function AdminDetalleRegistro() {
         setManualCantidadPlanificada(true);
       }
 
-      // Calcular horas trabajadas y cantidad planificada al cambiar horas
       if (campo === "hora_inicio" || campo === "hora_fin") {
         const inicio = campo === "hora_inicio" ? valor : prev.hora_inicio;
         const fin = campo === "hora_fin" ? valor : prev.hora_fin;
@@ -908,7 +930,6 @@ export default function AdminDetalleRegistro() {
         }
       }
 
-      // Recalcular cantidad_proceso automáticamente
       if (campo === "cantidad_planificada" || campo === "cantidad_elaborado") {
         const planificada = campo === "cantidad_planificada" ? valor : prev.cantidad_planificada;
         const elaborada = campo === "cantidad_elaborado" ? valor : prev.cantidad_elaborado;
@@ -917,17 +938,17 @@ export default function AdminDetalleRegistro() {
 
       return nuevoForm;
     });
-  }, [calcularHorasTrabajadas, calcularProceso, cantidadBaseProducto, manualCantidadPlanificada]);
+  };
 
-  const handleArrayChange = useCallback((campo, nuevoArray) => {
+  const handleArrayChange = (campo, nuevoArray) => {
     setForm(prev => ({ ...prev, [campo]: nuevoArray }));
-  }, []);
+  };
 
-  const handleActividadesPorIntegranteChange = useCallback((nuevoValor) => {
+  const handleActividadesPorIntegranteChange = (nuevoValor) => {
     setForm(prev => ({ ...prev, actividades_por_integrante: nuevoValor }));
-  }, []);
+  };
 
-  const validarArray = useCallback((arr) => {
+  const validarArray = (arr) => {
     if (!arr) return [];
     if (typeof arr === 'string') {
       try {
@@ -945,10 +966,10 @@ export default function AdminDetalleRegistro() {
       ...item,
       id: item.id || Date.now() + Math.random()
     })) : [];
-  }, []);
+  };
 
-  const prepararDatosParaEnvio = useCallback((estadoFinal, motivoRechazo = null) => {
-    const estadoAEnviar = estadoFinal ?? (registro.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro.estado);
+  const prepararDatosParaEnvio = (estadoFinal, motivoRechazo = null) => {
+    const estadoAEnviar = estadoFinal ?? (registro?.estado === "rechazado" ? "pendiente_SUPERVISOR" : registro?.estado);
     
     let detallesParaEnviar = form.detalles_actividades;
     if (!detallesParaEnviar) detallesParaEnviar = [];
@@ -986,7 +1007,7 @@ export default function AdminDetalleRegistro() {
       observaciones: form.observaciones,
       motivo_rechazo: motivoRechazo
     };
-  }, [form, registro, user.rol, user.nombre, validarArray]);
+  };
 
   const actualizarEstadoRegistro = async (nuevoEstado, confirmMessage, motivoRechazo = null) => {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
@@ -998,7 +1019,7 @@ export default function AdminDetalleRegistro() {
         const datosActualizados = response.data.registro || response.data;
         const datosParsados = parsearArrays(datosActualizados);
         setRegistro(datosParsados);
-        setForm(JSON.parse(JSON.stringify(datosParsados)));
+        setForm(copiarRegistroAForm(datosParsados));
         alert(`Registro actualizado a ${nuevoEstado}`);
       } else {
         throw new Error("Respuesta inesperada del servidor");
@@ -1040,7 +1061,7 @@ export default function AdminDetalleRegistro() {
         const datosActualizados = response.data.registro || response.data;
         const datosParsados = parsearArrays(datosActualizados);
         setRegistro(datosParsados);
-        setForm(JSON.parse(JSON.stringify(datosParsados)));
+        setForm(copiarRegistroAForm(datosParsados));
         setModoEdicion(false);
         alert("Registro actualizado correctamente");
       } else {
@@ -1054,16 +1075,14 @@ export default function AdminDetalleRegistro() {
     }
   };
 
-  // Función que se ejecuta después de rechazar
   const handleRechazado = async () => {
     setModalRechazoOpen(false);
-    // Recargar los datos del registro
     try {
       const res = await api.get(`/registros/${id}`);
       const datosRegistro = res.data.registro || res.data;
       const datosParsados = parsearArrays(datosRegistro);
       setRegistro(datosParsados);
-      setForm(JSON.parse(JSON.stringify(datosParsados)));
+      setForm(copiarRegistroAForm(datosParsados));
     } catch (error) {
       console.error("Error recargando registro:", error);
     }
@@ -1147,7 +1166,6 @@ export default function AdminDetalleRegistro() {
         </div>
       </header>
 
-      {/* INFO GENERAL */}
       <div className="card" style={cardStyle}>
         <div className="grid4">
           <Campo label="Fecha" campo="fecha" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha} onChange={handleChange} />
@@ -1186,7 +1204,6 @@ export default function AdminDetalleRegistro() {
         )}
       </div>
 
-      {/* INSUMOS */}
       <div className="subtitle2">
         <h3>ENTREGA Y RECEPCIÓN DE MATERIA PRIMA E INSUMOS</h3>
       </div>
@@ -1214,7 +1231,6 @@ export default function AdminDetalleRegistro() {
         )}
       />
 
-      {/* REPOSICIÓN NO CONFORME */}
       <div className="subtitle2">
         <h3>REPOSICIÓN NO CONFORME</h3>
       </div>
@@ -1228,6 +1244,7 @@ export default function AdminDetalleRegistro() {
         camposEditables={["codigo_insumo", "descripcion_insumo", "cantidad", "descrip_cant_insumo", "lote", "entrega", "recepcion"]}
         backgroundColor="#3498db"
         listaInsumos={listaInsumos}
+        integrantesForm={form.integrantes || []}
         renderItem={(i) => (
           <div style={{ fontSize: 14 }}>
             <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{i.codigo_insumo} — {i.descripcion_insumo}</div>
@@ -1241,7 +1258,6 @@ export default function AdminDetalleRegistro() {
         )}
       />
 
-      {/* ETIQUETAS */}
       <div className="subtitle2">
         <h3>ENTREGA Y RECEPCIÓN DE ETIQUETAS EN MESA</h3>
       </div>
@@ -1267,10 +1283,7 @@ export default function AdminDetalleRegistro() {
         )}
       />
 
-      {/* DOS COLUMNAS: CANTIDAD PRODUCTO Y CONFECCIÓN Y AUTOMÁTICAS */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-        
-        {/* COLUMNA DERECHA - CONFECCIÓN Y AUTOMÁTICAS */}
         <div>
           <div className="subtitle2" style={{ marginBottom: "10px" }}>
             <h3>CONFECCIÓN Y AUTOMÁTICAS</h3>
@@ -1309,7 +1322,6 @@ export default function AdminDetalleRegistro() {
           </div>
         </div>
 
-        {/* COLUMNA IZQUIERDA - CANTIDAD PRODUCTO */}
         <div>
           <div className="subtitle2" style={{ marginBottom: "10px"}}>
             <h3>CANTIDAD PRODUCTO</h3>
@@ -1318,14 +1330,13 @@ export default function AdminDetalleRegistro() {
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               <Campo label="ELABORADO" campo="cantidad_elaborado" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_elaborado} onChange={handleChange} />
               <Campo label="PROCESO" campo="cantidad_proceso" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_proceso} onChange={handleChange} />
-              <Campo label="MERMA" campo="cantidad_merma" type="number" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_merma} onChange={handleChange} />
+              <Campo label="MERMA" campo="cantidad_merma" type="text" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.cantidad_merma} onChange={handleChange} />
               <Campo label="FECHA FINAL DE PRODUCTO TERMINADO" campo="fecha_final_producto" type="date" modoEdicion={modoEdicion} puedeEditar={puedeEditar} value={form.fecha_final_producto} onChange={handleChange} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* MAQUINARIA */}
       <div className="subtitle2">
         <h3>MAQUINARIAS</h3>
       </div>
@@ -1421,7 +1432,6 @@ export default function AdminDetalleRegistro() {
         })()}
       </div>
 
-      {/* DETALLES DE ACTIVIDADES */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
         <h3>DETALLES DE ACTIVIDADES</h3>
       </div>
@@ -1535,7 +1545,6 @@ export default function AdminDetalleRegistro() {
         })()}
       </div>
 
-      {/* ACTIVIDADES POR INTEGRANTE */}
       <div className="subtitle2" style={{ marginBottom: "10px" }}>
         <h3>DETALLES DE ACTIVIDADES POR INTEGRANTE</h3>
       </div>
@@ -1547,7 +1556,6 @@ export default function AdminDetalleRegistro() {
             try {
               rawData = JSON.parse(rawData);
             } catch (error) {
-              console.log('Error parseando actividades_por_integrante:', error);
               rawData = {};
             }
           }
@@ -1566,7 +1574,6 @@ export default function AdminDetalleRegistro() {
               if (campo === 'actividad') {
                 valorFormateado = valor.toUpperCase();
               } else if (campo === 'cantidad_planificada') {
-                // Calcular horas automáticamente
                 const actividad = integrante.actividades[actividadIndex].actividad;
                 if (actividad && valor) {
                   const cantidadBase = await cargarCantidadPorHora(actividad);
@@ -1783,7 +1790,6 @@ export default function AdminDetalleRegistro() {
         })()}
       </div>
 
-      {/* INTEGRANTES (lista simple) */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
         <h3>INTEGRANTES</h3>
       </div>
@@ -1805,7 +1811,6 @@ export default function AdminDetalleRegistro() {
         )}
       />
 
-      {/* OBSERVACIONES */}
       <div className="subtitle2" style={{ marginTop: 30 }}>
         <h3>OBSERVACIONES</h3>
       </div>
@@ -1830,7 +1835,6 @@ export default function AdminDetalleRegistro() {
         />
       </div>
 
-      {/* ESTADO Y MOTIVO DE RECHAZO */}
       {registro.estado === "rechazado" && registro.motivo_rechazo && (
         <div style={{ ...cardStyle, background: "#fef2f2", border: "1px solid #fecaca" }}>
           <h3 style={{ ...sectionTitleStyle, color: "#991b1b", borderBottomColor: "#fecaca" }}>⚠️ INFORMACIÓN DE RECHAZO</h3>
@@ -1844,14 +1848,19 @@ export default function AdminDetalleRegistro() {
         </div>
       )}
       
-      {/* BOTONES DE ACCIÓN */}
       <div style={{ marginTop: 30, display: "flex", gap: 12, flexWrap: "wrap", padding: 20, background: "#f9fafb", borderRadius: 12, border: "1px solid #e5e7eb" }}>
         {estadoAprobado ? (
           <button className="btn" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => navigate(getPanelRoute())}>Ver</button>
         ) : (
           <>
             {puedeEditar && !modoEdicion && (estadoPendienteSupervisor || registro?.estado === "rechazado") && (
-              <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} onClick={() => setModoEdicion(true)}>✏️ Editar Registro</button>
+              <button className="btn2" style={{ padding: "12px 24px", fontWeight: 600, fontSize: 15 }} 
+                onClick={() => {
+                  setModoEdicion(true);
+                  setForm(copiarRegistroAForm(registro));
+                }}>
+                ✏️ Editar Registro
+              </button>
             )}
             
             {puedeEditar && !modoEdicion && !estadoPendienteSupervisor && registro?.estado !== "rechazado" && (
@@ -1861,11 +1870,10 @@ export default function AdminDetalleRegistro() {
             {modoEdicion && puedeEditar && (
               <>
                 <button className="btn-guardar2" style={{ padding: "12px 24px", cursor: guardando ? "not-allowed" : "pointer", opacity: guardando ? 0.7 : 1 }} onClick={guardarCambios} disabled={guardando}>{guardando ? "⏳ Guardando..." : "💾 Guardar Cambios"}</button>
-                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(JSON.parse(JSON.stringify(registro))); }}>❌ Cancelar</button>
+                <button className="btn" style={{ padding: "12px 24px", background: "#ef4444" }} onClick={() => { setModoEdicion(false); setForm(copiarRegistroAForm(registro)); }}>❌ Cancelar</button>
               </>
             )}
 
-            {/* Botón Rechazar para SUPERVISOR y ANALISTA con modal */}
             {((isSupervisor && estadoPendienteSupervisor) || (isAnalista && estadoPendienteAnalista)) && !modoEdicion && (
               <button
                 className="btn"
@@ -1905,7 +1913,6 @@ export default function AdminDetalleRegistro() {
         )}
       </div>
 
-      {/* Modal de Rechazo */}
       <ModalRechazo
         isOpen={modalRechazoOpen}
         onClose={() => setModalRechazoOpen(false)}

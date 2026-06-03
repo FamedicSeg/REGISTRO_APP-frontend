@@ -745,8 +745,7 @@ useEffect(() => {
         campo === "codigo_insumo" ||
         campo === "descripcion_insumo" ||
         campo === "lote" ||
-        campo === "entrega" ||
-        campo === "recepcion"
+        campo === "entrega"
       ) {
         valorFinal = String(valor || "").toUpperCase();
       }
@@ -1701,10 +1700,10 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="ANA MARIA PINCAY RUIZ">ANA MARIA PINCAY RUIZ</option>
                     <option value="ERIKA MARISELA SUNTAXI PAUCAR">ERIKA MARISELA SUNTAXI PAUCAR</option>
                     <option value="NATALY SILVANA TIPAN GUALOTUÑA">NATALY SILVANA TIPAN GUALOTUÑA</option>
-                    <option value="BONILLA TASHIGUANO ANTONY FABRICIO">ANTONY FABRICIO BONILLA TASHIGUANO</option>
-                    <option value="CHILUISA MONTALUISA MARIBEL ELIZABETH">MARIBEL ELIZABETH CHILUISA MONTALUISA</option>
-                    <option value="SUNTAXI SUNTASIG CHRISTIAN GIOVANNI">CHRISTIAN GIOVANNI SUNTAXI SUNTASIG</option>
-                    <option value="SIMBAÑA MAILA LUIS GUSTAVO">LUIS GUSTAVO SIMBAÑA MAILA</option>
+                    <option value="ANTONY FABRICIO BONILLA TASHIGUANO">ANTONY FABRICIO BONILLA TASHIGUANO</option>
+                    <option value="MARIBEL ELIZABETH CHILUISA MONTALUISA">MARIBEL ELIZABETH CHILUISA MONTALUISA</option>
+                    <option value="CHRISTIAN GIOVANNI SUNTAXI SUNTASIG ">CHRISTIAN GIOVANNI SUNTAXI SUNTASIG</option>
+                    <option value="LUIS GUSTAVO SIMBAÑA MAILA">LUIS GUSTAVO SIMBAÑA MAILA</option>
                     <option value="CAROLINA ESTEFANIA VACA GUANATASIG">CAROLINA ESTEFANIA VACA GUANATASIG</option>
                   </select>
                 </div>
@@ -1826,12 +1825,27 @@ const decimalParaHorasMinutos = (decimal) => {
                 
                 <div className="no-conforme-field">
                   <label style={{fontSize:"11px", fontWeight:"500"}}>ENTREGA:</label>
-                  <input 
-                    type="text" 
-                    value={item.entrega} 
+                  <select
+                    value={item.entrega}
                     onChange={(e) => actualizarReposicionNoConforme(index, "entrega", e.target.value)}
-                    placeholder="QUIÉN ENTREGA"
-                  />
+                  >
+                    <option value="">SELECCIONE...</option>
+                    <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
+                    <option value="JUAN ANIBAL CHASIPANTA ALQUINGA">JUAN ANIBAL CHASIPANTA ALQUINGA</option>
+                    <option value="CARLA MICAELA CHUQUIMARCA FERNANDEZ">CARLA MICAELA CHUQUIMARCA FERNANDEZ</option>
+                    <option value="JEREMY JOEL COLUMBA COLCHA">JEREMY JOEL COLUMBA COLCHA</option>
+                    <option value="GABRIELA SOLANGE COLUMBA IZA">GABRIELA SOLANGE COLUMBA IZA</option>
+                    <option value="ANA LUCIA GUAMAN PILATUÑA">ANA LUCIA GUAMAN PILATUÑA</option>
+                    <option value="MANUEL ALEJANDRO PERUGACHE QUIMBIURCO">MANUEL ALEJANDRO PERUGACHE QUIMBIURCO</option>
+                    <option value="ANA MARIA PINCAY RUIZ">ANA MARIA PINCAY RUIZ</option>
+                    <option value="ERIKA MARISELA SUNTAXI PAUCAR">ERIKA MARISELA SUNTAXI PAUCAR</option>
+                    <option value="NATALY SILVANA TIPAN GUALOTUÑA">NATALY SILVANA TIPAN GUALOTUÑA</option>
+                    <option value="ANTONY FABRICIO BONILLA TASHIGUANO">ANTONY FABRICIO BONILLA TASHIGUANO</option>
+                    <option value="MARIBEL ELIZABETH CHILUISA MONTALUISA">MARIBEL ELIZABETH CHILUISA MONTALUISA</option>
+                    <option value="CHRISTIAN GIOVANNI SUNTAXI SUNTASIG">CHRISTIAN GIOVANNI SUNTAXI SUNTASIG</option>
+                    <option value="LUIS GUSTAVO SIMBAÑA MAILA">LUIS GUSTAVO SIMBAÑA MAILA</option>
+                    <option value="CAROLINA ESTEFANIA VACA GUANATASIG">CAROLINA ESTEFANIA VACA GUANATASIG</option>
+                  </select>
                 </div>
                 
                 <div className="no-conforme-field">
@@ -1842,8 +1856,8 @@ const decimalParaHorasMinutos = (decimal) => {
                   >
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     {integrantes.map((integrante, idx) => (
-                      <option key={idx} value={integrante.nombre}>
-                        {integrante.nombre}
+                      <option key={idx} value={integrante.nombre.toUpperCase()}>
+                        {integrante.nombre.toUpperCase()}
                       </option>
                     ))}
                   </select>
