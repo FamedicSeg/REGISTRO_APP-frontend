@@ -105,7 +105,7 @@ export default function PanelRol() {
         })
       : registros;
 
-  const registrosPorEstado = registrosFiltrados.filter((r) => {
+  const registrosPorEstadoSinOrden = registrosFiltrados.filter((r) => {
     const estado = (r.estado || "pendiente").toLowerCase();
     if (filtroEstado === "pendientes") return estado.includes("pendiente");
     if (filtroEstado === "aprobados") return estado.includes("aprob");
@@ -114,6 +114,16 @@ export default function PanelRol() {
     if (filtroEstado === "rechazados") return estado.includes("rechazado");
     return true;
   });
+
+  const ordenarPorFecha = rol === "ANALISTA DE PRODUCCIÓN" || rol === "JEFE DE PRODUCCIÓN";
+
+  const registrosPorEstado = ordenarPorFecha
+    ? [...registrosPorEstadoSinOrden].sort((a, b) => {
+        const fechaA = a.fecha ? new Date(a.fecha) : new Date(0);
+        const fechaB = b.fecha ? new Date(b.fecha) : new Date(0);
+        return fechaA - fechaB;
+      })
+    : registrosPorEstadoSinOrden;
 
   const _counts = useMemo(() => {
     const acc = {
