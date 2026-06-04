@@ -48,12 +48,16 @@ const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, o
     onChange(campo, e.target.value);
   };
 
+  const selectedOption = options.find(opt => 
+    opt.value?.toUpperCase() === (value || "").toUpperCase()
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 15 }}>
       <span style={{ fontSize: 12, fontWeight: 600, color: "#000000" }}>{label}</span>
       {modoEdicion && puedeEditar ? (
         <select
-          value={value || ""}
+          value={selectedOption?.value || value || ""}
           onChange={handleChange}
           style={{
             padding: "8px 12px",
@@ -70,7 +74,7 @@ const SelectField = ({ label, campo, options, modoEdicion, puedeEditar, value, o
         </select>
       ) : (
         <div style={{ background: "#f3f4f6", padding: "8px 12px", borderRadius: 8, fontSize: 14 }}>
-          {options.find(opt => opt.value === value)?.label || value || "-"}
+          {selectedOption?.label || value || "-"}
         </div>
       )}
     </div>
@@ -413,9 +417,9 @@ export default function AdminDetalleRegistro() {
 
   const [cantidadBaseProducto, setCantidadBaseProducto] = useState("0");
   const [manualCantidadPlanificada, setManualCantidadPlanificada] = useState(false);
-  const [mostrarCheckboxes, setMostrarCheckboxes] = useState(false);
-  const [listaActividadesEQE, setListaActividadesEQE] = useState([]);
-  const [actividadesSeleccionadas, setActividadesSeleccionadas] = useState({});
+  const [_mostrarCheckboxes, setMostrarCheckboxes] = useState(false);
+  const [_listaActividadesEQE, setListaActividadesEQE] = useState([]);
+  const [_actividadesSeleccionadas, setActividadesSeleccionadas] = useState({});
   
   const [modalRechazoOpen, setModalRechazoOpen] = useState(false);
 
@@ -433,12 +437,27 @@ export default function AdminDetalleRegistro() {
   ];
 
   const moduloOptions = [
-    "Módulo 1", "Módulo 2", "Módulo 3", "Módulo 4", "Módulo 5",
-    "Módulo 6", "Módulo 7", "Módulo 8", "Módulo 9", "Módulo 10",
-    "Módulo 11", "Módulo 12", "Módulo 13", "varios 1", "varios 2",
-    "Estampado", "Botas Simples", "SPA", "Mascarillas", "GPA",
-    "Sellado", "Corte", "Metblown"
-  ].map(m => ({ value: m, label: m }));
+    
+              "MODULO 1",
+                "MODULO 2",
+                "MODULO 3",
+                "MODULO 4",
+                "MODULO 6",
+                "MODULO 7",
+                "MODULO 8",
+               "MODULO 10",
+                "VARIOS 1",
+                "VARIOS 2",
+                "ESTAMPADO",
+                "BOTAS SIMPLES",
+                "SPA",
+                "MASCARILLAS",
+                "GPA",
+                "SELLADO",
+                "CORTE",
+                "ETIQUETAS",
+                "METBLOWN"
+  ].map(m => ({ value: m.toUpperCase(), label: m }));
 
   const destinoOptions = [
     { value: "CLIENTE", label: "CLIENTE" },
