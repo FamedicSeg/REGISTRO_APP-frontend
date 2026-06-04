@@ -432,8 +432,8 @@ export default function AdminDetalleRegistro() {
   ];
 
   const areaOptions = [
-    { value: "Confección", label: "CONFECCIÓN" },
-    { value: "Automática", label: "AUTOMÁTICAS" }
+    { value: "CONFECCIÓN", label: "CONFECCIÓN" },
+    { value: "AUTOMÁTICAS", label: "AUTOMÁTICAS" }
   ];
 
   const moduloOptions = [
