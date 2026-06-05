@@ -40,16 +40,24 @@
   }
 }
 
+/* MODIFICADO: body sin scroll horizontal PERO con scroll vertical */
 body {
   background-color: #f5f7fa;
   color: #000000 !important;
   line-height: 1.6;
+  overflow-x: hidden;   /* ← Elimina scroll HORIZONTAL */
+  overflow-y: auto;     /* ← PERMITE scroll VERTICAL */
+  margin: 0;
+  padding: 0;
 }
 
+/* MODIFICADO: contenedor principal sin scroll horizontal */
 .registro-container {
   max-width: 2000px;
   margin: 0 auto;
   padding: 20px;
+  overflow-x: hidden;   /* ← Elimina scroll HORIZONTAL */
+  overflow-y: visible;  /* ← Permite scroll VERTICAL normal */
 }
 
 header {
@@ -584,4 +592,15 @@ textarea:focus {
 
 .textObs {
   width: 100%;
+}
+
+/* Para evitar scroll horizontal en elementos específicos */
+.grid, .grid2, .grid3, .grid4, .grid5, .grid6 {
+  overflow-x: hidden;
+}
+
+/* Para inputs muy anchos que puedan causar scroll */
+input, select, textarea {
+  max-width: 100%;
+  box-sizing: border-box;
 }

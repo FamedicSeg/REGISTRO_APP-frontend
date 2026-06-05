@@ -1436,7 +1436,8 @@ const decimalParaHorasMinutos = (decimal) => {
           <div className="grid4">
             <div className="form-group">
               <label htmlFor="fecha">FECHA:</label>
-              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} />
+              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange}
+              style={{ fontSize: "12px" }} />
             </div>
             
             <div className="form-group">
@@ -1450,6 +1451,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 onChange={onChange}
                 placeholder="SELECCIONA O ESCRIBE LA ORDEN DE PRODUCCIÓN..."
                 autoComplete="off"
+                style={{ fontSize: "12px" }}
                 />
                 <button
                 type="button"
@@ -1461,7 +1463,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
-                  fontSize: "12px",
+                  fontSize: "11px",
                   whiteSpace: "nowrap"
                 }}
                 title="Limpiar OP"
@@ -1533,7 +1535,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   name="responsable"
                   value={form.responsable || ""}
                   disabled={!form.modulo}
-                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed" }}
+                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "12px" }}
                 />
               </div>
 
@@ -1546,7 +1548,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   name="supervisor"
                   value={form.supervisor || ""}
                   disabled={!form.modulo}
-                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed" }}
+                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "12px" }}
                 />
               </div>
             </div>
@@ -1567,12 +1569,12 @@ const decimalParaHorasMinutos = (decimal) => {
               {form.personal_asignado === "OTRO" && (
                 <div className="form-group">
                   <label htmlFor="personal_otro">INGRESE CANTIDAD:</label>
-                  <input type="number" id="personal_otro" name="personal_otro" min="1" max="20" placeholder="INGRESA LA CANTIDAD DEL PERSONAL. EJ: 15" value={form.personal_otro} onChange={onChange} />
+                  <input type="number" id="personal_otro" name="personal_otro" min="1" max="20" placeholder="INGRESA LA CANTIDAD DEL PERSONAL. EJ: 15" value={form.personal_otro} onChange={onChange}  style={{ fontSize: "12px" }} />
                 </div>
               )}
               <div className="form-group">
                 <label>PERSONAL PRESENTE: </label>
-                <input placeholder="INGRESA LA CANTIDAD DEL PERSONAL PRESENTE..." type="number" id="personal_presente" name="personal_presente" min="0" max="20" value={form.personal_presente} onChange={onChange} />
+                <input placeholder="INGRESA LA CANTIDAD DEL PERSONAL PRESENTE..." type="number" id="personal_presente" name="personal_presente" min="0" max="20" value={form.personal_presente} onChange={onChange} style={{ fontSize: "12px" }} />
               </div>
             </div>
           </div>
@@ -1586,27 +1588,28 @@ const decimalParaHorasMinutos = (decimal) => {
                   name="codigo_producto"
                   value={form.codigo_producto}
                   onChange={onChange}
+                  style={{ fontSize: "12px" }}
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="descripcion">DESCRIPCIÓN:</label>
-                <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={onChange} className="input-disabled" />
+                <textarea id="descripcion" name="descripcion" rows={4} value={form.descripcion} onChange={onChange} style={{ fontSize: "12px" }} className="input-disabled" />
               </div>
               <div className="form-group">
                 <label htmlFor="hora_planificada">TIEMPO: </label>
-                <input htmlFor="number" id="hora_planificada" name="hora_planificada" value={form.hora_planificada} onChange={onChange} className="input-disabled" placeholder="Se calculará automaticamente" readOnly />
+                <input htmlFor="number" id="hora_planificada" name="hora_planificada" value={form.hora_planificada} onChange={onChange} className="input-disabled" style={{ fontSize: "12px" }} placeholder="Se calculará automaticamente" readOnly />
               </div>
               <div className="form-group">
                 <label htmlFor="cantidad_planificada">CANTIDAD PLANIFICADA:</label>
-                <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" />
+                <input type="number" id="cantidad_planificada" name="cantidad_planificada" value={form.cantidad_planificada} onChange={onChange} className="input-disabled" style={{ fontSize: "12px" }} />
               </div>
               <div className="form-group">
                 <label htmlFor="lotePrincipal">LOTE MAESTRO:</label>
-                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} />
+                <input type="text" id="lotePrincipal" name="lotePrincipal" value={form.lotePrincipal} onChange={onChange} style={{ fontSize: "12px" }} />
               </div>
               <div className="form-group">
                 <label htmlFor="loteSecundario" >N°:</label>
-                <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} />
+                <input placeholder="INGRESA EL DÍA LOTE (OPCIONAL)" type="text" id="loteSecundario" name="loteSecundario" value={form.loteSecundario} onChange={onChange} style={{ fontSize: "12px" }} />
               </div>
             </div>
           </div>
@@ -1641,7 +1644,7 @@ const decimalParaHorasMinutos = (decimal) => {
             
             {insumos.map((item, index) => (
               <div key={item.id || index} style={
-                { display: "grid", width: "950px", gridTemplateColumns: "2.0fr 4fr 1.5fr 1.1fr 3.4fr 2.6fr 2.5fr auto", gap: "20px", marginBottom: "25px", alignItems: "center", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", boxSizing: "border-box" }
+                { display: "grid", width: "950px", gridTemplateColumns: "2fr 4.2fr 1.9fr 1.2fr 3.2fr 2.3fr 2.3fr auto", gap: "5px", marginBottom: "25px", alignItems: "flex-start", padding: "20px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6", boxSizing: "border-box" }
               }>
                 <div>
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> CÓDIGO DEL INSUMO: </label>
@@ -1688,6 +1691,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   <select
                     value={item.entrega}
                     onChange={(e) => actualizarInsumo(index, "entrega", e.target.value)}
+                    style={{fontSize: "9.5px" }}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
@@ -1710,7 +1714,7 @@ const decimalParaHorasMinutos = (decimal) => {
 
                 <div className="insumo-field">
                   <label style={{ display: "block", marginBottom: "5px", fontSize: "10px", fontWeight: "500" }}> RECEPCIÓN: </label>
-                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{fontSize: "10.5px" }}>
+                  <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{fontSize: "9.5px" }}>
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     <option value="Vaca Guanatasig Carolina Estefania">Vaca Guanatasig Carolina Estefania</option>
                     {integrantes.map((integrante, idx) => (
@@ -1766,13 +1770,13 @@ const decimalParaHorasMinutos = (decimal) => {
             
             {reposicionNoConforme.map((item, index) => (
               <div key={item.id || index} style={
-                { display: "grid", width: "950px", gridTemplateColumns: "2.4fr 4.5fr 1.4fr 1.2fr 2fr 2.8fr 2.8fr auto", gap: "10px", marginBottom: "15px", alignItems: "center", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6" }
+                { display: "grid", width: "950px", gridTemplateColumns: "2fr 4.2fr 1.9fr 1.2fr 3.2fr 2.3fr 2.3fr auto", gap: "5px", marginBottom: "15px", alignItems: "center", padding: "15px", backgroundColor: index % 2 === 0 ? "#f8f9fa" : "#ffffff", borderRadius: "8px", border: "1px solid #dee2e6" }
               }>
                 <div className="no-conforme-field">
-                  <label style={{fontSize:"11px", fontWeight:"500"}}>CÓDIGO DEL INSUMO:</label>
+                  <label style={{fontSize:"10px", fontWeight:"500"}}>CÓDIGO DEL INSUMO:</label>
                   <select
                     value={item.codigo_insumo || ""}
-                    onChange={(e) => actualizarReposicionNoConforme(index, "codigo_insumo", e.target.value)}
+                    onChange={(e) => actualizarReposicionNoConforme(index, "codigo_insumo", e.target.value)} style={{fontSize: "9.5px" }}
                   >
                     <option value="">SELECCIONE...</option>
                     {_listaNoConforme.map((insumo, idx) => (
@@ -1784,50 +1788,54 @@ const decimalParaHorasMinutos = (decimal) => {
                 </div>
                 
                 <div className="no-conforme-field">
-                  <label style={{fontSize:"11px", fontWeight:"500"}}>DESCRIPCIÓN:</label>
+                  <label style={{fontSize:"10px", fontWeight:"500"}}>DESCRIPCIÓN:</label>
                   <input 
                     type="text" 
                     value={item.descripcion_insumo || ""} 
                     readOnly
-                    style={{ backgroundColor: "#e9ecef" }}
+                    style={{ backgroundColor: "#e9ecef", fontSize: "9.5px" }}
                   />
                 </div>
                 
                 <div className="no-conforme-field">
-                  <label style={{fontSize:"11px", fontWeight:"500"}}>CANTIDAD:</label>
+                  <label style={{fontSize:"10px", fontWeight:"500"}}>CANTIDAD:</label>
                   <input 
                     type="number" 
                     value={item.cantidad} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "cantidad", e.target.value)}
+                    style={{fontSize: "9.5px" }}
                     placeholder="EJ: 10"
                   />
                 </div>
                 
                 <div className="no-conforme-field">
-                  <label style={{fontSize: "11px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
+                  <label style={{fontSize: "10px", fontWeight:"500"}}>UNIDAD MEDIDA:</label>
                   <input
                     type="text"
                     value={item.descrip_cant_insumo}
                     onChange={(e)=> actualizarReposicionNoConforme(index, "descrip_cant_insumo", e.target.value)}
+                    style={{fontSize: "9.5px" }}
                     placeholder="EJ: UDS"
                   />
                 </div>
                 
                 <div className="no-conforme-field">
-                  <label style={{fontSize:"11px", fontWeight:"500"}}>LOTE:</label>
+                  <label style={{fontSize:"10px", fontWeight:"500"}}>LOTE:</label>
                   <input 
                     type="text" 
                     value={item.lote} 
                     onChange={(e) => actualizarReposicionNoConforme(index, "lote", e.target.value)}
                     placeholder="N° LOTE"
+                    style={{fontSize: "9.5px" }}
                   />
                 </div>
                 
                 <div className="no-conforme-field">
-                  <label style={{fontSize:"11px", fontWeight:"500"}}>ENTREGA:</label>
+                  <label style={{fontSize:"10px", fontWeight:"500"}}>ENTREGA:</label>
                   <select
                     value={item.entrega}
                     onChange={(e) => actualizarReposicionNoConforme(index, "entrega", e.target.value)}
+                    style={{fontSize: "9.5px" }}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="BRYAN ALEXANDER CAJAMARCA BONILLA">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
@@ -1849,10 +1857,10 @@ const decimalParaHorasMinutos = (decimal) => {
                 </div>
                 
                 <div className="no-conforme-field">
-                  <label style={{fontSize:"11px", fontWeight:"500"}}>RECEPCIÓN:</label>
+                  <label style={{fontSize:"10px", fontWeight:"500"}}>RECEPCIÓN:</label>
                   <select 
                     value={item.recepcion} 
-                    onChange={(e) => actualizarReposicionNoConforme(index, "recepcion", e.target.value)}
+                    onChange={(e) => actualizarReposicionNoConforme(index, "recepcion", e.target.value)} style={{fontSize: "9.5px" }}
                   >
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     {integrantes.map((integrante, idx) => (
@@ -2070,6 +2078,7 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="hora_inicio" 
                       value={form.hora_inicio} 
                       onChange={onChange} 
+                      style={{fontSize: "14px" }}
                     />
                   </div>
 
@@ -2081,6 +2090,7 @@ const decimalParaHorasMinutos = (decimal) => {
                       name="hora_fin" 
                       value={form.hora_fin} 
                       onChange={onChange} 
+                      style={{fontSize: "14px" }}
                     />
                   </div>
                 </div>
@@ -2246,7 +2256,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="fecha_final_producto" >FECHA FINAL DE PRODUCTO TERMINADO:</label>
-                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={{fontSize:"14px"}, {fontSize:"16px", padding:"12px"}} />
+                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={{fontSize:"14px"}, {fontSize:"14px", padding:"12px"}} />
                 </div>
               </div>
             </div>
@@ -2359,7 +2369,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   <label>NOMBRE DE LA MAQUINARÍA:</label>
                   <select value={item.maquinaria}
                           onChange={(e)=> actualizarMaquinaria(index, "maquinaria", e.target.value)}
-                          style={{ fontSize: "14px", padding: "12px" }}
+                          style={{ fontSize: "11px", padding: "12px" }}
                   >
                     <option value="">SELECCIONE...</option>
                     <option value="RECTA">RECTA</option>
@@ -2397,7 +2407,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 </div>
                 <div className="maquinaria-field" style={{ maxWidth: "100%" }}>
                   <label>CANTIDAD DE MAQUINARIA:</label>
-                  <input type="text" min="1" value={item.cantidad_maquinaria} onChange={(e)=> actualizarMaquinaria(index, "cantidad_maquinaria", e.target.value)}/>
+                  <input type="text" min="1" value={item.cantidad_maquinaria} onChange={(e)=> actualizarMaquinaria(index, "cantidad_maquinaria", e.target.value)} style={{fontSize: "11px", padding: "12px"}}/>
                 </div>
                 
                 {item.numero_maquinaria?.length > 0 &&(
@@ -2410,7 +2420,7 @@ const decimalParaHorasMinutos = (decimal) => {
                           value={numero}
                           onChange={(e) => actualizarNumeroMaquinaria(index, idxNumero, e.target.value)}
                           placeholder="INGRESA EL NÚMERO DE LA MAQUINARIA"
-                          style={{ fontSize: "14px", padding: "12px" }}
+                          style={{ fontSize: "11px", padding: "12px" }}
                         />
                       </div>
                     ))}  
@@ -2657,15 +2667,15 @@ const decimalParaHorasMinutos = (decimal) => {
           {/* Mensaje cuando NO hay actividades para EQE */}
           {mostrarCheckboxes && listaActividadesEQE.length === 0 && (
             <div style={{
-      padding: "20px",
-      textAlign: "center",
-      backgroundColor: "#fff3cd",
-      border: "1px solid #ffeeba",
-      borderRadius: "8px",
-      color: "#856404",
-      fontSize: "14px",
-      marginTop: "15px"
-    }}>
+              padding: "20px",
+              textAlign: "center",
+              backgroundColor: "#fff3cd",
+              border: "1px solid #ffeeba",
+              borderRadius: "8px",
+              color: "#856404",
+              fontSize: "14px",
+              marginTop: "15px"
+            }}>
               ⚠️ No se encontraron actividades para el producto {form.codigo_producto}. 
               Puedes agregar actividades manualmente en el campo de arriba.
             </div>
@@ -2685,67 +2695,67 @@ const decimalParaHorasMinutos = (decimal) => {
 
             return (
               <div key={`actividad-${index}`} style={{ 
-        marginBottom: "20px", 
-        padding: "15px", 
-        border: "1px solid #dee2e6", 
-        borderRadius: "8px",
-        backgroundColor: "#f8f9fa",
-        position: "relative"
-      }}>
+                marginBottom: "20px", 
+                padding: "15px", 
+                border: "1px solid #dee2e6", 
+                borderRadius: "8px",
+                backgroundColor: "#f8f9fa",
+                position: "relative"
+              }}>
                 <button
-          type="button"
-          onClick={() => eliminarDetalleActividad(index)}
-          title="Eliminar actividad"
-          style={
-            { position: "absolute", top: "10px", right: "10px", padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
-        >❌ Eliminar</button>
-                <div style={
-          { display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" }}>
+                  type="button"
+                  onClick={() => eliminarDetalleActividad(index)}
+                  title="Eliminar actividad"
+                  style={
+                    { position: "absolute", top: "10px", right: "10px", padding: "6px 10px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
+                >❌ Eliminar</button>
+                  <div style={{
+                    display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: "20px", alignItems: "center", paddingRight: "80px" }}>
                   <div style={{ fontWeight: "bold", fontSize:  "18px" }}>
                     {actividad.trim()}
                     {integrantesConActividad.length > 0 && (
                       <span style={{ 
-                marginLeft: "10px", 
-                fontSize: "14px", 
-                color: "#28a745",
-                backgroundColor: "#d4edda",
-                padding: "2px 8px",
-                borderRadius: "12px"
-              }}>{integrantesConActividad.length} INTEGRANTE(S)</span>
+                        marginLeft: "10px", 
+                        fontSize: "14px", 
+                        color: "#28a745",
+                        backgroundColor: "#d4edda",
+                        padding: "2px 8px",
+                        borderRadius: "12px"
+                      }}>{integrantesConActividad.length} INTEGRANTE(S)</span>
                     )}
                   </div>
                   <div className="actividad-normal-cantidades">
                     <div>
                       <label style={{ fontSize: "14px", color: "#495057", display: "block", marginBottom: "5px" }}>PLANIFICADA TOTAL:</label>
                       <input
-              type="number"
-              value={totalPlanificado}
-              readOnly
-              style={
-                { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" }}
-            />
+                        type="number"
+                        value={totalPlanificado}
+                        readOnly
+                        style={
+                          { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" }}
+                      />
                     </div>
                     <div>
                       <label style={{ fontSize:  "14px", color: "#495057", display: "block", marginBottom: "5px" }}>ELABORADA TOTAL:</label>
                       <input
-              type="number"
-              value={totalElaborado}
-              readOnly
-              style={
-                { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }}
-            />
+                        type="number"
+                        value={totalElaborado}
+                        readOnly
+                        style={
+                          { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }}
+                      />
                     </div>
                   </div>
                 </div>
                 {integrantesConActividad.length > 0 && (
                   <div style={{
-            marginTop: "10px",
-            padding: "10px",
-            backgroundColor: "#e9ecef",
-            border: "1px solid #ced4da",
-            borderRadius: "4px",
-            fontSize:"14px" 
-          }}>
+                    marginTop: "10px",
+                    padding: "10px",
+                    backgroundColor: "#e9ecef",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px",
+                    fontSize:"14px" 
+                  }}>
                     <strong>DISTRIBUCIÓN:</strong> {integrantesConActividad.length} integrantes × horas variables
                     {totalPlanificado > 0 && (
                       <> | <strong>AVANCE:</strong> {Math.round((totalElaborado/totalPlanificado)*100)}%</>
@@ -2834,7 +2844,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     }}
                     placeholder="ESCRIBE EL NOMBRE DEL INTEGRANTE..."
                     style={
-                      { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "16px" }}
+                      { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", backgroundColor: "#ffffff", fontWeight: "bold", fontSize: "12px" }}
                   />
                   <select
                     value={integrante.cargo}
@@ -2846,6 +2856,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="COSTURERA/O">COSTURERA/O</option>
                     <option value="REMATADORA/O">REMATADORA/O</option>
                     <option value="APRENDÍZ DE COSTURA">APRENDÍZ DE COSTURA</option>
+                    <option value="OPERARIA/O">OPERARIA/O</option>
                     <option value="OTRO">OTRO</option>
                   </select>
                   <button 
@@ -2882,7 +2893,7 @@ const decimalParaHorasMinutos = (decimal) => {
                       }}
                       placeholder="ESCRIBA EL CARGO CORRESPONDIENTE"
                       style={
-                        { width: "100%", padding: "8px", border: "1px solid #007bff", borderRadius: "4px", fontSize: "14px" }}
+                        { width: "100%", padding: "8px", border: "1px solid #007bff", borderRadius: "4px", fontSize: "12px" }}
                       autoFocus
                     />
                   </div>
@@ -3024,7 +3035,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     type="button"
                     onClick={() => agregarActividadAIntegrante(integranteIndex)}
                     style={
-                      { marginTop: "15px", padding: "10px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}
+                      { marginTop: "15px", padding: "10px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
                   >
                     ➕ AGREGAR ACTIVIDAD A {integrante.nombre ? integrante.nombre.split(' ')[0] : 'INTEGRANTE'}
                   </button>
@@ -3038,7 +3049,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 className="btn" 
                 onClick={agregarIntegrante}
                 style={
-                  { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px", fontWeight: "bold" }}
+                  { padding: "12px 20px", backgroundColor: "#ff7675", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}
               >
                 ➕ Agregar Nuevo Integrante
               </button>
@@ -3055,7 +3066,7 @@ const decimalParaHorasMinutos = (decimal) => {
           </div>
         </div>
         
-        <button type="submit" className="btn-guardar" style={{ padding: "16px", fontSize: "16px", minHeight: "56px" }}>
+        <button type="submit" className="btn-guardar" style={{ padding: "16px", fontSize: "14px", minHeight: "56px" }}>
           GUARDAR REGISTRO DE PRODUCCIÓN
         </button>
       </form>
