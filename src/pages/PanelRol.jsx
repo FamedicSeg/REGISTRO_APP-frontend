@@ -24,6 +24,12 @@ export default function PanelRol() {
 
   const rol = user?.rol || "";
 
+  // Función para obtener el título mostrado según el rol
+  const getTituloPanel = () => {
+    if (rol === "JEFE DE PRODUCCIÓN") return "JEFE DE OPERACIONES";
+    return rol;
+  };
+
   const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const _esSupervisor = rol === "SUPERVISOR";
   const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
@@ -217,7 +223,7 @@ export default function PanelRol() {
       <div className="panel-container">
         <div className="panel-header">
           <div>
-            <h2>Panel de {rol}</h2>
+            <h2>Panel de {getTituloPanel()}</h2>
             <h3>SISTEMA GESTIÓN DE REGISTROS</h3>
           </div>
           <button className="panel-btn panel-btn-logout" onClick={handleLogout}>
@@ -233,9 +239,30 @@ export default function PanelRol() {
     <div className="panel-container">
       <div className="panel-header">
         <div>
-          <h2>Panel de {rol}</h2>
+          <h2>Panel de {getTituloPanel()}</h2>
           <h3>SISTEMA GESTIÓN DE REGISTROS</h3>
         </div>
+        
+        {/* 🆕 BOTÓN PARA ESTADÍSTICAS SEMANALES - Solo JEFE DE PRODUCCIÓN y LÍDER */}
+        {(rol === "JEFE DE PRODUCCIÓN" || rol === "LÍDER") && (
+          <button
+            onClick={() => nav("/estadistica-semanal")}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "14px",
+              marginRight: "10px"
+            }}
+          >
+            📊 Ver Estadística Semanal
+          </button>
+        )}
+        
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
             type="text"
@@ -380,16 +407,6 @@ export default function PanelRol() {
                         </button>
                       )}
 
-                      {/* VERIFICAR - Solo SUPERVISOR en estado pendiente_SUPERVISOR 
-                      {esSupervisor && esEstadoPendienteSupervisor(r.estado) && (
-                        <button
-                          className="panel-btn panel-btn-warning"
-                          onClick={() => verificar(r.id)}
-                        >
-                          ✓ Verificar
-                        </button>
-                      )}*/}
-
                       {/* APROBAR - Solo ANALISTA en estado pendiente_ANALISTA */}
                       {esAnalista && esEstadoPendienteAnalista(r.estado) && (
                         <button
@@ -400,7 +417,7 @@ export default function PanelRol() {
                         </button>
                       )}
 
-                      {/* RECHAZAR - SUPERVISOR en pendiente_SUPERVISOR, ANALISTA en pendiente_ANALISTA */}
+                      {/* RECHAZAR - ANALISTA en pendiente_ANALISTA */}
                       {(
                         (esAnalista && esEstadoPendienteAnalista(r.estado))
                       ) && (

@@ -342,3 +342,80 @@ textarea:focus {
   gap: 20px;
   background: #1790d1;
 }
+
+/* ========== ESTILOS PARA PDF A4 ========== */
+@media print {
+  /* Ocultar botones y elementos no deseados en el PDF */
+  .btn, .btn2, .btn3, .btn-guardar2, .btn-add,
+  button:not(.no-print), .no-print {
+    display: none !important;
+  }
+
+  /* Configurar tamaño A4 */
+  @page {
+    size: A4;
+    margin: 15mm 10mm 15mm 10mm;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  /* Contenedor principal del PDF */
+  #registro-pdf-content {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    background: white;
+    font-size: 10pt;
+  }
+
+  /* Evitar saltos de página dentro de elementos importantes */
+  .card, .cabecera2, .cabecera3, .cabecera4, 
+  .subtitle2, .subtitle, header, .grid4, .grid2, .grid3, .grid6 {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Asegurar colores en impresión */
+  .card, .cabecera2, .subtitle2 {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ajustar tamaños de fuente para A4 */
+  h1 { font-size: 14pt !important; }
+  h2 { font-size: 12pt !important; }
+  h3 { font-size: 11pt !important; }
+  label, span { font-size: 9pt !important; }
+  input, select, textarea, div:not(.btn) { font-size: 9pt !important; }
+
+  /* Ajustar grids para impresión */
+  .grid4, .grid6 {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .grid4 { grid-template-columns: repeat(5, 1fr); }
+  .grid6 { grid-template-columns: repeat(6, 1fr); }
+  .grid2 { grid-template-columns: repeat(2, 1fr); }
+  .grid3 { grid-template-columns: repeat(3, 1fr); }
+
+  /* Reducir padding y margen para A4 */
+  .registro-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  header {
+    padding: 5px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .logo {
+    max-height: 40px !important;
+  }
+}

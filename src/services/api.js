@@ -104,3 +104,51 @@ export const guardarRegistroAprobado = async (sheetName, registroData) => {
     throw error;
   }
 };
+
+// ============================================
+// SERVICIOS PARA ESTADÍSTICAS SEMANALES
+// ============================================
+
+// Obtener resumen semanal (planificado vs elaborado)
+export const getResumenSemanal = async (anio, semana) => {
+  try {
+    const response = await api.get(`/estadisticas/resumen-semanal/${anio}/${semana}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo resumen semanal:', error);
+    throw error;
+  }
+};
+
+// Guardar resumen semanal en histórico
+export const guardarResumenSemanal = async (anio, semana) => {
+  try {
+    const response = await api.post('/estadisticas/guardar-resumen-semanal', { anio, semana });
+    return response.data;
+  } catch (error) {
+    console.error('Error guardando resumen semanal:', error);
+    throw error;
+  }
+};
+
+// Obtener solo planificación
+export const getPlanificacionSemanal = async (anio, semana) => {
+  try {
+    const response = await api.get(`/estadisticas/planificacion-semanal/${anio}/${semana}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo planificación:', error);
+    throw error;
+  }
+};
+
+// Obtener solo elaborado real
+export const getElaboradoSemanal = async (anio, semana) => {
+  try {
+    const response = await api.get(`/estadisticas/elaborado-semanal/${anio}/${semana}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo elaborado real:', error);
+    throw error;
+  }
+};
