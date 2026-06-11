@@ -148,9 +148,9 @@ export default function Registro() {
   const [actividadesIntegrantes, setActividadesIntegrantes] = useState({});
   const [nuevoDetalleActividad, setNuevoDetalleActividad] = useState("");
   const [actividadesConHoras, setActividadesConHoras] = useState([]);
-  const [cantidadBaseProducto, setCantidadBaseProducto] = useState("0");
+  const [_cantidadBaseProducto, setCantidadBaseProducto] = useState("0");
   const [_cargandoBase, setCargandoBase] = useState(false);
-  const [manualCantidadPlanificada, setManualCantidadPlanificada] = useState(false);
+  const [_manualCantidadPlanificada, setManualCantidadPlanificada] = useState(false);
   const [manualHorasPersona, setManualHorasPersona] = useState({});
   
   // NUEVOS ESTADOS PARA EQE
@@ -159,6 +159,14 @@ export default function Registro() {
   const [listaActividadesEQE, setListaActividadesEQE] = useState([]);
   const [actividadesGlobalesEQE, setActividadesGlobalesEQE] = useState([]);
   const [_productosEQECargados, setProductosEQECargados] = useState(new Set());
+
+  // ========== TEMPORIZADOR OCULTO PARA JEFE_PRODUCCION ==========
+  const [tiempoInicio, setTiempoInicio] = useState(null);
+  const [tiempoTranscurrido, setTiempoTranscurrido] = useState(null);
+  const [mostrarTiempoOculto, setMostrarTiempoOculto] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
+  const [tiempoFinal, setTiempoFinal] = useState(null);
+  // ================================================================
 
   // Función para calcular cantidad_proceso automáticamente
   const calcularProceso = useCallback((planificada, elaborada) => {
@@ -196,6 +204,127 @@ export default function Registro() {
     return horasDecimal.toFixed(2);
   }
 
+  // ========== FUNCIONES DEL TEMPORIZADOR ==========
+  const verificarRolJefeProduccion = useCallback(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userRole = user.rol || user.role || user.userRol;
+      const sessionUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      const sessionRole = sessionUser.rol || sessionUser.role;
+      const esJefe = userRole === 'JEFE_PRODUCCION' || userRole === 'JEFE DE PRODUCCIÓN' ||
+                     sessionRole === 'JEFE_PRODUCCION' || sessionRole === 'JEFE DE PRODUCCIÓN';
+      return esJefe;
+    } catch (error) {
+      console.error("Error verificando rol:", error);
+      return false;
+    }
+  }, []);
+
+  const iniciarTemporizador = useCallback(() => {
+    if (tiempoInicio) return;
+    
+    const inicio = new Date();
+    setTiempoInicio(inicio);
+    
+    const id = setInterval(() => {
+      const ahora = new Date();
+      const diffMs = ahora - inicio;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffSeg = Math.floor((diffMs % 60000) / 1000);
+      const horas = Math.floor(diffMin / 60);
+      const minutos = diffMin % 60;
+      
+      let tiempoTexto = "";
+      if (horas > 0) {
+        tiempoTexto = `${horas}h ${minutos}m ${diffSeg}s`;
+      } else if (minutos > 0) {
+        tiempoTexto = `${minutos}m ${diffSeg}s`;
+      } else {
+        tiempoTexto = `${diffSeg}s`;
+      }
+      
+      setTiempoTranscurrido(tiempoTexto);
+      
+      if (verificarRolJefeProduccion() && diffMin > 0 && diffMin % 30 === 0 && diffSeg < 5) {
+        console.log(`⏱️ [JEFE_PRODUCCION] Tiempo de creación: ${tiempoTexto}`);
+      }
+    }, 1000);
+    
+    setIntervalId(id);
+  }, [tiempoInicio, verificarRolJefeProduccion]);
+
+  const detenerTemporizador = useCallback(() => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+    
+    if (tiempoInicio && !tiempoFinal) {
+      const fin = new Date();
+      setTiempoFinal(fin);
+      const diffMs = fin - tiempoInicio;
+      const diffMin = Math.floor(diffMs / 60000);
+      const diffSeg = Math.floor((diffMs % 60000) / 1000);
+      const tiempoTotal = `${diffMin} minutos y ${diffSeg} segundos`;
+      
+      window.tiempoRegistroActual = {
+        inicio: tiempoInicio,
+        fin: fin,
+        totalMs: diffMs,
+        totalTexto: tiempoTotal
+      };
+      
+      if (verificarRolJefeProduccion()) {
+        console.log(`✅ Registro completado en: ${tiempoTotal}`);
+      }
+    }
+  }, [intervalId, tiempoInicio, tiempoFinal, verificarRolJefeProduccion]);
+
+  const reiniciarTemporizador = useCallback(() => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      setIntervalId(null);
+    }
+    setTiempoInicio(null);
+    setTiempoTranscurrido(null);
+    setTiempoFinal(null);
+    window.tiempoRegistroActual = null;
+  }, [intervalId]);
+
+  // Efecto para verificar rol al cargar el componente
+  useEffect(() => {
+    const esJefe = verificarRolJefeProduccion();
+    setMostrarTiempoOculto(esJefe);
+    if (esJefe) {
+      console.log('👑 Modo JEFE_PRODUCCION activado - Temporizador oculto disponible');
+    }
+  }, [verificarRolJefeProduccion]);
+
+  // Efecto para iniciar temporizador cuando el LÍDER empieza a trabajar
+  useEffect(() => {
+    const liderActivo = form.modulo && form.responsable && form.codigo_producto;
+    
+    if (liderActivo && !tiempoInicio) {
+      iniciarTemporizador();
+    }
+    
+    if (!form.modulo || !form.responsable) {
+      if (tiempoInicio || intervalId) {
+        reiniciarTemporizador();
+      }
+    }
+  }, [form.modulo, form.responsable, form.codigo_producto, tiempoInicio, intervalId, iniciarTemporizador, reiniciarTemporizador]);
+
+  // Limpiar intervalo al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [intervalId]);
+  // ========== FIN FUNCIONES DEL TEMPORIZADOR ==========
+
   // Fecha actual por defecto
   useEffect(() => {
     const hoy = new Date();
@@ -227,7 +356,6 @@ export default function Registro() {
         setManualHorasPersona({});
         setActividadesSeleccionadas({});
         
-        // Resetear actividades globales EQE si el nuevo producto no es EQE
         const esEQE = valorFinal.toUpperCase().startsWith("EQE");
         if (!esEQE) {
           setActividadesGlobalesEQE([]);
@@ -243,23 +371,9 @@ export default function Registro() {
       if (name === "hora_inicio" || name === "hora_fin") {
         const inicio = name === "hora_inicio" ? valorFinal : prev.hora_inicio;
         const fin = name === "hora_fin" ? valorFinal : prev.hora_fin;
-        
+  
         const horasTrabajadas = calcularHorasTrabajadas(inicio, fin);
         newForm.hora_planificada = horasTrabajadas;
-        
-        if (!manualCantidadPlanificada && cantidadBaseProducto && horasTrabajadas !== "0" && horasTrabajadas !== "0.00") {
-          const base = parseFloat(cantidadBaseProducto);
-          const horas = parseFloat(horasTrabajadas);
-          
-          if (!isNaN(base) && !isNaN(horas) && horas > 0) {
-            const cantidadCalculada = Math.floor(base * horas);
-            newForm.cantidad_planificada = cantidadCalculada.toString();
-          } else {
-            newForm.cantidad_planificada = cantidadBaseProducto;
-          }
-        } else if (!manualCantidadPlanificada) {
-          newForm.cantidad_planificada = cantidadBaseProducto;
-        }
       }
       
       if (name === "cantidad_planificada" || name === "cantidad_elaborado") {
@@ -348,7 +462,6 @@ useEffect(() => {
   setMostrarCheckboxes(esEQE);
   
   if (esEQE) {
-    // ✅ PARA EQE: Limpiar y cargar actividades maestras
     setListaActividadesEQE([]);
     setActividadesSeleccionadas({});
     setForm(prev => ({
@@ -392,7 +505,6 @@ useEffect(() => {
     cargarActividadesMaestras();
     
   } else {
-    // ✅ PARA PRODUCTOS NORMALES (NO EQE): Cargar actividades desde el backend
     setListaActividadesEQE([]);
     setActividadesSeleccionadas({});
     
@@ -1043,6 +1155,10 @@ useEffect(() => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    
+    // Detener el temporizador al guardar
+    detenerTemporizador();
+    
     setMsg("");
     setLoading(true);
     try {
@@ -1118,11 +1234,15 @@ useEffect(() => {
         detalles_actividades: actividadesTexto
       };
 
+      // Si es JEFE_PRODUCCION, añadir tiempo al payload (opcional)
+      if (mostrarTiempoOculto && window.tiempoRegistroActual) {
+        datosCompletos.tiempo_registro_frontend = window.tiempoRegistroActual.totalTexto;
+        datosCompletos.tiempo_registro_ms = window.tiempoRegistroActual.totalMs;
+      }
+
       await api.post("/registros", datosCompletos);
 
       setMsg("Registro guardado correctamente");
-
-      //await generarPDF();
 
       const hoy = new Date();
       const yyyy = hoy.getFullYear();
@@ -1144,6 +1264,10 @@ useEffect(() => {
       setMostrarCheckboxes(false);
       setActividadesGlobalesEQE([]);
       setProductosEQECargados(new Set());
+      
+      // Reiniciar temporizador después de guardar
+      reiniciarTemporizador();
+      
     } catch (err) {
       setMsg("❌ Error: " + (err.response?.data?.error || "No se pudo guardar"));
       console.error("Error al guardar:", err);
@@ -1368,34 +1492,7 @@ useEffect(() => {
     cargarPersonal();
   }, [form.modulo]);
 
-  {/*const generarPDF = async() =>{
-    const elemento = document.getElementById("formulario");
-
-    const canvas = await html2canvas(elemento);
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p","mm","a4");
-
-    const imgWidth = 210;
-    const pageHeight = 297;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    pdf.save("registro.pdf");
-  }*/}
-
-  // Agrega esta función ANTES del return, junto a las otras funciones
+  // Agrega esta función ANTES del return
 const decimalParaHorasMinutos = (decimal) => {
   if (isNaN(decimal) || decimal <= 0) return '';
   const horas = Math.floor(decimal);
@@ -1416,6 +1513,73 @@ const decimalParaHorasMinutos = (decimal) => {
           {msg}
         </div>
       )}
+      
+      {/* ========== TEMPORIZADOR OCULTO - SOLO PARA JEFE_PRODUCCION ========== */}
+      {mostrarTiempoOculto && tiempoTranscurrido && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          color: '#00ff00',
+          padding: '12px 18px',
+          borderRadius: '12px',
+          fontSize: '14px',
+          fontFamily: 'monospace',
+          fontWeight: 'bold',
+          zIndex: 9999,
+          border: '2px solid #00ff00',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(5px)',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 1)';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        onClick={() => {
+          if (window.tiempoRegistroActual) {
+            alert(`⏱️ TIEMPO TOTAL DE CREACIÓN\n\n${window.tiempoRegistroActual.totalTexto}\n\nInicio: ${new Date(window.tiempoRegistroActual.inicio).toLocaleTimeString()}\nFin: ${new Date(window.tiempoRegistroActual.fin).toLocaleTimeString()}`);
+          } else {
+            alert(`⏱️ TIEMPO TRANSCURRIDO\n\n${tiempoTranscurrido}\n\nEl temporizador se detendrá al guardar el registro.`);
+          }
+        }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '18px' }}>⏱️</span>
+            <div>
+              <div style={{ fontSize: '11px', color: '#88ff88', marginBottom: '2px' }}>TIEMPO DEL LÍDER</div>
+              <div style={{ fontSize: '16px', letterSpacing: '1px' }}>{tiempoTranscurrido}</div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Panel de información solo para JEFE_PRODUCCION 
+      {mostrarTiempoOculto && (
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          color: '#ffaa00',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          fontSize: '11px',
+          fontFamily: 'monospace',
+          zIndex: 9998,
+          border: '1px solid #ffaa00'
+        }}>
+          👑 MODO SUPERVISIÓN ACTIVO
+        </div>
+      )}*/}
+      {/* ========== FIN TEMPORIZADOR OCULTO ========== */}
+      
       <header>
         <div className="logo-left">
           <img src={logo_safemed} alt="logo" className="logo" />
@@ -1614,7 +1778,7 @@ const decimalParaHorasMinutos = (decimal) => {
             </div>
           </div>
         </div>
-        
+                
         <div className="subtitle">
           <h3>ENTREGA Y RECEPCIÓN DE MATERIA PRIMA E INSUMOS</h3>
         </div>
