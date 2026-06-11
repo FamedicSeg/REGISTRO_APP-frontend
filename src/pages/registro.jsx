@@ -1873,6 +1873,8 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="CHRISTIAN GIOVANNI SUNTAXI SUNTASIG ">CHRISTIAN GIOVANNI SUNTAXI SUNTASIG</option>
                     <option value="LUIS GUSTAVO SIMBAÑA MAILA">LUIS GUSTAVO SIMBAÑA MAILA</option>
                     <option value="CAROLINA ESTEFANIA VACA GUANATASIG">CAROLINA ESTEFANIA VACA GUANATASIG</option>
+                    <option value="KLEVER IVAN FARINANGO SUQUILLO">KLEVER IVAN FARINANGO SUQUILLO</option>
+                    <option value="ROCIO ELIZABETH PILATAXI MONTA">ROCIO ELIZABETH PILATAXI MONTA</option>
                   </select>
                 </div>
 
@@ -2017,6 +2019,8 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="CHRISTIAN GIOVANNI SUNTAXI SUNTASIG">CHRISTIAN GIOVANNI SUNTAXI SUNTASIG</option>
                     <option value="LUIS GUSTAVO SIMBAÑA MAILA">LUIS GUSTAVO SIMBAÑA MAILA</option>
                     <option value="CAROLINA ESTEFANIA VACA GUANATASIG">CAROLINA ESTEFANIA VACA GUANATASIG</option>
+                    <option value="KLEVER IVAN FARINANGO SUQUILLO">KLEVER IVAN FARINANGO SUQUILLO</option>
+                    <option value="ROCIO ELIZABETH PILATAXI MONTA">ROCIO ELIZABETH PILATAXI MONTA</option>
                   </select>
                 </div>
                 
