@@ -86,7 +86,7 @@ const EstadisticaSemanal = () => {
             }
         } catch (err) {
             console.error('Error cargando datos:', err);
-            setError('Estamos trabajando para mejorar el servicio. Regrese a su Panel Principal. Analista de Transformación Digital - KSZS 😊');
+            setError('Estamos trabajando para mejorar el servicio. Regrese a su Panel Principal. Analista de Transformación Digital');
         } finally {
             setLoading(false);
         }
