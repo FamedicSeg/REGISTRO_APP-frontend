@@ -10,7 +10,7 @@
 
 /* Header */
 .estadistica-header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: linear-gradient(135deg, #152a51 0%, #0f1c33 100%);
     color: white;
     padding: 30px 25px;
     border-radius: 12px;
@@ -103,7 +103,7 @@
 }
 
 .btn-guardar {
-    background: #10b981;
+    background: #22C55E;
     color: white;
 }
 
@@ -113,12 +113,12 @@
 }
 
 .btn-actualizar {
-    background: #3b82f6;
+    background: #F59E0B;
     color: white;
 }
 
 .btn-actualizar:hover:not(:disabled) {
-    background: #2563eb;
+    background: #F59E0B;
     transform: translateY(-1px);
 }
 
@@ -305,5 +305,180 @@
     .estadistica-table td {
         padding: 8px;
         font-size: 11px;
+    }
+}
+
+/* ─────────────────────────────────────────────
+   TABS
+───────────────────────────────────────────── */
+.estadistica-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    border-color: #59606a;
+    color: #59606a;
+}
+
+.tab-btn.active {
+    background: #59606a;
+    color: white;
+    border-color: #59606a;
+}
+
+/* ─────────────────────────────────────────────
+   KPI CARDS
+───────────────────────────────────────────── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-top: 4px solid #e2e8f0;
+}
+
+.kpi-card.kpi-blue  { border-top-color: #3b82f6; }
+.kpi-card.kpi-green { border-top-color: #10b981; }
+.kpi-card.kpi-purple{ border-top-color: #8b5cf6; }
+
+.kpi-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.kpi-unit {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ─────────────────────────────────────────────
+   BADGE PORCENTAJE
+───────────────────────────────────────────── */
+.pct-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* ─────────────────────────────────────────────
+   AUTO-SAVE HINT
+───────────────────────────────────────────── */
+.autosave-hint {
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ─────────────────────────────────────────────
+   SEMANAS GUARDADAS (GRID DE TARJETAS)
+───────────────────────────────────────────── */
+.semanas-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.semana-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 110px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.semana-card:hover {
+    border-color: #2a5298;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(42,82,152,0.15);
+}
+
+.semana-card--active {
+    border-color: #2a5298;
+    background: #eff6ff;
+    box-shadow: 0 4px 12px rgba(42,82,152,0.2);
+}
+
+.semana-card__num {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.semana-card__pct {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.semana-card__label {
+    font-size: 10px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.semana-card__prods {
+    font-size: 11px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .semanas-grid {
+        gap: 8px;
+    }
+    .semana-card {
+        min-width: 80px;
+        padding: 12px;
     }
 }

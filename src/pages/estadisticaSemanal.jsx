@@ -1,363 +1,623 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
     BarElement,
+    LineElement,
+    PointElement,
     Title,
     Tooltip,
     Legend
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { 
-    getResumenSemanal, 
-    guardarResumenSemanal 
+import {
+    getResumenSemanal,
+    guardarResumenSemanal,
+    getHistoricoSemanal,
+    getSemanasGuardadas,
+    getTendenciaAnual
 } from '../services/api';
-import '../styles/estadisticaSemanal.css'; // Crearemos este CSS
+import '../styles/estadisticaSemanal.css';
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
     BarElement,
+    LineElement,
+    PointElement,
     Title,
     Tooltip,
     Legend
 );
 
+// Helpers
+function getSemanaActual() {
+    const now = new Date();
+    const jan4 = new Date(now.getFullYear(), 0, 4);
+    const jan4Day = jan4.getDay() || 7;
+    const monday = new Date(jan4);
+    monday.setDate(jan4.getDate() - (jan4Day - 1));
+    const diff = Math.floor((now - monday) / (7 * 24 * 60 * 60 * 1000));
+    const weekNum = diff + 1;
+    return `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+function getWeekRange(weekString) {
+    const [year, week] = weekString.split('-W');
+    const ano = parseInt(year);
+    const semana = parseInt(week);
+    const fechaInicio = new Date(ano, 0, 1);
+    const diaSemana = fechaInicio.getDay();
+    const diasOffset = (semana - 1) * 7;
+    fechaInicio.setDate(fechaInicio.getDate() + diasOffset - diaSemana + 1);
+    const fechaFin = new Date(fechaInicio);
+    fechaFin.setDate(fechaInicio.getDate() + 6);
+    return {
+        inicio: fechaInicio.toISOString().split('T')[0],
+        fin: fechaFin.toISOString().split('T')[0]
+    };
+}
+
+function formatNum(n) {
+    return Number(n || 0).toLocaleString('es-EC');
+}
+
+const colorCumplimiento = (pct) => {
+    if (pct >= 100) return '#10b981';
+    if (pct >= 80) return '#f59e0b';
+    return '#ef4444';
+};
+
+const estadoCumplimiento = (pct) => {
+    if (pct >= 100) return 'Meta cumplida';
+    if (pct >= 80) return 'Cerca de meta';
+    return 'Por debajo de la meta';
+};
+
 const EstadisticaSemanal = () => {
+    const [selectedWeek, setSelectedWeek] = useState(getSemanaActual);
+    const [weekRange, setWeekRange] = useState({ inicio: '', fin: '' });
     const [chartData, setChartData] = useState(null);
+    const [smallChartData, setSmallChartData] = useState(null);
+    const [resumenData, setResumenData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [selectedWeek, setSelectedWeek] = useState(() => {
-        const now = new Date();
-        const jan4 = new Date(now.getFullYear(), 0, 4);
-        const jan4Day = jan4.getDay() || 7;
-        const monday = new Date(jan4);
-        monday.setDate(jan4.getDate() - (jan4Day - 1));
-        const diff = Math.floor((now - monday) / (7 * 24 * 60 * 60 * 1000));
-        const weekNum = diff + 1;
-        return `${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
-    });
-    const [resumenData, setResumenData] = useState(null);
     const [saving, setSaving] = useState(false);
-    const [weekRange, setWeekRange] = useState({ inicio: '', fin: '' });
+    const prevWeekRef = useRef(null);
+    const [activeTab, setActiveTab] = useState('actual');
+    const [anioHistorico, setAnioHistorico] = useState(new Date().getFullYear());
+    const [semanasGuardadas, setSemanasGuardadas] = useState([]);
+    const [semanaHistSel, setSemanaHistSel] = useState('');
+    const [histData, setHistData] = useState(null);
+    const [histChart, setHistChart] = useState(null);
+    const [loadingHist, setLoadingHist] = useState(false);
+    const [tendenciaData, setTendenciaData] = useState(null);
+    const [loadingTendencia, setLoadingTendencia] = useState(false);
+    
+    const [chartVersion, setChartVersion] = useState(0);
 
-    // Función para obtener las fechas de inicio y fin de semana
-    const getWeekRange = (weekString) => {
-        const [year, week] = weekString.split('-W');
-        const ano = parseInt(year);
-        const semana = parseInt(week);
-        
-        // Calcular fecha de inicio (lunes)
-        const fechaInicio = new Date(ano, 0, 1);
-        const diaSemana = fechaInicio.getDay();
-        const diasOffset = (semana - 1) * 7;
-        fechaInicio.setDate(fechaInicio.getDate() + diasOffset - diaSemana + 1);
-        
-        const fechaFin = new Date(fechaInicio);
-        fechaFin.setDate(fechaInicio.getDate() + 6);
-        
-        return {
-            inicio: fechaInicio.toISOString().split('T')[0],
-            fin: fechaFin.toISOString().split('T')[0]
-        };
-    };
-
-    // Actualizar rango de fechas cuando cambia la semana
     useEffect(() => {
-        const range = getWeekRange(selectedWeek);
-        setWeekRange(range);
+        setWeekRange(getWeekRange(selectedWeek));
     }, [selectedWeek]);
 
-    // Función para cargar datos
+    useEffect(() => {
+        const prev = prevWeekRef.current;
+        const run = async () => {
+            if (prev && prev !== selectedWeek && resumenData && resumenData.length > 0) {
+                const [py, pw] = prev.split('-W');
+                try { 
+                    await guardarResumenSemanal(parseInt(py), parseInt(pw)); 
+                } catch (err) { 
+                    console.error(err); 
+                    alert('Error al guardar el resumen semanal anterior. Asegúrate de que la conexión con OneDrive esté activa.');
+                }
+            }
+            prevWeekRef.current = selectedWeek;
+            await cargarDatos();
+        };
+        run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedWeek]);
+
+    useEffect(() => {
+        if (activeTab === 'historico') {
+            cargarSemanasGuardadas();
+            cargarTendencia();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, anioHistorico]);
+
+    useEffect(() => {
+        if (semanaHistSel) cargarHistoricoSemana(semanaHistSel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [semanaHistSel]);
+
     const cargarDatos = async () => {
-        setLoading(true);
-        setError('');
+        setLoading(true); setError('');
         try {
             const [year, week] = selectedWeek.split('-W');
             const response = await getResumenSemanal(parseInt(year), parseInt(week));
             if (response.success && response.data.length > 0) {
                 setResumenData(response.data);
-                prepararGrafico(response.data);
+                prepararGraficos(response.data);
+                setChartVersion(prev => prev + 1);
             } else {
                 setError(`No hay datos para la semana ${week}/${year}`);
-                setResumenData(null);
-                setChartData(null);
+                setResumenData(null); setChartData(null); setSmallChartData(null);
             }
         } catch (err) {
-            console.error('Error cargando datos:', err);
-            setError('Estamos trabajando para mejorar el servicio. Regrese a su Panel Principal. Analista de Transformación Digital');
-        } finally {
-            setLoading(false);
-        }
+            setError('Error al cargar los datos. Verifique la conexión con OneDrive.');
+            console.error(err);
+        } finally { setLoading(false); }
     };
 
-    // Función para preparar el gráfico
-    const prepararGrafico = (data) => {
-        const productos = data.map(item => item.codigo_producto);
-        const planificados = data.map(item => item.planificado);
-        const elaborados = data.map(item => item.elaborado);
-
-        setChartData({
-            labels: productos,
-            datasets: [
-                {
-                    label: 'CANT. PLANIFICADA SEMANAL',
-                    data: planificados,
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                },
-                {
-                    label: 'CANT. ELABORADO REAL',
-                    data: elaborados,
-                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                    borderRadius: 4,
-                }
-            ]
-        });
-    };
-
-    // Función para guardar resumen en histórico
-    const guardarResumen = async () => {
+    const guardarResumen = async (silencioso = false) => {
         setSaving(true);
         try {
             const [year, week] = selectedWeek.split('-W');
             const response = await guardarResumenSemanal(parseInt(year), parseInt(week));
             if (response.success) {
-                alert(`✅ ${response.message}`);
-                await cargarDatos();
-            } else {
-                alert('Error al guardar resumen');
+                if (!silencioso) alert(`✅ ${response.message}`);
+                if (activeTab === 'historico') { await cargarSemanasGuardadas(); await cargarTendencia(); }
+            } else if (!silencioso) alert('Error al guardar resumen');
+        } catch (err) { if (!silencioso) alert('Error al guardar el resumen semanal'); console.error(err); }
+        finally { setSaving(false); }
+    };
+
+    const cargarSemanasGuardadas = async () => {
+        try {
+            const response = await getSemanasGuardadas(anioHistorico);
+            if (response.success) {
+                setSemanasGuardadas(response.data || []);
+                if (response.data && response.data.length > 0 && !semanaHistSel)
+                    setSemanaHistSel(String(response.data[response.data.length - 1].semana));
             }
-        } catch (err) {
-            console.error('Error guardando:', err);
-            alert('Error al guardar el resumen semanal');
-        } finally {
-            setSaving(false);
+        } catch (err) { console.error(err); }
+    };
+
+    const cargarHistoricoSemana = async (semana) => {
+        setLoadingHist(true);
+        try {
+            const response = await getHistoricoSemanal(anioHistorico, semana);
+            if (response.success && response.data.length > 0) {
+                setHistData(response.data);
+                prepararGraficosHistorico(response.data);
+            } else { setHistData([]); setHistChart(null); }
+        } catch (err) { console.error(err); }
+        finally { setLoadingHist(false); }
+    };
+
+    const cargarTendencia = async () => {
+        setLoadingTendencia(true);
+        try {
+            const response = await getTendenciaAnual(anioHistorico);
+            if (response.success && response.tendencia.length > 0) setTendenciaData(response.tendencia);
+            else setTendenciaData(null);
+        } catch (err) { console.error(err); }
+        finally { setLoadingTendencia(false); }
+    };
+
+    // Nueva función: prepara ambos gráficos (todos y pequeños)
+    const prepararGraficos = (data) => {
+        // Filtrar productos con cantidad planificada pequeña (menos de 500 unidades)
+        const productosPequeños = data.filter(item => item.planificado < 500);
+        const _productosGrandes = data.filter(item => item.planificado >= 500);
+        
+        // Gráfico principal (todos los productos)
+        setChartData({
+            labels: data.map(i => i.codigo_producto),
+            datasets: [
+                { label: 'CANT. PLANIFICADA', data: data.map(i => i.planificado), backgroundColor: 'rgba(148, 163, 184, 0.9)', borderColor: 'rgba(148, 163, 184, 0.9)', borderWidth: 1, borderRadius: 4 },
+                { label: 'CANT. ELABORADA',   data: data.map(i => i.elaborado),   backgroundColor: 'rgba(6, 182, 212, 0.9)', borderColor: 'rgba(6, 182, 212, 0.9)',  borderWidth: 1, borderRadius: 4 }
+            ]
+        });
+        
+        // Gráfico de productos pequeños (menos de 500 unidades)
+        if (productosPequeños.length > 0) {
+            setSmallChartData({
+                labels: productosPequeños.map(i => i.codigo_producto),
+                datasets: [
+                    { label: 'CANT. PLANIFICADA', data: productosPequeños.map(i => i.planificado), backgroundColor: 'rgba(148, 163, 184, 0.9)', borderColor: 'rgba(148, 163, 184, 0.9)', borderWidth: 1, borderRadius: 4 },
+                    { label: 'CANT. ELABORADA',   data: productosPequeños.map(i => i.elaborado),   backgroundColor: 'rgba(6, 182, 212, 0.9)', borderColor: 'rgba(6, 182, 212, 0.9)',  borderWidth: 1, borderRadius: 4 }
+                ]
+            });
+        } else {
+            setSmallChartData(null);
         }
     };
 
-    // Cargar datos cuando cambia la semana
-    useEffect(() => {
-        cargarDatos();
-    }, [selectedWeek]);
+    // Gráficos históricos
+    const prepararGraficosHistorico = (data) => {
+        const _productosPequeños = data.filter(item => item.planificado < 500);
+        
+        setHistChart({
+            labels: data.map(i => i.codigo_producto),
+            datasets: [
+                { label: 'PLANIFICADO', data: data.map(i => i.planificado), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
+                { label: 'ELABORADO',   data: data.map(i => i.elaborado),   backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
+            ]
+        });
+    };
 
-    // Opciones del gráfico
-    const options = {
-        responsive: true,
+    const prepararGraficoTendencia = (tendencia) => ({
+        labels: tendencia.map(t => `Sem. ${t.semana}`),
+        datasets: [
+            { type: 'bar',  label: 'Total Planificado', data: tendencia.map(t => t.total_planificado), backgroundColor: 'rgba(54,162,235,0.5)',  borderColor: 'rgba(54,162,235,1)',  borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
+            { type: 'bar',  label: 'Total Elaborado',   data: tendencia.map(t => t.total_elaborado),   backgroundColor: 'rgba(16,185,129,0.5)',  borderColor: 'rgba(16,185,129,1)',  borderWidth: 1, borderRadius: 4, yAxisID: 'y' },
+            { type: 'line', label: '% Cumplimiento',    data: tendencia.map(t => t.cumplimiento_global), borderColor: 'rgba(239,68,68,1)', backgroundColor: 'rgba(239,68,68,0.1)', borderWidth: 2, pointRadius: 5, pointHoverRadius: 7, tension: 0.3, fill: false, yAxisID: 'y2' }
+        ]
+    });
+
+    const opcionesBarras = {
+        responsive: true, 
         maintainAspectRatio: false,
         plugins: {
-            legend: {
-                position: 'top',
-                labels: {
-                    font: { size: 12, weight: 'bold' },
-                    padding: 15,
-                    usePointStyle: true,
-                    boxWidth: 10,
-                }
+            legend: { 
+                position: 'top', 
+                labels: { font: { size: 12, weight: 'bold' }, padding: 15, usePointStyle: true } 
             },
             tooltip: {
                 callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        let value = context.raw;
-                        let porcentaje = '';
-                        
-                        if (context.dataset.label === 'CANT. ELABORADO REAL') {
-                            const planificado = context.chart.data.datasets[0].data[context.dataIndex];
-                            if (planificado > 0) {
-                                const cumplimiento = (value / planificado) * 100;
-                                porcentaje = ` (${cumplimiento.toFixed(1)}% de cumplimiento)`;
-                            }
+                    label(ctx) {
+                        const v = ctx.raw;
+                        let extra = '';
+                        if (ctx.datasetIndex === 1) {
+                            const plan = ctx.chart.data.datasets[0].data[ctx.dataIndex];
+                            if (plan > 0) extra = ` — ${((v / plan) * 100).toFixed(1)}% cumplimiento`;
                         }
-                        return `${label}: ${value.toLocaleString()} unidades${porcentaje}`;
+                        return `${ctx.dataset.label}: ${formatNum(v)} unid.${extra}`;
                     }
                 },
-                backgroundColor: 'rgba(0,0,0,0.8)',
-                titleFont: { size: 13, weight: 'bold' },
-                bodyFont: { size: 12 },
-                padding: 10,
+                backgroundColor: 'rgba(0,0,0,0.8)', 
+                titleFont: { size: 13, weight: 'bold' }, 
+                bodyFont: { size: 12 }, 
+                padding: 10
             }
         },
         scales: {
-            y: {
+            y: { 
+                type: 'linear',
                 beginAtZero: true,
-                grid: { color: 'rgba(0,0,0,0.05)' },
-                title: {
-                    display: true,
-                    text: 'Cantidad (unidades)',
-                    font: { weight: 'bold', size: 12 },
-                    color: '#555'
-                },
-                ticks: {
-                    callback: function(value) {
-                        return value.toLocaleString();
-                    }
-                }
+                grid: { color: 'rgba(0,0,0,0.05)' }, 
+                title: { 
+                    display: true, 
+                    text: 'Cantidad (unidades)', 
+                    font: { weight: 'bold', size: 12 }, 
+                    color: '#555' 
+                }, 
+                ticks: { callback: v => formatNum(v) }
             },
-            x: {
-                grid: { display: false },
-                title: {
-                    display: true,
-                    text: 'Código de Producto',
-                    font: { weight: 'bold', size: 12 },
-                    color: '#555'
-                },
-                ticks: {
-                    rotation: -45,
-                    autoSkip: true,
-                    maxRotation: 45,
-                    minRotation: 45
-                }
+            x: { 
+                grid: { display: false }, 
+                title: { display: true, text: 'Código de Producto', font: { weight: 'bold', size: 12 }, color: '#555' }, 
+                ticks: { rotation: -45, autoSkip: true, maxRotation: 45, minRotation: 45 } 
             }
         }
     };
+
+    // Opciones especiales para gráfico de productos pequeños (sin rotación de etiquetas)
+    const opcionesBarrasPequeños = {
+        responsive: true, 
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { 
+                position: 'top', 
+                labels: { font: { size: 12, weight: 'bold' }, padding: 15, usePointStyle: true } 
+            },
+            tooltip: {
+                callbacks: {
+                    label(ctx) {
+                        const v = ctx.raw;
+                        let extra = '';
+                        if (ctx.datasetIndex === 1) {
+                            const plan = ctx.chart.data.datasets[0].data[ctx.dataIndex];
+                            if (plan > 0) extra = ` — ${((v / plan) * 100).toFixed(1)}% cumplimiento`;
+                        }
+                        return `${ctx.dataset.label}: ${formatNum(v)} unid.${extra}`;
+                    }
+                },
+                backgroundColor: 'rgba(0,0,0,0.8)', 
+                titleFont: { size: 13, weight: 'bold' }, 
+                bodyFont: { size: 12 }, 
+                padding: 10
+            }
+        },
+        scales: {
+            y: { 
+                type: 'linear',
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.05)' }, 
+                title: { 
+                    display: true, 
+                    text: 'Cantidad (unidades)', 
+                    font: { weight: 'bold', size: 12 }, 
+                    color: '#555' 
+                }, 
+                ticks: { callback: v => formatNum(v) }
+            },
+            x: { 
+                grid: { display: false }, 
+                title: { display: true, text: 'Código de Producto', font: { weight: 'bold', size: 12 }, color: '#555' }, 
+                ticks: { rotation: -25, autoSkip: true, maxRotation: 25, minRotation: 25 } // Menos rotación
+            }
+        }
+    };
+
+    const opcionesTendencia = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top', labels: { font: { size: 12, weight: 'bold' }, padding: 15, usePointStyle: true } },
+            tooltip: {
+                callbacks: {
+                    label(ctx) {
+                        return ctx.dataset.yAxisID === 'y2'
+                            ? `${ctx.dataset.label}: ${ctx.raw}%`
+                            : `${ctx.dataset.label}: ${formatNum(ctx.raw)} unid.`;
+                    }
+                },
+                backgroundColor: 'rgba(0,0,0,0.85)', titleFont: { size: 13, weight: 'bold' }, bodyFont: { size: 12 }, padding: 10
+            }
+        },
+        scales: {
+            y:  { beginAtZero: true, position: 'left',  title: { display: true, text: 'Cantidad (unidades)', font: { weight: 'bold' }, color: '#555' }, ticks: { callback: v => formatNum(v) }, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y2: { beginAtZero: true, max: 100, position: 'right', title: { display: true, text: '% Cumplimiento', font: { weight: 'bold' }, color: '#ef4444' }, ticks: { callback: v => `${v}%`, color: '#ef4444' }, grid: { drawOnChartArea: false } },
+            x:  { grid: { display: false } }
+        }
+    };
+
+    const totalPlan = resumenData ? resumenData.reduce((s, r) => s + r.planificado, 0) : 0;
+    const totalElab = resumenData ? resumenData.reduce((s, r) => s + r.elaborado, 0) : 0;
+    const pctGlobal = totalPlan > 0 ? (totalElab / totalPlan) * 100 : 0;
+    const metasCumplidas = resumenData ? resumenData.filter(r => r.planificado > 0 && r.elaborado >= r.planificado).length : 0;
+    const totalProductosConPlan = resumenData ? resumenData.filter(r => r.planificado > 0).length : 0;
+
+    // Contar productos pequeños
+    const productosPequeñosCount = resumenData ? resumenData.filter(r => r.planificado < 500).length : 0;
 
     return (
         <div className="estadistica-container">
             <header className="estadistica-header">
                 <div>
-                    <h1>📊 Dashboard de Productividad Semanal</h1>
-                    <p className="estadistica-subtitle">Comparación de producción planificada vs elaborada por producto</p>
+                    <h1> Dashboard - Comparativa Semanal de Cumplimiento (%) </h1>
+                    <p className="estadistica-subtitle">Análisis Comparativo del Porcentaje de Cumplimiento Semanal</p>
                 </div>
             </header>
 
-            {/* Panel de control con selector de semana estilo calendario */}
-            <div className="estadistica-controls">
-                <div className="week-selector-wrap">
-                    <label className="week-selector-label" htmlFor="week-input">
-                        📅 Seleccionar Semana
-                    </label>
-                    <input
-                        id="week-input"
-                        type="week"
-                        className="week-input"
-                        value={selectedWeek}
-                        onChange={(e) => setSelectedWeek(e.target.value)}
-                    />
-                    {weekRange.inicio && (
-                        <span className="week-range-label">
-                            {new Date(weekRange.inicio + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
-                            {' — '}
-                            {new Date(weekRange.fin + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </span>
-                    )}
-                </div>
-
-                <div className="estadistica-actions">
-                    <button
-                        onClick={guardarResumen}
-                        disabled={saving || loading}
-                        className="btn-guardar"
-                    >
-                        {saving ? '💾 Guardando...' : '💾 Guardar Resumen Semanal'}
-                    </button>
-                    <button
-                        onClick={cargarDatos}
-                        disabled={loading}
-                        className="btn-actualizar"
-                    >
-                        {loading ? '🔄 Cargando...' : '🔄 Actualizar'}
-                    </button>
-                </div>
+            <div className="estadistica-tabs">
+                <button className={`tab-btn ${activeTab === 'actual' ? 'active' : ''}`} onClick={() => setActiveTab('actual')}>Semana Actual</button>
+                <button className={`tab-btn ${activeTab === 'historico' ? 'active' : ''}`} onClick={() => setActiveTab('historico')}>Base Histórica</button>
             </div>
 
-            {/* Mostrar error */}
-            {error && (
-                <div className="estadistica-error">
-                    ⚠️ {error}
-                </div>
-            )}
-
-            {/* Mostrar loading */}
-            {loading && (
-                <div className="estadistica-loading">
-                    <div className="spinner"></div>
-                    <p>Cargando datos...</p>
-                </div>
-            )}
-
-            {/* Mostrar gráfico */}
-            {!loading && chartData && (
-                <div className="estadistica-chart-container">
-                    <div className="chart-header">
-                        <h3>📈 Comparación Semanal</h3>
-                        <span className="chart-badge">
-                            Semana {selectedWeek.split('-W')[1]} - {selectedWeek.split('-W')[0]}
-                        </span>
+            {activeTab === 'actual' && (
+                <>
+                    <div className="estadistica-controls">
+                        <div className="week-selector-wrap">
+                            <label className="week-selector-label" htmlFor="week-input">Selecciona la Semana</label>
+                            <input id="week-input" type="week" className="week-input" value={selectedWeek} onChange={e => setSelectedWeek(e.target.value)} />
+                            {weekRange.inicio && (
+                                <span className="week-range-label">
+                                    {new Date(weekRange.inicio + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                                    {' — '}
+                                    {new Date(weekRange.fin + 'T00:00:00').toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </span>
+                            )}
+                        </div>
+                        <div className="estadistica-actions">
+                            <button onClick={() => guardarResumen(false)} disabled={saving || loading} className="btn-guardar">
+                                {saving ? 'Guardando...' : 'Guardar en la Base Histórica'}
+                            </button>
+                            <button onClick={cargarDatos} disabled={loading} className="btn-actualizar">
+                                {loading ? 'Cargando...' : '✨Actualizar'}
+                            </button>
+                        </div>
                     </div>
-                    <div className="chart-wrapper">
-                        <Bar data={chartData} options={options} />
-                    </div>
-                </div>
-            )}
 
-            {/* Mostrar tabla resumen */}
-            {!loading && resumenData && resumenData.length > 0 && (
-                <div className="estadistica-table-container">
-                    <div className="table-header">
-                        <h3>📋 Detalle por Producto</h3>
-                        <span className="table-count">{resumenData.length} productos</span>
-                    </div>
-                    <div className="table-wrapper">
-                        <table className="estadistica-table">
-                            <thead>
-                                <tr>
-                                    <th>Código Producto</th>
-                                    <th>Planificado</th>
-                                    <th>Elaborado</th>
-                                    <th>Diferencia</th>
-                                    <th>Cumplimiento</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {resumenData.map((item, index) => {
-                                    const diferencia = item.elaborado - item.planificado;
-                                    const cumplimiento = item.planificado > 0 
-                                        ? (item.elaborado / item.planificado) * 100 
-                                        : 0;
-                                    const diferenciaColor = diferencia >= 0 ? '#10b981' : '#ef4444';
-                                    const cumplimientoColor = cumplimiento >= 100 ? '#10b981' : cumplimiento >= 80 ? '#f59e0b' : '#ef4444';
-                                    
-                                    let estado = '';
-                                    let estadoColor = '';
-                                    if (cumplimiento >= 100) {
-                                        estado = '✅ Meta superada';
-                                        estadoColor = '#10b981';
-                                    } else if (cumplimiento >= 80) {
-                                        estado = '⚠️ Cerca de meta';
-                                        estadoColor = '#f59e0b';
-                                    } else {
-                                        estado = '❌ Por debajo';
-                                        estadoColor = '#ef4444';
-                                    }
-                                    
-                                    return (
-                                        <tr key={index}>
-                                            <td className="producto-code">{item.codigo_producto}</td>
-                                            <td>{item.planificado.toLocaleString()} unit.</td>
-                                            <td>{item.elaborado.toLocaleString()} unit.</td>
-                                            <td style={{ color: diferenciaColor, fontWeight: 'bold' }}>
-                                                {diferencia >= 0 ? `+${diferencia.toLocaleString()}` : diferencia.toLocaleString()}
-                                            </td>
-                                            <td style={{ color: cumplimientoColor, fontWeight: 'bold' }}>
-                                                {cumplimiento.toFixed(1)}%
-                                            </td>
-                                            <td style={{ color: estadoColor }}>
-                                                {estado}
-                                            </td>
+                    {error && <div className="estadistica-error">⚠️ {error}</div>}
+                    {loading && <div className="estadistica-loading"><div className="spinner"></div><p>Cargando datos desde Excel y Base de Datos...</p></div>}
+
+                    {!loading && resumenData && resumenData.length > 0 && (
+                        <div className="kpi-grid">
+                            <div className="kpi-card kpi-blue"><span className="kpi-label">Total Planificado</span><span className="kpi-value">{formatNum(totalPlan)}</span><span className="kpi-unit">unidades</span></div>
+                            <div className="kpi-card kpi-green"><span className="kpi-label">Total Elaborado</span><span className="kpi-value">{formatNum(totalElab)}</span><span className="kpi-unit">unidades</span></div>
+                            <div className="kpi-card" style={{ borderTop: `4px solid ${colorCumplimiento(pctGlobal)}` }}>
+                                <span className="kpi-label">% Cumplimiento Global</span>
+                                <span className="kpi-value" style={{ color: colorCumplimiento(pctGlobal) }}>{pctGlobal.toFixed(1)}%</span>
+                                <span className="kpi-unit">{estadoCumplimiento(pctGlobal)}</span>
+                            </div>
+                            <div className="kpi-card kpi-purple"><span className="kpi-label">Metas Cumplidas</span><span className="kpi-value">{metasCumplidas} / {totalProductosConPlan}</span><span className="kpi-unit">productos</span></div>
+                        </div>
+                    )}
+
+                    {/* GRÁFICO PRINCIPAL - Todos los productos */}
+                    {!loading && chartData && (
+                        <div className="estadistica-chart-container">
+                            <div className="chart-header">
+                                <h3>📊 DIAGRAMA DE BARRAS: TODOS LOS PRODUCTOS</h3>
+                                <span className="chart-badge">
+                                    Semana {selectedWeek.split('-W')[1]} — {selectedWeek.split('-W')[0]} | Total: {resumenData?.length} productos
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar key={chartVersion} data={chartData} options={opcionesBarras} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* GRÁFICO ESPECIAL - Solo productos con cantidad planificada < 500 */}
+                    {!loading && smallChartData && productosPequeñosCount > 0 && (
+                        <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
+                            <div className="chart-header">
+                                <h3>ENFOQUE EN PRODUCTOS DE BAJO VOLUMEN</h3>
+                                <span className="chart-badge">
+                                    {productosPequeñosCount} productos con baja planificación - Semana {selectedWeek.split('-W')[1]}
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar data={smallChartData} options={opcionesBarrasPequeños} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mensaje si no hay productos pequeños */}
+                    {!loading && resumenData && productosPequeñosCount === 0 && (
+                        <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
+                            ✅ No hay productos con planificación menor a 500 unidades esta semana.
+                        </div>
+                    )}
+
+                    {!loading && resumenData && resumenData.length > 0 && (
+                        <div className="estadistica-table-container">
+                            <div className="table-header">
+                                <h3>DETALLE POR PRODUCTO</h3>
+                                <span className="table-count">{resumenData.length} productos</span>
+                            </div>
+                            <div className="table-wrapper">
+                                <table className="estadistica-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Código Producto</th>
+                                            <th>Planificado</th>
+                                            <th>Elaborado</th>
+                                            <th>Diferencia</th>
+                                            <th>% Cumplimiento</th>
+                                            <th>Estado</th>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                        </thead>
+                                    <tbody>
+                                        {resumenData.map((item, i) => {
+                                            const dif = item.elaborado - item.planificado;
+                                            const pct = item.planificado > 0 ? (item.elaborado / item.planificado) * 100 : 0;
+                                            const esBajoVolumen = item.planificado < 500;
+                                            return (
+                                                <tr key={i} style={esBajoVolumen ? { backgroundColor: '#fffbeb' } : {}}>
+                                                    <td className="producto-code" style={esBajoVolumen ? { fontWeight: 'bold', color: '#d97706' } : {}}>
+                                                        {item.codigo_producto}
+                                                        {esBajoVolumen && <span style={{ fontSize: '10px', marginLeft: '8px', background: '#fef3c7', padding: '2px 6px', borderRadius: '12px' }}>bajo volumen</span>}
+                                                    </td>
+                                                    <td>{formatNum(item.planificado)} unit.</td>
+                                                    <td>{formatNum(item.elaborado)} unit.</td>
+                                                    <td style={{ color: dif >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{dif >= 0 ? `+${formatNum(dif)}` : formatNum(dif)}</td>
+                                                    <td><span className="pct-badge" style={{ background: colorCumplimiento(pct) }}>{pct.toFixed(1)}%</span></td>
+                                                    <td style={{ color: colorCumplimiento(pct) }}>{estadoCumplimiento(pct)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {activeTab === 'historico' && (
+                <>
+                    <div className="estadistica-controls">
+                        <div className="week-selector-wrap">
+                            <label className="week-selector-label">AÑO</label>
+                            <select className="week-input" value={anioHistorico} onChange={e => { setAnioHistorico(parseInt(e.target.value)); setSemanaHistSel(''); setHistData(null); setHistChart(null); }}>
+                                {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                            {semanasGuardadas.length > 0 && (
+                                <>
+                                    <label className="week-selector-label">Semana guardada</label>
+                                    <select className="week-input" value={semanaHistSel} onChange={e => setSemanaHistSel(e.target.value)}>
+                                        <option value="">— Seleccione —</option>
+                                        {semanasGuardadas.map(s => (
+                                            <option key={s.semana} value={s.semana}>Semana {s.semana} — {s.total_productos} prod. — {s.cumplimiento_promedio}% cumpl.</option>
+                                        ))}
+                                    </select>
+                                </>
+                            )}
+                        </div>
+                        <div className="estadistica-actions">
+                            <button onClick={() => { cargarSemanasGuardadas(); cargarTendencia(); }} className="btn-actualizar">🔄 Refrescar</button>
+                        </div>
                     </div>
-                </div>
+
+                    {semanasGuardadas.length === 0 && !loadingTendencia && (
+                        <div className="estadistica-error">⚠️ No hay semanas guardadas para {anioHistorico}. Ve a "Semana Actual" y presiona "Guardar en la Base Histórica".</div>
+                    )}
+
+                    {semanasGuardadas.length > 0 && (
+                        <div className="semanas-grid">
+                            {semanasGuardadas.map(s => (
+                                <div key={s.semana} className={`semana-card ${semanaHistSel === String(s.semana) ? 'semana-card--active' : ''}`} onClick={() => setSemanaHistSel(String(s.semana))}>
+                                    <span className="semana-card__num">Sem. {s.semana}</span>
+                                    <span className="semana-card__pct" style={{ color: colorCumplimiento(s.cumplimiento_promedio) }}>{s.cumplimiento_promedio}%</span>
+                                    <span className="semana-card__label">cumplimiento prom.</span>
+                                    <span className="semana-card__prods">{s.total_productos} productos</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {loadingTendencia && <div className="estadistica-loading"><div className="spinner"></div><p>Cargando tendencia anual...</p></div>}
+                    {!loadingTendencia && tendenciaData && tendenciaData.length > 0 && (
+                        <div className="estadistica-chart-container">
+                            <div className="chart-header">
+                                <h3>TENDENCIA DE CUMPLIMIENTO — {anioHistorico}</h3>
+                                <span className="chart-badge">Barras: volumen · Línea roja: % cumplimiento</span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar data={prepararGraficoTendencia(tendenciaData)} options={opcionesTendencia} />
+                            </div>
+                        </div>
+                    )}
+
+                    {loadingHist && <div className="estadistica-loading"><div className="spinner"></div><p>Cargando semana {semanaHistSel}...</p></div>}
+                    {!loadingHist && histChart && semanaHistSel && (
+                        <div className="estadistica-chart-container">
+                            <div className="chart-header">
+                                <h3>DETALLE - SEMANA {semanaHistSel} — {anioHistorico}</h3>
+                                <span className="chart-badge">Datos desde la base histórica guardada</span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar data={histChart} options={opcionesBarras} />
+                            </div>
+                        </div>
+                    )}
+
+                    {!loadingHist && histData && histData.length > 0 && (
+                        <div className="estadistica-table-container">
+                            <div className="table-header">
+                                <h3>📋 Detalle Semana {semanaHistSel} — {anioHistorico}</h3>
+                                <span className="table-count">{histData.length} productos</span>
+                            </div>
+                            <div className="table-wrapper">
+                                <table className="estadistica-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Código Producto</th>
+                                            <th>Planificado</th>
+                                            <th>Elaborado</th>
+                                            <th>Diferencia</th>
+                                            <th>% Cumplimiento</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {histData.map((item, i) => {
+                                            const dif = item.elaborado - item.planificado;
+                                            const pct = item.planificado > 0 ? (item.elaborado / item.planificado) * 100 : 0;
+                                            return (
+                                                <tr key={i}>
+                                                    <td className="producto-code">{item.codigo_producto}</td>
+                                                    <td>{formatNum(item.planificado)} unit.</td>
+                                                    <td>{formatNum(item.elaborado)} unit.</td>
+                                                    <td style={{ color: dif >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{dif >= 0 ? `+${formatNum(dif)}` : formatNum(dif)}</td>
+                                                    <td><span className="pct-badge" style={{ background: colorCumplimiento(pct) }}>{pct.toFixed(1)}%</span></td>
+                                                    <td style={{ color: colorCumplimiento(pct) }}>{estadoCumplimiento(pct)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

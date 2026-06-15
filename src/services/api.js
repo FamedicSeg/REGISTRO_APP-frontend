@@ -152,3 +152,37 @@ export const getElaboradoSemanal = async (anio, semana) => {
     throw error;
   }
 };
+
+// Obtener histórico de una semana específica (desde la tabla histórica)
+export const getHistoricoSemanal = async (anio, semana) => {
+  try {
+    const response = await api.get(`/estadisticas/historico/${anio}/${semana}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo histórico semanal:', error);
+    throw error;
+  }
+};
+
+// Obtener listado de semanas que tienen datos guardados en el histórico
+export const getSemanasGuardadas = async (anio) => {
+  try {
+    const response = await api.get(`/estadisticas/semanas-guardadas/${anio}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo semanas guardadas:', error);
+    throw error;
+  }
+};
+
+// Obtener tendencia anual (cumplimiento semana por semana)
+export const getTendenciaAnual = async (anio, codigos = '') => {
+  try {
+    const params = codigos ? `?codigos=${encodeURIComponent(codigos)}` : '';
+    const response = await api.get(`/estadisticas/tendencia-anual/${anio}${params}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error obteniendo tendencia anual:', error);
+    throw error;
+  }
+};

@@ -2553,6 +2553,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="SELLADORA DE PEDESTAL">SELLADORA DE PEDESTAL</option>
                     <option value="SELLADORA DE BANDA">SELLADORA DE BANDA</option>
                     <option value="SELLADORAS">SELLADORAS</option>
+                    <option value="M. SELLADORA NEUMÁTICA">M. SELLADORA NEUMÁTICA</option>
                     <option value="MÁQUINA DE BOLSOS O FUNDA">MÁQUINA DE BOLSOS O FUNDA</option>
                     <option value="VIDEO JET">VIDEO JET</option>
                     <option value="GORROS TIPO ARCODEÓN">GORROS TIPO ARCODEÓN</option>
