@@ -53,7 +53,7 @@ const estadoCumplimiento = (pct) => {
 const EstadisticaSemanal = () => {
     const [selectedWeek, setSelectedWeek] = useState(getSemanaActual);
     const [weekRange, setWeekRange] = useState({ inicio: '', fin: '' });
-    const [chartData, setChartData] = useState(null);
+    const [_chartData, setChartData] = useState(null);
     const [largeChartData, setLargeChartData] = useState(null);
     const [smallChartData, setSmallChartData] = useState(null);
     const [resumenData, setResumenData] = useState(null);
@@ -71,7 +71,7 @@ const EstadisticaSemanal = () => {
     const [tendenciaData, setTendenciaData] = useState(null);
     const [loadingTendencia, setLoadingTendencia] = useState(false);
     
-    const [chartVersion, setChartVersion] = useState(0);
+    const [_chartVersion, setChartVersion] = useState(0);
 
     useEffect(() => {
         setWeekRange(getWeekRange(selectedWeek));
