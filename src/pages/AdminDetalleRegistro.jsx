@@ -256,6 +256,9 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                 >
                   <option value="">SELECCIONE...</option>
                   <option value="VACA GUANATASIG CAROLINA ESTEFANIA">VACA GUANATASIG CAROLINA ESTEFANIA</option>
+                  <option value="CAJAMARCA BONILLA BRYAN ALEXANDER">CAJAMARCA BONILLA BRYAN ALEXANDER</option>
+                  <option value="GUAMAN PILATUÑA ANA LUCIA">GUAMAN PILATUÑA ANA LUCIA</option>
+                  <option value="TIPAN GUALOTUÑA NATALY SILVANA">TIPAN GUALOTUÑA NATALY SILVANA</option>
                   {integrantesForm.map((integrante, idx) => (
                     integrante?.nombre ? (
                       <option key={idx} value={integrante.nombre.toUpperCase()}>{integrante.nombre.toUpperCase()}</option>

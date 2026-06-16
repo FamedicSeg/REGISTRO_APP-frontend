@@ -1883,6 +1883,9 @@ const decimalParaHorasMinutos = (decimal) => {
                   <select value={item.recepcion || ""} onChange={(e) => actualizarInsumo(index, "recepcion", e.target.value)} style={{fontSize: "9.5px" }}>
                     <option value="">SELECCIONA LA PERSONA QUE RECIBE...</option>
                     <option value="Vaca Guanatasig Carolina Estefania">Vaca Guanatasig Carolina Estefania</option>
+                    <option value="Cajamarca Bonilla Bryan Alexander">BRYAN ALEXANDER CAJAMARCA BONILLA</option>
+                    <option value="Guaman Pilatuña Ana Lucia">ANA LUCIA GUAMAN PILATUÑA</option>
+                    <option value="Tipan Gualotuña Nataly Silvana">NATALY SILVANA TIPAN GUALOTUÑA</option>
                     {integrantes.map((integrante, idx) => (
                       <option key={idx} value={integrante.nombre}>
                         {integrante.nombre}

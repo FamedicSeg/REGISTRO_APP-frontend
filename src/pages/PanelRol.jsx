@@ -244,12 +244,12 @@ export default function PanelRol() {
         </div>
         
         {/* 🆕 BOTÓN PARA ESTADÍSTICAS SEMANALES - Solo JEFE DE PRODUCCIÓN y LÍDER */}
-        {(rol === "JEFE DE PRODUCCIÓN" || rol === "LÍDER") && (
+        {(rol === "JEFE DE PRODUCCIÓN") && (
           <button
             onClick={() => nav("/estadistica-semanal")}
             style={{
               padding: "10px 20px",
-              backgroundColor: "#4CAF50",
+              backgroundColor: "#4c9aaf",
               color: "white",
               border: "none",
               borderRadius: "6px",

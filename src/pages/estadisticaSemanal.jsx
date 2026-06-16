@@ -1,35 +1,10 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-    Legend
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import {
-    getResumenSemanal,
-    guardarResumenSemanal,
-    getHistoricoSemanal,
-    getSemanasGuardadas,
-    getTendenciaAnual
-} from '../services/api';
+import { getResumenSemanal, guardarResumenSemanal, getHistoricoSemanal, getSemanasGuardadas, getTendenciaAnual } from '../services/api';
 import '../styles/estadisticaSemanal.css';
 
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-    Legend
-);
+ChartJS.register( CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend );
 
 // Helpers
 function getSemanaActual() {
@@ -79,6 +54,7 @@ const EstadisticaSemanal = () => {
     const [selectedWeek, setSelectedWeek] = useState(getSemanaActual);
     const [weekRange, setWeekRange] = useState({ inicio: '', fin: '' });
     const [chartData, setChartData] = useState(null);
+    const [largeChartData, setLargeChartData] = useState(null);
     const [smallChartData, setSmallChartData] = useState(null);
     const [resumenData, setResumenData] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -144,7 +120,7 @@ const EstadisticaSemanal = () => {
                 setChartVersion(prev => prev + 1);
             } else {
                 setError(`No hay datos para la semana ${week}/${year}`);
-                setResumenData(null); setChartData(null); setSmallChartData(null);
+                setResumenData(null); setChartData(null); setLargeChartData(null); setSmallChartData(null);
             }
         } catch (err) {
             setError('Error al cargar los datos. Verifique la conexión con OneDrive.');
@@ -200,9 +176,9 @@ const EstadisticaSemanal = () => {
 
     // Nueva función: prepara ambos gráficos (todos y pequeños)
     const prepararGraficos = (data) => {
-        // Filtrar productos con cantidad planificada pequeña (menos de 500 unidades)
-        const productosPequeños = data.filter(item => item.planificado < 500);
-        const _productosGrandes = data.filter(item => item.planificado >= 500);
+        // Filtrar productos con cantidad planificada pequeña (menos de 4000 unidades)
+        const productosPequeños = data.filter(item => item.planificado < 4000);
+        const productosGrandes = data.filter(item => item.planificado >= 4000);
         
         // Gráfico principal (todos los productos)
         setChartData({
@@ -212,8 +188,21 @@ const EstadisticaSemanal = () => {
                 { label: 'CANT. ELABORADA',   data: data.map(i => i.elaborado),   backgroundColor: 'rgba(6, 182, 212, 0.9)', borderColor: 'rgba(6, 182, 212, 0.9)',  borderWidth: 1, borderRadius: 4 }
             ]
         });
-        
-        // Gráfico de productos pequeños (menos de 500 unidades)
+
+        // Gráfico de productos grandes (mayores a 4000 unidades)
+        if (productosGrandes.length > 0) {
+            setLargeChartData({
+                labels: productosGrandes.map(i => i.codigo_producto),
+                datasets: [
+                    { label: 'CANT. PLANIFICADA', data: productosGrandes.map(i => i.planificado), backgroundColor: 'rgba(148, 163, 184, 0.9)', borderColor: 'rgba(148, 163, 184, 0.9)', borderWidth: 1, borderRadius: 4 },
+                    { label: 'CANT. ELABORADA',   data: productosGrandes.map(i => i.elaborado),   backgroundColor: 'rgba(6, 182, 212, 0.9)', borderColor: 'rgba(6, 182, 212, 0.9)',  borderWidth: 1, borderRadius: 4 }
+                ]
+            });
+        } else {
+            setLargeChartData(null);
+        }
+
+        // Gráfico de productos pequeños (menos de 4000 unidades)
         if (productosPequeños.length > 0) {
             setSmallChartData({
                 labels: productosPequeños.map(i => i.codigo_producto),
@@ -229,8 +218,6 @@ const EstadisticaSemanal = () => {
 
     // Gráficos históricos
     const prepararGraficosHistorico = (data) => {
-        const _productosPequeños = data.filter(item => item.planificado < 500);
-        
         setHistChart({
             labels: data.map(i => i.codigo_producto),
             datasets: [
@@ -344,6 +331,8 @@ const EstadisticaSemanal = () => {
         }
     };
 
+    const opcionesBarrasGrandes = opcionesBarras;
+
     const opcionesTendencia = {
         responsive: true, maintainAspectRatio: false,
         plugins: {
@@ -373,13 +362,14 @@ const EstadisticaSemanal = () => {
     const totalProductosConPlan = resumenData ? resumenData.filter(r => r.planificado > 0).length : 0;
 
     // Contar productos pequeños
-    const productosPequeñosCount = resumenData ? resumenData.filter(r => r.planificado < 500).length : 0;
+    const productosPequeñosCount = resumenData ? resumenData.filter(r => r.planificado < 4000).length : 0;
+    const productosGrandesCount = resumenData ? resumenData.filter(r => r.planificado >= 4000).length : 0;
 
     return (
         <div className="estadistica-container">
             <header className="estadistica-header">
                 <div>
-                    <h1> Dashboard - Comparativa Semanal de Cumplimiento (%) </h1>
+                    <h1> DASHBOARD - COMPARATIVA SEMANAL DE CUMPLIMIENTO (%) </h1>
                     <p className="estadistica-subtitle">Análisis Comparativo del Porcentaje de Cumplimiento Semanal</p>
                 </div>
             </header>
@@ -405,10 +395,10 @@ const EstadisticaSemanal = () => {
                         </div>
                         <div className="estadistica-actions">
                             <button onClick={() => guardarResumen(false)} disabled={saving || loading} className="btn-guardar">
-                                {saving ? 'Guardando...' : 'Guardar en la Base Histórica'}
+                                {saving ? ' ⏱ Guardando...' : ' 🌐 Guardar en la Base Histórica'}
                             </button>
                             <button onClick={cargarDatos} disabled={loading} className="btn-actualizar">
-                                {loading ? 'Cargando...' : '✨Actualizar'}
+                                {loading ? '⏳ Cargando...' : '⟳ Actualizar'}
                             </button>
                         </div>
                     </div>
@@ -429,11 +419,11 @@ const EstadisticaSemanal = () => {
                         </div>
                     )}
 
-                    {/* GRÁFICO PRINCIPAL - Todos los productos */}
+                    {/* GRÁFICO PRINCIPAL - Todos los productos 
                     {!loading && chartData && (
                         <div className="estadistica-chart-container">
                             <div className="chart-header">
-                                <h3>📊 DIAGRAMA DE BARRAS: TODOS LOS PRODUCTOS</h3>
+                                <h3> DIAGRAMA DE BARRAS: TODOS LOS PRODUCTOS</h3>
                                 <span className="chart-badge">
                                     Semana {selectedWeek.split('-W')[1]} — {selectedWeek.split('-W')[0]} | Total: {resumenData?.length} productos
                                 </span>
@@ -443,12 +433,28 @@ const EstadisticaSemanal = () => {
                             </div>
                         </div>
                     )}
+                        */}
 
-                    {/* GRÁFICO ESPECIAL - Solo productos con cantidad planificada < 500 */}
+                    {/* GRÁFICO ESPECIAL - Solo productos con cantidad planificada >= 500 */}
+                    {!loading && largeChartData && productosGrandesCount > 0 && (
+                        <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
+                            <div className="chart-header">
+                                <h3>ENFOQUE EN PRODUCTOS DE ALTA CANTIDAD</h3>
+                                <span className="chart-badge">
+                                    {productosGrandesCount} productos con alta planificación - Semana {selectedWeek.split('-W')[1]}
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar data={largeChartData} options={opcionesBarrasGrandes} />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* GRÁFICO ESPECIAL - Solo productos con cantidad planificada < 4000 */}
                     {!loading && smallChartData && productosPequeñosCount > 0 && (
                         <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
                             <div className="chart-header">
-                                <h3>ENFOQUE EN PRODUCTOS DE BAJO VOLUMEN</h3>
+                                <h3>ENFOQUE EN PRODUCTOS DE BAJA CANTIDAD</h3>
                                 <span className="chart-badge">
                                     {productosPequeñosCount} productos con baja planificación - Semana {selectedWeek.split('-W')[1]}
                                 </span>
@@ -462,7 +468,7 @@ const EstadisticaSemanal = () => {
                     {/* Mensaje si no hay productos pequeños */}
                     {!loading && resumenData && productosPequeñosCount === 0 && (
                         <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
-                            ✅ No hay productos con planificación menor a 500 unidades esta semana.
+                            ✅ No hay productos con planificación menor a 4000 unidades esta semana.
                         </div>
                     )}
 
@@ -488,7 +494,7 @@ const EstadisticaSemanal = () => {
                                         {resumenData.map((item, i) => {
                                             const dif = item.elaborado - item.planificado;
                                             const pct = item.planificado > 0 ? (item.elaborado / item.planificado) * 100 : 0;
-                                            const esBajoVolumen = item.planificado < 500;
+                                            const esBajoVolumen = item.planificado < 4000;
                                             return (
                                                 <tr key={i} style={esBajoVolumen ? { backgroundColor: '#fffbeb' } : {}}>
                                                     <td className="producto-code" style={esBajoVolumen ? { fontWeight: 'bold', color: '#d97706' } : {}}>
@@ -532,7 +538,7 @@ const EstadisticaSemanal = () => {
                             )}
                         </div>
                         <div className="estadistica-actions">
-                            <button onClick={() => { cargarSemanasGuardadas(); cargarTendencia(); }} className="btn-actualizar">🔄 Refrescar</button>
+                            <button onClick={() => { cargarSemanasGuardadas(); cargarTendencia(); }} className="btn-actualizar">🗘 Refrescar</button>
                         </div>
                     </div>
 
@@ -582,7 +588,7 @@ const EstadisticaSemanal = () => {
                     {!loadingHist && histData && histData.length > 0 && (
                         <div className="estadistica-table-container">
                             <div className="table-header">
-                                <h3>📋 Detalle Semana {semanaHistSel} — {anioHistorico}</h3>
+                                <h3>Detalle Semana {semanaHistSel} — {anioHistorico}</h3>
                                 <span className="table-count">{histData.length} productos</span>
                             </div>
                             <div className="table-wrapper">
