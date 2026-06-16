@@ -1,10 +1,10 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, LineController, BarController, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { getResumenSemanal, guardarResumenSemanal, getHistoricoSemanal, getSemanasGuardadas, getTendenciaAnual } from '../services/api';
 import '../styles/estadisticaSemanal.css';
 
-ChartJS.register( CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend );
+ChartJS.register( CategoryScale, LinearScale, BarElement, LineElement, PointElement, LineController, BarController, Title, Tooltip, Legend );
 
 // Helpers
 function getSemanaActual() {
