@@ -1204,7 +1204,19 @@ useEffect(() => {
       }, 0);
       
       const actividadesParaGuardar = {};
-      
+
+      // Primero incluir todos los integrantes (aunque no tengan actividades asignadas)
+      integrantes.forEach((integrante, index) => {
+        if (integrante.nombre || integrante.cargo) {
+          actividadesParaGuardar[index] = {
+            nombre: integrante.nombre || "",
+            cargo: integrante.cargo || "",
+            actividades: []
+          };
+        }
+      });
+
+      // Luego sobreescribir con los que sí tienen actividades asignadas
       Object.keys(actividadesIntegrantes).forEach(key => {
         const match = key.match(/integrante_(\d+)/);
         if (match) {

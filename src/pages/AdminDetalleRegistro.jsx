@@ -133,35 +133,57 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
   const buscarDescripcion = async (codigo) => {
     if (!codigo || codigo.trim() === "") return;
     setLoadingDesc(true);
+    console.log("🔍 Buscando descripción para:", codigo);
     try {
-      const { data } = await api.get("/productos/detalle", {
+      // Primero intenta buscar como producto
+      try {
+        const { data } = await api.get("/productos/detalle", {
+          params: { codigo: codigo.trim() }
+        });
+        if (data?.descripcion) {
+          console.log("✅ Descripción encontrada (producto):", data.descripcion);
+          onUpdate(index, "descripcion_insumo", data.descripcion.toUpperCase());
+          return;
+        }
+      } catch (prodError) {
+        console.log("❌ No es producto, intentando como insumo...");
+      }
+
+      // Si no fue producto, intenta como insumo
+      const { data } = await api.get("/insumos/detalle", {
         params: { codigo: codigo.trim() }
       });
-      onUpdate(index, "descripcion_insumo", data?.descripcion?.toUpperCase() || "");
+      const descripcion = data?.descripcion || data?.descripcion_insumo || "SIN DESCRIPCIÓN";
+      console.log("✅ Descripción encontrada (insumo):", descripcion);
+      onUpdate(index, "descripcion_insumo", descripcion.toUpperCase());
     } catch (error) {
-      console.error("Error obteniendo descripción:", error);
+      console.error("❌ Error obteniendo descripción:", error);
+      onUpdate(index, "descripcion_insumo", "NO ENCONTRADO");
     } finally {
       setLoadingDesc(false);
     }
   };
 
-  const buscarLote = async (codigo) => {
+  const buscarLote = async (codigo, campoDest = "lote_insumo") => {
     if (!codigo || codigo.trim() === "") return;
     const codigoLimpio = codigo.trim();
     const isNoAplica = /^(CF|RCTEL|BCD|TAB|FPQ)/i.test(codigoLimpio);
     if (isNoAplica) {
-      onUpdate(index, "lote_insumo", "NO APLICA");
+      onUpdate(index, campoDest, "NO APLICA");
       return;
     }
     setLoadingLote(true);
     try {
       const { data } = await api.get("/insumos/lote", { params: { codigo: codigoLimpio } });
-      if (data.error) { onUpdate(index, "lote_insumo", `Error: ${data.error}`); return; }
+      if (data.error) { 
+        onUpdate(index, campoDest, `Error: ${data.error}`); 
+        return;
+      }
       const lote = typeof data === 'string' ? data : (data.lote || "Sin lote disponible");
-      onUpdate(index, "lote_insumo", lote);
+      onUpdate(index, campoDest, lote);
     } catch (err) {
-      if (err.response?.status === 404) onUpdate(index, "lote_insumo", "Insumo no encontrado");
-      else onUpdate(index, "lote_insumo", "Error al buscar lote");
+      if (err.response?.status === 404) onUpdate(index, campoDest, "Insumo no encontrado");
+      else onUpdate(index, campoDest, "Error al buscar lote");
     } finally {
       setLoadingLote(false);
     }
@@ -187,10 +209,14 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
                   <input
                     list={`insumos-list-${index}`}
                     value={item[campo] !== undefined && item[campo] !== null ? item[campo] : ""}
-                    onChange={(e) => handleChange(campo, e.target.value)}
-                    onBlur={() => {
-                      buscarDescripcion(item[campo]);
-                      buscarLote(item[campo]);
+                    onChange={(e) => {
+                      handleChange(campo, e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      const valor = e.target.value;
+                      if (!valor || valor.trim() === "") return;
+                      // SOLO buscar descripción - NO buscar lote automáticamente
+                      buscarDescripcion(valor);
                     }}
                     style={inputStyle}
                     placeholder={`Ingresa ${campo}`}
@@ -1361,15 +1387,15 @@ export default function AdminDetalleRegistro() {
           puedeEditar={puedeEditar}
           items={modoEdicion ? (form.insumos || []) : (registro.insumos || [])}
           onItemsChange={handleArrayChange}
-          camposEditables={["tipo_insumo", "descripcion_insumo", "cantidad_insumo", "lote_insumo", "entrega", "recepcion"]}
+          camposEditables={["tipo_insumo", "descripcion_insumo", "cantidad_insumo", "descrip_cant_insumo", "lote_insumo", "entrega", "recepcion"]}
           backgroundColor="#3498db"
           listaInsumos={listaInsumos}
           integrantesForm={form.integrantes || []}
           renderItem={(i) => (
             <div style={{ fontSize: 14 }}>
               <div style={{ fontWeight: 600, marginBottom: 5, textTransform: "uppercase" }}>{i.tipo_insumo} — {i.descripcion_insumo}</div>
-              <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-                <span>Cantidad: {i.cantidad_insumo}</span>
+              <div style={{ fontSize: 12, color: "#000000", display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+                <span>Cantidad: {i.cantidad_insumo} {i.descrip_cant_insumo}</span>
                 <span>Lote: {i.lote_insumo}</span>
                 <span>Entrega: {i.entrega}</span>
                 <span>Recepción: {i.recepcion}</span>
