@@ -144,6 +144,7 @@ export default function Registro() {
   const [_listaLideres, setListaLideres] = useState([]);
   const [_listaIntegrantes, setListaIntegrantes] = useState([]);
   const [_loadingPersonal, setLoadingPersonal] = useState(false);
+  const [lideresFilterados, setLideresFilterados] = useState([]);
   const [cantidadesActividades, setCantidadesActividades] = useState({});
   const [actividadesIntegrantes, setActividadesIntegrantes] = useState({});
   const [nuevoDetalleActividad, setNuevoDetalleActividad] = useState("");
@@ -1452,6 +1453,7 @@ useEffect(() => {
       setListaSupervisores([]);
       setListaIntegrantes([]);
       setListaLideres([]);
+      setLideresFilterados([]);
       setIntegrantes([]);
       setForm((p) => ({ ...p, supervisor: "", responsable: "" }));
       return;
@@ -1494,6 +1496,7 @@ useEffect(() => {
         setListaSupervisores([]);
         setListaIntegrantes([]);
         setListaLideres([]);
+        setLideresFilterados([]);
         setIntegrantes([]);
         setForm((p) => ({ ...p, supervisor: "", responsable: "" }));
       } finally {
@@ -1503,6 +1506,63 @@ useEffect(() => {
 
     cargarPersonal();
   }, [form.modulo]);
+
+  // Efecto para filtrar líderes según turno (especialmente para GPA)
+  useEffect(() => {
+    const listaLideres = Array.isArray(_listaLideres) ? _listaLideres : [];
+    
+    console.log("DEBUG: form.modulo =", form.modulo, "form.turno =", form.turno, "listaLideres =", listaLideres);
+    
+    if (form.modulo === "GPA" && form.turno && listaLideres.length > 0) {
+      // Configuración especial para GPA
+      let liderFiltrado = [];
+      
+      if (form.turno === "1") {
+        // Turno 1: Primer líder o búsqueda por keywords
+        liderFiltrado = listaLideres.filter(lider => 
+          lider.toLowerCase().includes("alvarez") || 
+          lider.toLowerCase().includes("priscila") ||
+          lider.toLowerCase().includes("vanessa")
+        );
+        // Si no encuentra por keywords, usar el primer líder
+        if (liderFiltrado.length === 0 && listaLideres.length >= 1) {
+          liderFiltrado = [listaLideres[0]];
+          console.log("DEBUG: Turno 1 - usando primer líder por defecto:", liderFiltrado[0]);
+        } else {
+          console.log("DEBUG: Turno 1 - encontrado por keywords:", liderFiltrado[0]);
+        }
+      } else if (form.turno === "2") {
+        // Turno 2: Segundo líder o búsqueda por keywords
+        liderFiltrado = listaLideres.filter(lider => 
+          lider.toLowerCase().includes("sinchiguano") || 
+          lider.toLowerCase().includes("lorena") ||
+          lider.toLowerCase().includes("carla")
+        );
+        // Si no encuentra por keywords, usar el segundo líder
+        if (liderFiltrado.length === 0 && listaLideres.length >= 2) {
+          liderFiltrado = [listaLideres[1]];
+          console.log("DEBUG: Turno 2 - usando segundo líder por defecto:", liderFiltrado[0]);
+        } else if (liderFiltrado.length === 0 && listaLideres.length === 1) {
+          liderFiltrado = [listaLideres[0]];
+          console.log("DEBUG: Turno 2 - solo hay 1 líder disponible:", liderFiltrado[0]);
+        } else {
+          console.log("DEBUG: Turno 2 - encontrado por keywords:", liderFiltrado[0]);
+        }
+      }
+      
+      console.log("DEBUG: liderFiltrado final =", liderFiltrado);
+      setLideresFilterados(liderFiltrado);
+      
+      // Seleccionar automáticamente el líder del turno
+      if (liderFiltrado.length > 0) {
+        setForm(prev => ({ ...prev, responsable: liderFiltrado[0] }));
+      }
+    } else {
+      // Para otros módulos, mostrar todos los líderes
+      setLideresFilterados(listaLideres);
+      console.log("DEBUG: No es GPA o turno vacío - mostrando todos los líderes");
+    }
+  }, [form.modulo, form.turno, _listaLideres]);
 
   // Agrega esta función ANTES del return
 const decimalParaHorasMinutos = (decimal) => {
@@ -1704,15 +1764,28 @@ const decimalParaHorasMinutos = (decimal) => {
             <div className="grid2">
               <div className="form-group">
                 <label htmlFor="responsable">RESPONSABLE:</label>
-                <input
-                  placeholder="SELECCIONA PRIMERO EL MÓDULO..."
-                  type="text"
+                <select
                   id="responsable"
                   name="responsable"
                   value={form.responsable || ""}
+                  onChange={onChange}
                   disabled={!form.modulo}
-                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "12px" }}
-                />
+                  style={{
+                    backgroundColor: !form.modulo ? "#f3f4f6" : "#ffffff",
+                    cursor: !form.modulo ? "not-allowed" : "pointer",
+                    fontSize: "12px",
+                    padding: "8px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px"
+                  }}
+                >
+                  <option value="">SELECCIONA EL RESPONSABLE...</option>
+                  {lideresFilterados.map((lider, idx) => (
+                    <option key={idx} value={lider}>
+                      {lider}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
