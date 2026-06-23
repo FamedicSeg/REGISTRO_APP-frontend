@@ -31,8 +31,8 @@ export default function PanelRol() {
   };
 
   const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
-  const _esSupervisor = rol === "SUPERVISOR";
-  const _esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
+  const esSupervisor = rol === "SUPERVISOR";
+  const esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
 
   const puedeEliminar = useMemo(() => 
     rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
@@ -91,8 +91,8 @@ export default function PanelRol() {
   const registrosFiltrados =
     ["ADMINISTRADOR","JEFE DE PRODUCCIÓN","ANALISTA DE PRODUCCIÓN","SUPERVISOR","LÍDER"].includes(rol)
       ? registros.filter((r) => {
-          // ANALISTA DE PRODUCCIÓN no ve registros Aprobados
-          if (esAnalista && r.estado?.toLowerCase().includes("aprob")) {
+          // ANALISTA DE PRODUCCIÓN, SUPERVISOR y LÍDER no ven registros Aprobados
+          if ((esLider || esSupervisor || esAnalista) && r.estado?.toLowerCase().includes("aprob")) {
             return false;
           }
 
