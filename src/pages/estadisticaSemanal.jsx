@@ -80,16 +80,28 @@ const EstadisticaSemanal = () => {
     useEffect(() => {
         const prev = prevWeekRef.current;
         const run = async () => {
-            if (prev && prev !== selectedWeek && resumenData && resumenData.length > 0) {
-                const [py, pw] = prev.split('-W');
-                try { 
-                    await guardarResumenSemanal(parseInt(py), parseInt(pw)); 
-                } catch (err) { 
-                    console.error(err); 
-                    alert('Error al guardar el resumen semanal anterior. Asegúrate de que la conexión con OneDrive esté activa.');
+            // IMPORTANTE: Limpiar el estado ANTES de cargar nuevos datos cuando cambia la semana
+            if (prev && prev !== selectedWeek) {
+                setResumenData(null);
+                setChartData(null);
+                setLargeChartData(null);
+                setSmallChartData(null);
+                setError('');
+                
+                // Guardar la semana anterior si tiene datos
+                if (resumenData && resumenData.length > 0) {
+                    const [py, pw] = prev.split('-W');
+                    try { 
+                        await guardarResumenSemanal(parseInt(py), parseInt(pw)); 
+                        console.log(`✅ Semana ${pw}/${py} guardada automáticamente`);
+                    } catch (err) { 
+                        console.error(err); 
+                        alert('Error al guardar el resumen semanal anterior. Asegúrate de que la conexión con OneDrive esté activa.');
+                    }
                 }
             }
             prevWeekRef.current = selectedWeek;
+            console.log(`📅 Cambiando a semana: ${selectedWeek}`);
             await cargarDatos();
         };
         run();
@@ -110,22 +122,34 @@ const EstadisticaSemanal = () => {
     }, [semanaHistSel]);
 
     const cargarDatos = async () => {
-        setLoading(true); setError('');
+        setLoading(true); 
+        setError('');
         try {
             const [year, week] = selectedWeek.split('-W');
             const response = await getResumenSemanal(parseInt(year), parseInt(week));
+            console.log(`📊 Datos recibidos para semana ${week}/${year}:`, {
+                success: response.success,
+                productosCount: response.data?.length || 0,
+                totalPlanificado: response.data?.reduce((s, r) => s + r.planificado, 0) || 0
+            });
+            
             if (response.success && response.data.length > 0) {
                 setResumenData(response.data);
                 prepararGraficos(response.data);
                 setChartVersion(prev => prev + 1);
             } else {
                 setError(`No hay datos para la semana ${week}/${year}`);
-                setResumenData(null); setChartData(null); setLargeChartData(null); setSmallChartData(null);
+                setResumenData(null); 
+                setChartData(null); 
+                setLargeChartData(null); 
+                setSmallChartData(null);
             }
         } catch (err) {
             setError('Error al cargar los datos. Verifique la conexión con OneDrive.');
-            console.error(err);
-        } finally { setLoading(false); }
+            console.error('Error cargando datos:', err);
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     const guardarResumen = async (silencioso = false) => {
