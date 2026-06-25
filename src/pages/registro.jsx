@@ -357,12 +357,18 @@ export default function Registro() {
         setManualHorasPersona({});
         setActividadesSeleccionadas({});
         
+        // COMENTADO: condición especial EQE - ahora todos los productos usan el flujo normal
+        /*
         const esEQE = valorFinal.toUpperCase().startsWith("EQE");
         if (!esEQE) {
           setActividadesGlobalesEQE([]);
           setProductosEQECargados(new Set());
           setListaActividadesEQE([]);
         }
+        */
+        setActividadesGlobalesEQE([]);
+        setProductosEQECargados(new Set());
+        setListaActividadesEQE([]);
       }
 
       if (name === "cantidad_planificada") {
@@ -390,7 +396,7 @@ export default function Registro() {
 
   useEffect(() => {
     const codigo_producto = form.codigo_producto?.trim() || "";
-
+    
     if (!codigo_producto || codigo_producto.length < 3) {
       setListaInsumos([]);
       setInsumos([]);
@@ -458,7 +464,10 @@ useEffect(() => {
     setActividadesSeleccionadas({});
     return;
   }
+
   
+  // COMENTADO: condición especial EQE con checkboxes - EQE-075 y EQE-045 ahora cargan sus propias actividades como cualquier otro producto
+  /*
   const esEQE = codigo_producto.toUpperCase().startsWith("EQE");
   setMostrarCheckboxes(esEQE);
   
@@ -506,6 +515,7 @@ useEffect(() => {
     cargarActividadesMaestras();
     
   } else {
+  */
     setListaActividadesEQE([]);
     setActividadesSeleccionadas({});
     
@@ -536,9 +546,9 @@ useEffect(() => {
         }));
       }
     };
-    
+
     cargarActividadesNormales();
-  }
+  // } // fin else comentado
   
 }, [form.codigo_producto]);
 
@@ -550,9 +560,10 @@ useEffect(() => {
       [actividad]: !prev[actividad]
     }));
   };
+
   
   // Función para obtener las actividades seleccionadas como texto
-  const getActividadesSeleccionadasTexto = () => {
+  const _getActividadesSeleccionadasTexto = () => {
     return Object.keys(actividadesSeleccionadas)
       .filter(act => actividadesSeleccionadas[act])
       .join('\n');
@@ -1165,9 +1176,12 @@ useEffect(() => {
     try {
       let actividadesTexto = form.detalles_actividades;
       
+      // COMENTADO: los EQE ahora usan el mismo flujo normal que los demás productos
+      /*
       if (mostrarCheckboxes) {
         actividadesTexto = getActividadesSeleccionadasTexto();
       }
+      */
       
       const planificadaPorDetalle = {};
       const elaboradaPorDetalle = {};
@@ -2705,8 +2719,9 @@ const decimalParaHorasMinutos = (decimal) => {
           <h3>DETALLES DE ACTIVIDADES</h3>
         </div>
 
+          
         <div className="card">
-          {/* Input para agregar actividad manualmente - SIEMPRE visible para EQE */}
+          {/* Input para agregar actividad manualmente - SIEMPRE visible para EQE*/}
           {mostrarCheckboxes && (
             <div style={
       { marginBottom: "15px", padding: "15px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9", display: "flex", gap: "10px", alignItems: "flex-end" }}>
@@ -2756,6 +2771,7 @@ const decimalParaHorasMinutos = (decimal) => {
               </button>
             </div>
           )}
+            
 
           {/* Lista de actividades con checkboxes - solo visible si hay actividades */}
           {mostrarCheckboxes && listaActividadesEQE.length > 0 && (
@@ -2827,6 +2843,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   <strong>Actividades seleccionadas:</strong> {Object.values(actividadesSeleccionadas).filter(v => v).length} de {listaActividadesEQE.length}
                 </div>
               </div>
+              
 
               {/* RESUMEN DE ACTIVIDADES SELECCIONADAS PARA EQE */}
               {Object.keys(actividadesSeleccionadas).filter(act => actividadesSeleccionadas[act]).length > 0 && (
@@ -2920,7 +2937,8 @@ const decimalParaHorasMinutos = (decimal) => {
                 </div>
               )}
             </>
-          )}
+          )} 
+            
           
           {/* Mensaje cuando NO hay actividades para EQE */}
           {mostrarCheckboxes && listaActividadesEQE.length === 0 && (
@@ -2938,6 +2956,7 @@ const decimalParaHorasMinutos = (decimal) => {
               Puedes agregar actividades manualmente en el campo de arriba.
             </div>
           )}
+            
           
           {/* Mostrar actividades en texto plano para productos normales */}
           {!mostrarCheckboxes && form.detalles_actividades.split('\n').filter(act => act.trim() !== '').map((actividad, index) => {
