@@ -201,8 +201,8 @@ const EstadisticaSemanal = () => {
     // Nueva función: prepara ambos gráficos (todos y pequeños)
     const prepararGraficos = (data) => {
         // Filtrar productos con cantidad planificada pequeña (menos de 4000 unidades)
-        const productosPequeños = data.filter(item => item.planificado < 4000);
-        const productosGrandes = data.filter(item => item.planificado >= 4000);
+        const productosPequeños = data.filter(item => item.elaborado < 4000);
+        const productosGrandes = data.filter(item => item.elaborado >= 4000);
         
         // Gráfico principal (todos los productos)
         setChartData({
