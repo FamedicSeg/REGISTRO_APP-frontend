@@ -2670,6 +2670,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="INJETH">INJETH</option>
                     <option value="DE PEDESTAL">DE PEDESTAL</option>
                     <option value="M. CNC">M. CNC</option>
+                    <option value="M. RIBETEADORA">M. RIBETEADORA</option>
                     <option value="M. BROCHADORA">M. BROCHADORA</option>
                     <option value="M. NEUMÁTICA DE VÁLVULAS">M. NEUMÁTICA DE VÁLVULAS</option>
                     <option value="M. PUÑOS">M. PUÑOS</option>

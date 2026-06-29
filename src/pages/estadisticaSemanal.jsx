@@ -245,8 +245,8 @@ const EstadisticaSemanal = () => {
         setHistChart({
             labels: data.map(i => i.codigo_producto),
             datasets: [
-                { label: 'PLANIFICADO', data: data.map(i => i.planificado), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
-                { label: 'ELABORADO',   data: data.map(i => i.elaborado),   backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
+                { label: 'PLANIFICADO', data: data.map(i => Number(i.planificado || 0)), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
+                { label: 'ELABORADO',   data: data.map(i => Number(i.elaborado   || 0)), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
             ]
         });
     };
@@ -604,7 +604,7 @@ const EstadisticaSemanal = () => {
                                 <span className="chart-badge">Datos desde la base histórica guardada</span>
                             </div>
                             <div className="chart-wrapper">
-                                <Bar data={histChart} options={opcionesBarras} />
+                                <Bar key={`hist-${anioHistorico}-${semanaHistSel}`} data={histChart} options={opcionesBarras} />
                             </div>
                         </div>
                     )}
