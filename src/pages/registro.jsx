@@ -671,7 +671,7 @@ useEffect(() => {
             actualizarInsumo(index, "lote_insumo", "Insumo no encontrado en sistema");
             break;
           case 500:
-            actualizarInsumo(index, "lote_insumo", "Error interno del servidor");
+            actualizarInsumo(index, "lote_insumo", "Lote no encontrado en la BD");
             break;
           default:
             actualizarInsumo(index, "lote_insumo", `Error ${status}: ${data?.error || 'Desconocido'}`);
