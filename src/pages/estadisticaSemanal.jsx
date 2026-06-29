@@ -523,7 +523,6 @@ const EstadisticaSemanal = () => {
                                                 <tr key={i} style={esBajoVolumen ? { backgroundColor: '#fffbeb' } : {}}>
                                                     <td className="producto-code" style={esBajoVolumen ? { fontWeight: 'bold', color: '#d97706' } : {}}>
                                                         {item.codigo_producto}
-                                                        {esBajoVolumen && <span style={{ fontSize: '10px', marginLeft: '8px', background: '#fef3c7', padding: '2px 6px', borderRadius: '12px' }}>bajo volumen</span>}
                                                     </td>
                                                     <td>{formatNum(item.planificado)} unit.</td>
                                                     <td>{formatNum(item.elaborado)} unit.</td>
