@@ -386,8 +386,8 @@ const EstadisticaSemanal = () => {
     const totalProductosConPlan = resumenData ? resumenData.filter(r => r.planificado > 0).length : 0;
 
     // Contar productos pequeños
-    const productosPequeñosCount = resumenData ? resumenData.filter(r => r.planificado < 4000).length : 0;
-    const productosGrandesCount = resumenData ? resumenData.filter(r => r.planificado >= 4000).length : 0;
+    const productosPequeñosCount = resumenData ? resumenData.filter(r => r.elaborado < 4000).length : 0;
+    const productosGrandesCount = resumenData ? resumenData.filter(r => r.elaborado >= 4000).length : 0;
 
     return (
         <div className="estadistica-container">
