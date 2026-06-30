@@ -32,7 +32,7 @@ export default function PanelRol() {
 
   const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const esSupervisor = rol === "SUPERVISOR";
-  const esLider = ["LÍDER", "LIDER", "JEFE DE PRODUCCIÓN"].includes(rol);
+  const esLider = ["LÍDER", "LIDER"].includes(rol);
 
   const puedeEliminar = useMemo(() => 
     rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
