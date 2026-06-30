@@ -243,8 +243,8 @@ export default function PanelRol() {
           <h3>SISTEMA GESTIÓN DE REGISTROS</h3>
         </div>
         
-        {/* 🆕 BOTÓN PARA ESTADÍSTICAS SEMANALES - Solo JEFE DE PRODUCCIÓN y ADMINISTRADOR*/}
-        {(rol === "JEFE DE PRODUCCIÓN" || rol === "ADMINISTRADOR") && (
+        {/* 🆕 BOTÓN PARA ESTADÍSTICAS SEMANALES - Solo JEFE DE PRODUCCIÓN y LÍDER*/}
+        {(rol === "JEFE DE PRODUCCIÓN" || rol === "LÍDER") && (
           <button
             onClick={() => nav("/estadistica-semanal")}
             style={{
