@@ -525,7 +525,7 @@ const EstadisticaSemanal = () => {
                                                         {item.codigo_producto}
                                                         {item.es_cambio && (
                                                             <span style={{ marginLeft: '6px', fontSize: '10px', fontWeight: 'bold', background: '#7c3aed', color: '#fff', borderRadius: '4px', padding: '2px 6px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                                                                cambios en producción
+                                                                Cambio de Producción
                                                             </span>
                                                         )}
                                                     </td>
