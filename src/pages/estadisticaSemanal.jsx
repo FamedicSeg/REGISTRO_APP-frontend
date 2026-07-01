@@ -180,6 +180,9 @@ const EstadisticaSemanal = () => {
         setLoadingHist(true);
         try {
             const response = await getHistoricoSemanal(anioHistorico, semana);
+            console.log(`📦 [HISTÓRICO] Semana ${semana}/${anioHistorico} - códigos recibidos:`,
+                response.data?.map(i => i.codigo_producto)
+            );
             if (response.success && response.data.length > 0) {
                 setHistData(response.data);
                 prepararGraficosHistorico(response.data);
