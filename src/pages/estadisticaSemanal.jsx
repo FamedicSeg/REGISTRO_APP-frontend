@@ -67,10 +67,11 @@ const EstadisticaSemanal = () => {
     const [semanaHistSel, setSemanaHistSel] = useState('');
     const [histData, setHistData] = useState(null);
     const [histChart, setHistChart] = useState(null);
+    const [histLargeChart, setHistLargeChart] = useState(null); // NUEVO
+    const [histSmallChart, setHistSmallChart] = useState(null); // NUEVO
     const [loadingHist, setLoadingHist] = useState(false);
     const [tendenciaData, setTendenciaData] = useState(null);
     const [loadingTendencia, setLoadingTendencia] = useState(false);
-    const [showTooltip, setShowTooltip] = useState(false);
     
     const [_chartVersion, setChartVersion] = useState(0);
 
@@ -182,9 +183,18 @@ const EstadisticaSemanal = () => {
             if (response.success && response.data.length > 0) {
                 setHistData(response.data);
                 prepararGraficosHistorico(response.data);
-            } else { setHistData([]); setHistChart(null); }
-        } catch (err) { console.error(err); }
-        finally { setLoadingHist(false); }
+            } else { 
+                setHistData([]); 
+                setHistChart(null);
+                setHistLargeChart(null);
+                setHistSmallChart(null);
+            }
+        } catch (err) { 
+            console.error(err); 
+        }
+        finally { 
+            setLoadingHist(false); 
+        }
     };
 
     const cargarTendencia = async () => {
@@ -234,14 +244,74 @@ const EstadisticaSemanal = () => {
         }
     };
 
+    // MODIFICADA: Ahora divide los gráficos históricos
     const prepararGraficosHistorico = (data) => {
+        // Gráfico completo (todos los productos)
         setHistChart({
             labels: data.map(i => i.codigo_producto),
             datasets: [
                 { label: 'PLANIFICADO', data: data.map(i => Number(i.planificado || 0)), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
-                { label: 'ELABORADO',   data: data.map(i => Number(i.elaborado   || 0)), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
+                { label: 'ELABORADO',   data: data.map(i => Number(i.elaborado || 0)), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
             ]
         });
+
+        // Dividir por cantidad (usando el mismo criterio de 4000)
+        const productosPequeños = data.filter(item => Number(item.elaborado || 0) < 4000);
+        const productosGrandes = data.filter(item => Number(item.elaborado || 0) >= 4000);
+        
+        // Gráfico de productos grandes (mayores o iguales a 4000 unidades)
+        if (productosGrandes.length > 0) {
+            setHistLargeChart({
+                labels: productosGrandes.map(i => i.codigo_producto),
+                datasets: [
+                    { 
+                        label: 'PLANIFICADO', 
+                        data: productosGrandes.map(i => Number(i.planificado || 0)), 
+                        backgroundColor: 'rgba(54,162,235,0.75)', 
+                        borderColor: 'rgba(54,162,235,1)', 
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    },
+                    { 
+                        label: 'ELABORADO',   
+                        data: productosGrandes.map(i => Number(i.elaborado || 0)), 
+                        backgroundColor: 'rgba(245,158,11,0.75)', 
+                        borderColor: 'rgba(245,158,11,1)',  
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    }
+                ]
+            });
+        } else {
+            setHistLargeChart(null);
+        }
+
+        // Gráfico de productos pequeños (menos de 4000 unidades)
+        if (productosPequeños.length > 0) {
+            setHistSmallChart({
+                labels: productosPequeños.map(i => i.codigo_producto),
+                datasets: [
+                    { 
+                        label: 'PLANIFICADO', 
+                        data: productosPequeños.map(i => Number(i.planificado || 0)), 
+                        backgroundColor: 'rgba(54,162,235,0.75)', 
+                        borderColor: 'rgba(54,162,235,1)', 
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    },
+                    { 
+                        label: 'ELABORADO',   
+                        data: productosPequeños.map(i => Number(i.elaborado || 0)), 
+                        backgroundColor: 'rgba(245,158,11,0.75)', 
+                        borderColor: 'rgba(245,158,11,1)',  
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    }
+                ]
+            });
+        } else {
+            setHistSmallChart(null);
+        }
     };
 
     const prepararGraficoTendencia = (tendencia) => ({
@@ -342,7 +412,7 @@ const EstadisticaSemanal = () => {
             x: { 
                 grid: { display: false }, 
                 title: { display: true, text: 'Código de Producto', font: { weight: 'bold', size: 12 }, color: '#555' }, 
-                ticks: { rotation: -25, autoSkip: true, maxRotation: 25, minRotation: 25 } 
+                ticks: { rotation: -25, autoSkip: true, maxRotation: 25, minRotation: 25 }
             }
         }
     };
@@ -371,20 +441,11 @@ const EstadisticaSemanal = () => {
         }
     };
 
-    // Calcular estadísticas
     const totalPlan = resumenData ? resumenData.reduce((s, r) => s + r.planificado, 0) : 0;
     const totalElab = resumenData ? resumenData.reduce((s, r) => s + r.elaborado, 0) : 0;
     const pctGlobal = totalPlan > 0 ? (totalElab / totalPlan) * 100 : 0;
     const metasCumplidas = resumenData ? resumenData.filter(r => r.planificado > 0 && r.elaborado >= r.planificado).length : 0;
     const totalProductosConPlan = resumenData ? resumenData.filter(r => r.planificado > 0).length : 0;
-    
-    // Calcular cumplimiento promedio (el 82.2% del ejemplo)
-    const pctPromedio = resumenData && resumenData.length > 0 
-        ? resumenData.reduce((sum, r) => {
-            const pct = r.planificado > 0 ? (r.elaborado / r.planificado) * 100 : 0;
-            return sum + pct;
-        }, 0) / resumenData.length
-        : 0;
 
     const productosPequeñosCount = resumenData ? resumenData.filter(r => r.elaborado < 4000).length : 0;
     const productosGrandesCount = resumenData ? resumenData.filter(r => r.elaborado >= 4000).length : 0;
@@ -431,131 +492,18 @@ const EstadisticaSemanal = () => {
                     {loading && <div className="estadistica-loading"><div className="spinner"></div><p>Cargando datos desde Excel y Base de Datos...</p></div>}
 
                     {!loading && resumenData && resumenData.length > 0 && (
-                        <>
-                            {/* KPI Cards con ambos indicadores */}
-                            <div className="kpi-grid">
-                                <div className="kpi-card kpi-blue">
-                                    <span className="kpi-label">Total Planificado</span>
-                                    <span className="kpi-value">{formatNum(totalPlan)}</span>
-                                    <span className="kpi-unit">unidades</span>
-                                </div>
-                                <div className="kpi-card kpi-green">
-                                    <span className="kpi-label">Total Elaborado</span>
-                                    <span className="kpi-value">{formatNum(totalElab)}</span>
-                                    <span className="kpi-unit">unidades</span>
-                                </div>
-                                <div className="kpi-card" style={{ borderTop: `4px solid ${colorCumplimiento(pctGlobal)}` }}>
-                                    <span className="kpi-label">% Cumplimiento Global</span>
-                                    <span className="kpi-value" style={{ color: colorCumplimiento(pctGlobal) }}>{pctGlobal.toFixed(1)}%</span>
-                                    <span className="kpi-unit">{estadoCumplimiento(pctGlobal)}</span>
-                                </div>
-                                <div className="kpi-card" style={{ borderTop: `4px solid ${colorCumplimiento(pctPromedio)}` }}>
-                                    <span className="kpi-label">% Cumplimiento Promedio</span>
-                                    <span className="kpi-value" style={{ color: colorCumplimiento(pctPromedio) }}>{pctPromedio.toFixed(1)}%</span>
-                                    <span className="kpi-unit">Promedio por producto</span>
-                                </div>
-                                <div className="kpi-card kpi-purple">
-                                    <span className="kpi-label">Metas Cumplidas</span>
-                                    <span className="kpi-value">{metasCumplidas} / {totalProductosConPlan}</span>
-                                    <span className="kpi-unit">productos</span>
-                                </div>
+                        <div className="kpi-grid">
+                            <div className="kpi-card kpi-blue"><span className="kpi-label">Total Planificado</span><span className="kpi-value">{formatNum(totalPlan)}</span><span className="kpi-unit">unidades</span></div>
+                            <div className="kpi-card kpi-green"><span className="kpi-label">Total Elaborado</span><span className="kpi-value">{formatNum(totalElab)}</span><span className="kpi-unit">unidades</span></div>
+                            <div className="kpi-card" style={{ borderTop: `4px solid ${colorCumplimiento(pctGlobal)}` }}>
+                                <span className="kpi-label">% Cumplimiento Global</span>
+                                <span className="kpi-value" style={{ color: colorCumplimiento(pctGlobal) }}>{pctGlobal.toFixed(1)}%</span>
+                                <span className="kpi-unit">{estadoCumplimiento(pctGlobal)}</span>
                             </div>
-
-                            {/* Nota explicativa de la diferencia */}
-                            {pctGlobal !== pctPromedio && (
-                                <div style={{
-                                    background: '#f0f9ff',
-                                    borderLeft: '4px solid #3b82f6',
-                                    padding: '12px 20px',
-                                    margin: '10px 0 20px 0',
-                                    borderRadius: '6px',
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    gap: '12px'
-                                }}>
-                                    <span style={{ fontSize: '20px' }}>ℹ️</span>
-                                    <div>
-                                        <strong style={{ color: '#1e40af' }}>Diferencia entre indicadores:</strong>
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#475569' }}>
-                                            El <strong>% Cumplimiento Global ({pctGlobal.toFixed(1)}%)</strong> es <strong>ponderado por volumen</strong> de producción — 
-                                            productos con mayor planificación tienen más peso en el resultado.
-                                            <br />
-                                            El <strong>% Cumplimiento Promedio ({pctPromedio.toFixed(1)}%)</strong> es el <strong>promedio simple</strong> de todos los productos — 
-                                            cada producto tiene el mismo peso.
-                                            <br />
-                                            <span style={{ fontSize: '13px', color: '#64748b' }}>
-                                                💡 La diferencia del {Math.abs(pctGlobal - pctPromedio).toFixed(1)}% se debe a que productos con mayor volumen impactan más en el resultado global.
-                                            </span>
-                                        </p>
-                                    </div>
-                                    <button 
-                                        onClick={() => setShowTooltip(!showTooltip)}
-                                        style={{
-                                            border: 'none',
-                                            color: '#3b82f6',
-                                            cursor: 'pointer',
-                                            fontSize: '14px',
-                                            fontWeight: 'bold',
-                                            whiteSpace: 'nowrap',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            background: showTooltip ? '#dbeafe' : 'transparent'
-                                        }}
-                                    >
-                                        {showTooltip ? 'Ocultar detalles' : 'Ver detalles'}
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Detalle adicional del cálculo (tooltip expandido) */}
-                            {showTooltip && resumenData && (
-                                <div style={{
-                                    background: '#ffffff',
-                                    border: '1px solid #e2e8f0',
-                                    borderRadius: '8px',
-                                    padding: '16px 20px',
-                                    margin: '0 0 20px 0',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                                }}>
-                                    <h4 style={{ margin: '0 0 12px 0', color: '#1e293b' }}>📊 Desglose del Cálculo</h4>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                        <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '6px' }}>
-                                            <strong style={{ color: '#0f172a' }}>Cumplimiento Global (Ponderado)</strong>
-                                            <p style={{ margin: '8px 0 4px 0', fontSize: '14px' }}>
-                                                = (Total Elaborado / Total Planificado) × 100
-                                            </p>
-                                            <p style={{ margin: '4px 0', fontSize: '13px', color: '#475569' }}>
-                                                = ({formatNum(totalElab)} / {formatNum(totalPlan)}) × 100
-                                            </p>
-                                            <p style={{ margin: '4px 0', fontSize: '15px', fontWeight: 'bold', color: colorCumplimiento(pctGlobal) }}>
-                                                = {pctGlobal.toFixed(1)}%
-                                            </p>
-                                        </div>
-                                        <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '6px' }}>
-                                            <strong style={{ color: '#0f172a' }}>Cumplimiento Promedio (Simple)</strong>
-                                            <p style={{ margin: '8px 0 4px 0', fontSize: '14px' }}>
-                                                = Suma de % de cada producto / Número de productos
-                                            </p>
-                                            <p style={{ margin: '4px 0', fontSize: '13px', color: '#475569' }}>
-                                                = (Suma de {resumenData.length} productos) / {resumenData.length}
-                                            </p>
-                                            <p style={{ margin: '4px 0', fontSize: '15px', fontWeight: 'bold', color: colorCumplimiento(pctPromedio) }}>
-                                                = {pctPromedio.toFixed(1)}%
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div style={{ marginTop: '12px', padding: '8px 12px', background: '#fef3c7', borderRadius: '4px' }}>
-                                        <span style={{ fontSize: '13px', color: '#92400e' }}>
-                                            ⚠️ <strong>Nota:</strong> La diferencia del {Math.abs(pctGlobal - pctPromedio).toFixed(1)}% ocurre porque 
-                                            los productos de mayor volumen tienen mayor influencia en el resultado global.
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-                        </>
+                            <div className="kpi-card kpi-purple"><span className="kpi-label">Metas Cumplidas</span><span className="kpi-value">{metasCumplidas} / {totalProductosConPlan}</span><span className="kpi-unit">productos</span></div>
+                        </div>
                     )}
 
-                    {/* GRÁFICOS */}
                     {!loading && largeChartData && productosGrandesCount > 0 && (
                         <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
                             <div className="chart-header">
@@ -644,7 +592,7 @@ const EstadisticaSemanal = () => {
                     <div className="estadistica-controls">
                         <div className="week-selector-wrap">
                             <label className="week-selector-label">AÑO</label>
-                            <select className="week-input" value={anioHistorico} onChange={e => { setAnioHistorico(parseInt(e.target.value)); setSemanaHistSel(''); setHistData(null); setHistChart(null); }}>
+                            <select className="week-input" value={anioHistorico} onChange={e => { setAnioHistorico(parseInt(e.target.value)); setSemanaHistSel(''); setHistData(null); setHistChart(null); setHistLargeChart(null); setHistSmallChart(null); }}>
                                 {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(y => <option key={y} value={y}>{y}</option>)}
                             </select>
                             {semanasGuardadas.length > 0 && (
@@ -695,11 +643,67 @@ const EstadisticaSemanal = () => {
                     )}
 
                     {loadingHist && <div className="estadistica-loading"><div className="spinner"></div><p>Cargando semana {semanaHistSel}...</p></div>}
-                    {!loadingHist && histChart && semanaHistSel && (
-                        <div className="estadistica-chart-container">
+
+                    {/* GRÁFICO HISTÓRICO - PRODUCTOS DE ALTA CANTIDAD */}
+                    {!loadingHist && histLargeChart && semanaHistSel && (
+                        <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
                             <div className="chart-header">
-                                <h3>DETALLE - SEMANA {semanaHistSel} — {anioHistorico}</h3>
-                                <span className="chart-badge">Datos desde la base histórica guardada</span>
+                                <h3>ENFOQUE EN PRODUCTOS DE ALTA CANTIDAD - SEMANA {semanaHistSel}</h3>
+                                <span className="chart-badge">
+                                    {histLargeChart.labels.length} productos con alta planificación
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar 
+                                    key={`hist-large-${anioHistorico}-${semanaHistSel}`} 
+                                    data={histLargeChart} 
+                                    options={opcionesBarrasGrandes} 
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* GRÁFICO HISTÓRICO - PRODUCTOS DE BAJA CANTIDAD */}
+                    {!loadingHist && histSmallChart && semanaHistSel && (
+                        <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
+                            <div className="chart-header">
+                                <h3>ENFOQUE EN PRODUCTOS DE BAJA CANTIDAD - SEMANA {semanaHistSel}</h3>
+                                <span className="chart-badge">
+                                    {histSmallChart.labels.length} productos con baja planificación
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar 
+                                    key={`hist-small-${anioHistorico}-${semanaHistSel}`} 
+                                    data={histSmallChart} 
+                                    options={opcionesBarrasPequeños} 
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MENSAJES INFORMATIVOS */}
+                    {!loadingHist && histData && histData.length > 0 && (
+                        <>
+                            {histLargeChart === null && histSmallChart !== null && (
+                                <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
+                                    ℹ️ No hay productos con planificación mayor o igual a 4000 unidades en esta semana.
+                                </div>
+                            )}
+                            {histSmallChart === null && histLargeChart !== null && (
+                                <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
+                                    ℹ️ No hay productos con planificación menor a 4000 unidades en esta semana.
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* GRÁFICO COMPLETO (OPCIONAL - TODOS LOS PRODUCTOS) */}
+                    {!loadingHist && histChart && semanaHistSel && (
+                        <div className="estadistica-chart-container" style={{ borderTop: '3px solid #e5e7eb', paddingTop: '2rem', marginTop: '2rem' }}>
+                            <div className="chart-header">
+                                <h3>DETALLE COMPLETO - SEMANA {semanaHistSel} — {anioHistorico}</h3>
+                                <span className="chart-badge">Todos los productos</span>
                             </div>
                             <div className="chart-wrapper">
                                 <Bar key={`hist-${anioHistorico}-${semanaHistSel}`} data={histChart} options={opcionesBarras} />
