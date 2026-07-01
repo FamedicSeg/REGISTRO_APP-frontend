@@ -7,8 +7,10 @@ import ModalRechazo from "./ModalRechazo";
 
 export default function PanelRol() {
 
-  const [filtroTexto, setFiltroTexto] = useState("");
+  const [filtroTexto, _setFiltroTexto] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todos");
+  const [filtroTipoFecha, setFiltroTipoFecha] = useState("todos"); // "todos" | "dia" | "semana"
+  const [filtroFechaSeleccionada, setFiltroFechaSeleccionada] = useState("");
   const [registros, setRegistros] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [_aprobando, setAprobando] = useState(false);
@@ -33,6 +35,34 @@ export default function PanelRol() {
   const esAnalista = rol === "ANALISTA DE PRODUCCIÓN";
   const esSupervisor = rol === "SUPERVISOR";
   const esLider = ["LÍDER", "LIDER"].includes(rol);
+
+  // ===============================
+  // HELPERS FILTRO FECHA
+  // ===============================
+
+  const normalizarFecha = (fechaStr) => {
+    if (!fechaStr) return "";
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(fechaStr)) {
+      const [d, m, y] = fechaStr.split("/");
+      return `${y}-${m}-${d}`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}/.test(fechaStr)) return fechaStr.substring(0, 10);
+    const date = new Date(fechaStr);
+    if (!isNaN(date)) return date.toISOString().substring(0, 10);
+    return fechaStr;
+  };
+
+  const getWeekRange = (dateStr) => {
+    const date = new Date(dateStr + "T00:00:00");
+    const day = date.getDay();
+    const diffStart = day === 0 ? -6 : 1 - day;
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() + diffStart);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    return { startOfWeek, endOfWeek };
+  };
 
   const puedeEliminar = useMemo(() => 
     rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN",
@@ -94,6 +124,18 @@ export default function PanelRol() {
           // ANALISTA DE PRODUCCIÓN, SUPERVISOR y LÍDER no ven registros Aprobados
           if ((esLider || esSupervisor || esAnalista) && r.estado?.toLowerCase().includes("aprob")) {
             return false;
+          }
+
+          // Filtro por fecha (día o semana)
+          if (filtroTipoFecha !== "todos" && filtroFechaSeleccionada) {
+            const fechaNorm = normalizarFecha(r.fecha);
+            if (filtroTipoFecha === "dia") {
+              if (fechaNorm !== filtroFechaSeleccionada) return false;
+            } else if (filtroTipoFecha === "semana") {
+              const { startOfWeek, endOfWeek } = getWeekRange(filtroFechaSeleccionada);
+              const fechaRegistro = new Date(fechaNorm + "T00:00:00");
+              if (fechaRegistro < startOfWeek || fechaRegistro > endOfWeek) return false;
+            }
           }
 
           const texto = filtroTexto.toLowerCase();
@@ -263,55 +305,132 @@ export default function PanelRol() {
           </button>
         )}
         
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <input
-            type="text"
-            placeholder="Buscar en registros..."
-            value={filtroTexto}
-            onChange={(e) => setFiltroTexto(e.target.value)}
-            style={{ 
-              flex: 1,
-              padding: "10px 14px",
-              borderRadius: "6px",
-              border: "1px solid #ddd",
-              fontSize: "14px"
-            }}
-          />
-          <div style={{
-            display: "flex",
-            gap: "6px",
-            backgroundColor: "#f5f5f5",
-            padding: "6px",
-            borderRadius: "8px",
-            border: "1px solid #ddd"
-          }}>
-            {[
-              { valor: "todos", label: "Todos" },
-              { valor: "pendientes", label: "En Proceso" },
-              { valor: "aprobados", label: "Aprobados" },
-              { valor: "rechazados", label: "Rechazados" }
-            ].map(opcion => (
-              <button
-                key={opcion.valor}
-                onClick={() => setFiltroEstado(opcion.valor)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  border: "none",
-                  backgroundColor: filtroEstado === opcion.valor ? "#007bff" : "#fff",
-                  color: filtroEstado === opcion.valor ? "#fff" : "#333",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontWeight: filtroEstado === opcion.valor ? "600" : "500",
-                  transition: "all 0.3s ease",
-                  boxShadow: filtroEstado === opcion.valor ? "0 2px 8px rgba(0,123,255,0.3)" : "none"
-                }}
-              >
-                {opcion.label}
-              </button>
-            ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
+
+          {/* ── Fila 1: buscador + filtro de estado (sin cambios) ── */}
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{
+              display: "flex",
+              gap: "6px",
+              backgroundColor: "#f5f5f5",
+              padding: "6px",
+              borderRadius: "8px",
+              border: "1px solid #ddd"
+            }}>
+              {[
+                { valor: "todos", label: "Todos" },
+                { valor: "pendientes", label: "En Proceso" },
+                { valor: "aprobados", label: "Aprobados" },
+                { valor: "rechazados", label: "Rechazados" }
+              ].map(opcion => (
+                <button
+                  key={opcion.valor}
+                  onClick={() => setFiltroEstado(opcion.valor)}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: "none",
+                    backgroundColor: filtroEstado === opcion.valor ? "#007bff" : "#fff",
+                    color: filtroEstado === opcion.valor ? "#fff" : "#333",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: filtroEstado === opcion.valor ? "600" : "500",
+                    transition: "all 0.3s ease",
+                    boxShadow: filtroEstado === opcion.valor ? "0 2px 8px rgba(0,123,255,0.3)" : "none"
+                  }}
+                >
+                  {opcion.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
+          {/* ── Fila 2: filtro por fecha (nuevo) ── */}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "13px", color: "#555", fontWeight: "500" }}>📅 Fecha:</span>
+            <div style={{
+              display: "flex",
+              gap: "4px",
+              backgroundColor: "#f5f5f5",
+              padding: "4px",
+              borderRadius: "8px",
+              border: "1px solid #ddd"
+            }}>
+              {[
+                { valor: "todos",  label: "Todos" },
+                { valor: "dia",    label: "Día" },
+                { valor: "semana", label: "Semana" }
+              ].map(op => (
+                <button
+                  key={op.valor}
+                  onClick={() => { setFiltroTipoFecha(op.valor); setFiltroFechaSeleccionada(""); }}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "6px",
+                    border: "none",
+                    backgroundColor: filtroTipoFecha === op.valor ? "#2563eb" : "#fff",
+                    color: filtroTipoFecha === op.valor ? "#fff" : "#333",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    fontWeight: filtroTipoFecha === op.valor ? "600" : "500",
+                    transition: "all 0.3s ease",
+                    boxShadow: filtroTipoFecha === op.valor ? "0 2px 8px rgba(37,99,235,0.3)" : "none"
+                  }}
+                >
+                  {op.label}
+                </button>
+              ))}
+            </div>
+
+            {filtroTipoFecha !== "todos" && (
+              <input
+                type="date"
+                value={filtroFechaSeleccionada}
+                onChange={(e) => setFiltroFechaSeleccionada(e.target.value)}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #ddd",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  color: "#333",
+                  width: "160px"
+                }}
+              />
+            )}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            {filtroTipoFecha === "semana" && filtroFechaSeleccionada && (() => {
+              const { startOfWeek, endOfWeek } = getWeekRange(filtroFechaSeleccionada);
+              const fmt = (d) => d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
+              return (
+                <span style={{ fontSize: "12px", color: "#2563eb", fontWeight: "500" }}>
+                  {fmt(startOfWeek)} — {fmt(endOfWeek)}
+                </span>
+              );
+            })()}
+
+            {filtroTipoFecha !== "todos" && filtroFechaSeleccionada && (
+              <button
+                onClick={() => setFiltroFechaSeleccionada("")}
+                style={{
+                  padding: "5px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #ddd",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  color: "#666"
+                }}
+              >
+                ✕ Limpiar
+              </button>
+            )}
+          </div>
+          </div>
+        </div>
+        
         <button className="panel-btn panel-btn-logout" onClick={handleLogout}>
           Salir
         </button>
