@@ -67,6 +67,8 @@ const EstadisticaSemanal = () => {
     const [semanaHistSel, setSemanaHistSel] = useState('');
     const [histData, setHistData] = useState(null);
     const [histChart, setHistChart] = useState(null);
+    const [histLargeChart, setHistLargeChart] = useState(null); // NUEVO
+    const [histSmallChart, setHistSmallChart] = useState(null); // NUEVO
     const [loadingHist, setLoadingHist] = useState(false);
     const [tendenciaData, setTendenciaData] = useState(null);
     const [loadingTendencia, setLoadingTendencia] = useState(false);
@@ -80,7 +82,6 @@ const EstadisticaSemanal = () => {
     useEffect(() => {
         const prev = prevWeekRef.current;
         const run = async () => {
-            // IMPORTANTE: Limpiar el estado ANTES de cargar nuevos datos cuando cambia la semana
             if (prev && prev !== selectedWeek) {
                 setResumenData(null);
                 setChartData(null);
@@ -88,7 +89,6 @@ const EstadisticaSemanal = () => {
                 setSmallChartData(null);
                 setError('');
                 
-                // Guardar la semana anterior si tiene datos
                 if (resumenData && resumenData.length > 0) {
                     const [py, pw] = prev.split('-W');
                     try { 
@@ -180,12 +180,24 @@ const EstadisticaSemanal = () => {
         setLoadingHist(true);
         try {
             const response = await getHistoricoSemanal(anioHistorico, semana);
+            console.log(`📦 [HISTÓRICO] Semana ${semana}/${anioHistorico} - códigos recibidos:`,
+                response.data?.map(i => i.codigo_producto)
+            );
             if (response.success && response.data.length > 0) {
                 setHistData(response.data);
                 prepararGraficosHistorico(response.data);
-            } else { setHistData([]); setHistChart(null); }
-        } catch (err) { console.error(err); }
-        finally { setLoadingHist(false); }
+            } else { 
+                setHistData([]); 
+                setHistChart(null);
+                setHistLargeChart(null);
+                setHistSmallChart(null);
+            }
+        } catch (err) { 
+            console.error(err); 
+        }
+        finally { 
+            setLoadingHist(false); 
+        }
     };
 
     const cargarTendencia = async () => {
@@ -198,13 +210,10 @@ const EstadisticaSemanal = () => {
         finally { setLoadingTendencia(false); }
     };
 
-    // Nueva función: prepara ambos gráficos (todos y pequeños)
     const prepararGraficos = (data) => {
-        // Filtrar productos con cantidad planificada pequeña (menos de 4000 unidades)
         const productosPequeños = data.filter(item => item.elaborado < 4000);
         const productosGrandes = data.filter(item => item.elaborado >= 4000);
         
-        // Gráfico principal (todos los productos)
         setChartData({
             labels: data.map(i => i.codigo_producto),
             datasets: [
@@ -213,7 +222,6 @@ const EstadisticaSemanal = () => {
             ]
         });
 
-        // Gráfico de productos grandes (mayores a 4000 unidades)
         if (productosGrandes.length > 0) {
             setLargeChartData({
                 labels: productosGrandes.map(i => i.codigo_producto),
@@ -226,7 +234,6 @@ const EstadisticaSemanal = () => {
             setLargeChartData(null);
         }
 
-        // Gráfico de productos pequeños (menos de 4000 unidades)
         if (productosPequeños.length > 0) {
             setSmallChartData({
                 labels: productosPequeños.map(i => i.codigo_producto),
@@ -240,15 +247,76 @@ const EstadisticaSemanal = () => {
         }
     };
 
-    // Gráficos históricos
+    // MODIFICADA: Ahora divide los gráficos históricos
     const prepararGraficosHistorico = (data) => {
+        console.log('🔬 [prepararGraficosHistorico] Primer item completo:', JSON.stringify(data[0]));
+        console.log('🏷️ [prepararGraficosHistorico] Labels que van al gráfico:', data.map(i => i.codigo_producto));
+        // Gráfico completo (todos los productos)
         setHistChart({
             labels: data.map(i => i.codigo_producto),
             datasets: [
-                { label: 'PLANIFICADO', data: data.map(i => Number(i.planificado || 0)), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
-                { label: 'ELABORADO',   data: data.map(i => Number(i.elaborado   || 0)), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
+                { label: 'PLANIFICADO', data: data.map(i => i.planificado), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
+                { label: 'ELABORADO',   data: data.map(i => i.elaborado), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
             ]
         });
+
+        // Dividir por cantidad (usando el mismo criterio de 4000)
+        const productosPequeños = data.filter(item => item.elaborado < 4000);
+        const productosGrandes = data.filter(item => item.elaborado >= 4000);
+        
+        // Gráfico de productos grandes (mayores o iguales a 4000 unidades)
+        if (productosGrandes.length > 0) {
+            setHistLargeChart({
+                labels: productosGrandes.map(i => i.codigo_producto),
+                datasets: [
+                    { 
+                        label: 'PLANIFICADO', 
+                        data: productosGrandes.map(i => i.planificado), 
+                        backgroundColor: 'rgba(54,162,235,0.75)', 
+                        borderColor: 'rgba(54,162,235,1)', 
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    },
+                    { 
+                        label: 'ELABORADO',   
+                        data: productosGrandes.map(i => i.elaborado), 
+                        backgroundColor: 'rgba(245,158,11,0.75)', 
+                        borderColor: 'rgba(245,158,11,1)',  
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    }
+                ]
+            });
+        } else {
+            setHistLargeChart(null);
+        }
+
+        // Gráfico de productos pequeños (menos de 4000 unidades)
+        if (productosPequeños.length > 0) {
+            setHistSmallChart({
+                labels: productosPequeños.map(i => i.codigo_producto),
+                datasets: [
+                    { 
+                        label: 'PLANIFICADO', 
+                        data: productosPequeños.map(i => i.planificado), 
+                        backgroundColor: 'rgba(54,162,235,0.75)', 
+                        borderColor: 'rgba(54,162,235,1)', 
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    },
+                    { 
+                        label: 'ELABORADO',   
+                        data: productosPequeños.map(i => i.elaborado), 
+                        backgroundColor: 'rgba(245,158,11,0.75)', 
+                        borderColor: 'rgba(245,158,11,1)',  
+                        borderWidth: 1, 
+                        borderRadius: 4 
+                    }
+                ]
+            });
+        } else {
+            setHistSmallChart(null);
+        }
     };
 
     const prepararGraficoTendencia = (tendencia) => ({
@@ -307,7 +375,6 @@ const EstadisticaSemanal = () => {
         }
     };
 
-    // Opciones especiales para gráfico de productos pequeños (sin rotación de etiquetas)
     const opcionesBarrasPequeños = {
         responsive: true, 
         maintainAspectRatio: false,
@@ -350,7 +417,7 @@ const EstadisticaSemanal = () => {
             x: { 
                 grid: { display: false }, 
                 title: { display: true, text: 'Código de Producto', font: { weight: 'bold', size: 12 }, color: '#555' }, 
-                ticks: { rotation: -25, autoSkip: true, maxRotation: 25, minRotation: 25 } // Menos rotación
+                ticks: { rotation: -25, autoSkip: true, maxRotation: 25, minRotation: 25 }
             }
         }
     };
@@ -385,7 +452,6 @@ const EstadisticaSemanal = () => {
     const metasCumplidas = resumenData ? resumenData.filter(r => r.planificado > 0 && r.elaborado >= r.planificado).length : 0;
     const totalProductosConPlan = resumenData ? resumenData.filter(r => r.planificado > 0).length : 0;
 
-    // Contar productos pequeños
     const productosPequeñosCount = resumenData ? resumenData.filter(r => r.elaborado < 4000).length : 0;
     const productosGrandesCount = resumenData ? resumenData.filter(r => r.elaborado >= 4000).length : 0;
 
@@ -443,23 +509,6 @@ const EstadisticaSemanal = () => {
                         </div>
                     )}
 
-                    {/* GRÁFICO PRINCIPAL - Todos los productos 
-                    {!loading && chartData && (
-                        <div className="estadistica-chart-container">
-                            <div className="chart-header">
-                                <h3> DIAGRAMA DE BARRAS: TODOS LOS PRODUCTOS</h3>
-                                <span className="chart-badge">
-                                    Semana {selectedWeek.split('-W')[1]} — {selectedWeek.split('-W')[0]} | Total: {resumenData?.length} productos
-                                </span>
-                            </div>
-                            <div className="chart-wrapper">
-                                <Bar key={chartVersion} data={chartData} options={opcionesBarras} />
-                            </div>
-                        </div>
-                    )}
-                        */}
-
-                    {/* GRÁFICO ESPECIAL - Solo productos con cantidad planificada >= 500 */}
                     {!loading && largeChartData && productosGrandesCount > 0 && (
                         <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
                             <div className="chart-header">
@@ -474,7 +523,6 @@ const EstadisticaSemanal = () => {
                         </div>
                     )}
 
-                    {/* GRÁFICO ESPECIAL - Solo productos con cantidad planificada < 4000 */}
                     {!loading && smallChartData && productosPequeñosCount > 0 && (
                         <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
                             <div className="chart-header">
@@ -489,7 +537,6 @@ const EstadisticaSemanal = () => {
                         </div>
                     )}
 
-                    {/* Mensaje si no hay productos pequeños */}
                     {!loading && resumenData && productosPequeñosCount === 0 && (
                         <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
                             ✅ No hay productos con planificación menor a 4000 unidades esta semana.
@@ -523,7 +570,7 @@ const EstadisticaSemanal = () => {
                                                 <tr key={i} style={esBajoVolumen ? { backgroundColor: '#fffbeb' } : {}}>
                                                     <td className="producto-code" style={esBajoVolumen ? { fontWeight: 'bold', color: '#d97706' } : {}}>
                                                         {item.codigo_producto}
-                                                        {item.es_cambio && (
+                                                        {item.es_cambio === 1 && (
                                                             <span style={{ marginLeft: '6px', fontSize: '10px', fontWeight: 'bold', background: '#7c3aed', color: '#fff', borderRadius: '4px', padding: '2px 6px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                                                                 Cambio de Producción
                                                             </span>
@@ -550,7 +597,7 @@ const EstadisticaSemanal = () => {
                     <div className="estadistica-controls">
                         <div className="week-selector-wrap">
                             <label className="week-selector-label">AÑO</label>
-                            <select className="week-input" value={anioHistorico} onChange={e => { setAnioHistorico(parseInt(e.target.value)); setSemanaHistSel(''); setHistData(null); setHistChart(null); }}>
+                            <select className="week-input" value={anioHistorico} onChange={e => { setAnioHistorico(parseInt(e.target.value)); setSemanaHistSel(''); setHistData(null); setHistChart(null); setHistLargeChart(null); setHistSmallChart(null); }}>
                                 {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(y => <option key={y} value={y}>{y}</option>)}
                             </select>
                             {semanasGuardadas.length > 0 && (
@@ -601,11 +648,67 @@ const EstadisticaSemanal = () => {
                     )}
 
                     {loadingHist && <div className="estadistica-loading"><div className="spinner"></div><p>Cargando semana {semanaHistSel}...</p></div>}
-                    {!loadingHist && histChart && semanaHistSel && (
-                        <div className="estadistica-chart-container">
+
+                    {/* GRÁFICO HISTÓRICO - PRODUCTOS DE ALTA CANTIDAD */}
+                    {!loadingHist && histLargeChart && semanaHistSel && (
+                        <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
                             <div className="chart-header">
-                                <h3>DETALLE - SEMANA {semanaHistSel} — {anioHistorico}</h3>
-                                <span className="chart-badge">Datos desde la base histórica guardada</span>
+                                <h3>ENFOQUE EN PRODUCTOS DE ALTA CANTIDAD - SEMANA {semanaHistSel}</h3>
+                                <span className="chart-badge">
+                                    {histLargeChart.labels.length} productos con alta planificación
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar 
+                                    key={`hist-large-${anioHistorico}-${semanaHistSel}`} 
+                                    data={histLargeChart} 
+                                    options={opcionesBarrasGrandes} 
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* GRÁFICO HISTÓRICO - PRODUCTOS DE BAJA CANTIDAD */}
+                    {!loadingHist && histSmallChart && semanaHistSel && (
+                        <div className="estadistica-chart-container" style={{ marginTop: '2rem', borderTop: '3px solid #e5e7eb', paddingTop: '2rem' }}>
+                            <div className="chart-header">
+                                <h3>ENFOQUE EN PRODUCTOS DE BAJA CANTIDAD - SEMANA {semanaHistSel}</h3>
+                                <span className="chart-badge">
+                                    {histSmallChart.labels.length} productos con baja planificación
+                                </span>
+                            </div>
+                            <div className="chart-wrapper">
+                                <Bar 
+                                    key={`hist-small-${anioHistorico}-${semanaHistSel}`} 
+                                    data={histSmallChart} 
+                                    options={opcionesBarrasPequeños} 
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MENSAJES INFORMATIVOS */}
+                    {!loadingHist && histData && histData.length > 0 && (
+                        <>
+                            {histLargeChart === null && histSmallChart !== null && (
+                                <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
+                                    ℹ️ No hay productos con planificación mayor o igual a 4000 unidades en esta semana.
+                                </div>
+                            )}
+                            {histSmallChart === null && histLargeChart !== null && (
+                                <div className="estadistica-info" style={{ margin: '1rem 0', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', textAlign: 'center' }}>
+                                    ℹ️ No hay productos con planificación menor a 4000 unidades en esta semana.
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* GRÁFICO COMPLETO (OPCIONAL - TODOS LOS PRODUCTOS) */}
+                    {!loadingHist && histChart && semanaHistSel && (
+                        <div className="estadistica-chart-container" style={{ borderTop: '3px solid #e5e7eb', paddingTop: '2rem', marginTop: '2rem' }}>
+                            <div className="chart-header">
+                                <h3>DETALLE COMPLETO - SEMANA {semanaHistSel} — {anioHistorico}</h3>
+                                <span className="chart-badge">Todos los productos</span>
                             </div>
                             <div className="chart-wrapper">
                                 <Bar key={`hist-${anioHistorico}-${semanaHistSel}`} data={histChart} options={opcionesBarras} />
@@ -637,7 +740,24 @@ const EstadisticaSemanal = () => {
                                             const pct = item.planificado > 0 ? (item.elaborado / item.planificado) * 100 : 0;
                                             return (
                                                 <tr key={i}>
-                                                    <td className="producto-code">{item.codigo_producto}</td>
+                                                    <td className="producto-code">
+                                                        {item.codigo_producto}
+                                                        {item.es_cambio === 1 && (
+                                                        <span style={{ 
+                                                            marginLeft: '6px', 
+                                                            fontSize: '10px', 
+                                                            fontWeight: 'bold', 
+                                                            background: '#7c3aed', 
+                                                            color: '#fff', 
+                                                            borderRadius: '4px', 
+                                                            padding: '2px 6px', 
+                                                            verticalAlign: 'middle', 
+                                                            whiteSpace: 'nowrap' 
+                                                            }}>
+                                                            Cambio de Producción
+                                                        </span>
+                                                        )}
+                                                    </td>
                                                     <td>{formatNum(item.planificado)} unit.</td>
                                                     <td>{formatNum(item.elaborado)} unit.</td>
                                                     <td style={{ color: dif >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{dif >= 0 ? `+${formatNum(dif)}` : formatNum(dif)}</td>
