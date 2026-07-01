@@ -255,14 +255,14 @@ const EstadisticaSemanal = () => {
         setHistChart({
             labels: data.map(i => i.codigo_producto),
             datasets: [
-                { label: 'PLANIFICADO', data: data.map(i => Number(i.planificado || 0)), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
-                { label: 'ELABORADO',   data: data.map(i => Number(i.elaborado || 0)), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
+                { label: 'PLANIFICADO', data: data.map(i => i.planificado), backgroundColor: 'rgba(54,162,235,0.75)', borderColor: 'rgba(54,162,235,1)', borderWidth: 1, borderRadius: 4 },
+                { label: 'ELABORADO',   data: data.map(i => i.elaborado), backgroundColor: 'rgba(245,158,11,0.75)', borderColor: 'rgba(245,158,11,1)',  borderWidth: 1, borderRadius: 4 }
             ]
         });
 
         // Dividir por cantidad (usando el mismo criterio de 4000)
-        const productosPequeños = data.filter(item => Number(item.elaborado || 0) < 4000);
-        const productosGrandes = data.filter(item => Number(item.elaborado || 0) >= 4000);
+        const productosPequeños = data.filter(item => item.elaborado < 4000);
+        const productosGrandes = data.filter(item => item.elaborado >= 4000);
         
         // Gráfico de productos grandes (mayores o iguales a 4000 unidades)
         if (productosGrandes.length > 0) {
@@ -271,7 +271,7 @@ const EstadisticaSemanal = () => {
                 datasets: [
                     { 
                         label: 'PLANIFICADO', 
-                        data: productosGrandes.map(i => Number(i.planificado || 0)), 
+                        data: productosGrandes.map(i => i.planificado), 
                         backgroundColor: 'rgba(54,162,235,0.75)', 
                         borderColor: 'rgba(54,162,235,1)', 
                         borderWidth: 1, 
@@ -279,7 +279,7 @@ const EstadisticaSemanal = () => {
                     },
                     { 
                         label: 'ELABORADO',   
-                        data: productosGrandes.map(i => Number(i.elaborado || 0)), 
+                        data: productosGrandes.map(i => i.elaborado), 
                         backgroundColor: 'rgba(245,158,11,0.75)', 
                         borderColor: 'rgba(245,158,11,1)',  
                         borderWidth: 1, 
@@ -298,7 +298,7 @@ const EstadisticaSemanal = () => {
                 datasets: [
                     { 
                         label: 'PLANIFICADO', 
-                        data: productosPequeños.map(i => Number(i.planificado || 0)), 
+                        data: productosPequeños.map(i => i.planificado), 
                         backgroundColor: 'rgba(54,162,235,0.75)', 
                         borderColor: 'rgba(54,162,235,1)', 
                         borderWidth: 1, 
@@ -306,7 +306,7 @@ const EstadisticaSemanal = () => {
                     },
                     { 
                         label: 'ELABORADO',   
-                        data: productosPequeños.map(i => Number(i.elaborado || 0)), 
+                        data: productosPequeños.map(i => i.elaborado), 
                         backgroundColor: 'rgba(245,158,11,0.75)', 
                         borderColor: 'rgba(245,158,11,1)',  
                         borderWidth: 1, 
