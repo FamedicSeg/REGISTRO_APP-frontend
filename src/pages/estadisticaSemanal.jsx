@@ -249,6 +249,8 @@ const EstadisticaSemanal = () => {
 
     // MODIFICADA: Ahora divide los gráficos históricos
     const prepararGraficosHistorico = (data) => {
+        console.log('🔬 [prepararGraficosHistorico] Primer item completo:', JSON.stringify(data[0]));
+        console.log('🏷️ [prepararGraficosHistorico] Labels que van al gráfico:', data.map(i => i.codigo_producto));
         // Gráfico completo (todos los productos)
         setHistChart({
             labels: data.map(i => i.codigo_producto),
