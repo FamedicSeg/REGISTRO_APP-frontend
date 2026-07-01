@@ -735,7 +735,24 @@ const EstadisticaSemanal = () => {
                                             const pct = item.planificado > 0 ? (item.elaborado / item.planificado) * 100 : 0;
                                             return (
                                                 <tr key={i}>
-                                                    <td className="producto-code">{item.codigo_producto}</td>
+                                                    <td className="producto-code">
+                                                        {item.codigo_producto}
+                                                        {item.es_cambio && (
+                                                        <span style={{ 
+                                                            marginLeft: '6px', 
+                                                            fontSize: '10px', 
+                                                            fontWeight: 'bold', 
+                                                            background: '#7c3aed', 
+                                                            color: '#fff', 
+                                                            borderRadius: '4px', 
+                                                            padding: '2px 6px', 
+                                                            verticalAlign: 'middle', 
+                                                            whiteSpace: 'nowrap' 
+                                                            }}>
+                                                            Cambio de Producción
+                                                        </span>
+                                                        )}
+                                                    </td>
                                                     <td>{formatNum(item.planificado)} unit.</td>
                                                     <td>{formatNum(item.elaborado)} unit.</td>
                                                     <td style={{ color: dif >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{dif >= 0 ? `+${formatNum(dif)}` : formatNum(dif)}</td>
