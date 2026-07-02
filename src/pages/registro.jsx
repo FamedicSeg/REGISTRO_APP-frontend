@@ -628,7 +628,7 @@ useEffect(() => {
     }
   
     const codigoLimpio = codigo_insumo.trim();
-    const isCodigoNoAplica = /^(CF|BCD|TAB|FPQ)/i.test(codigoLimpio);
+    const isCodigoNoAplica = /^(CF|BCD|FPQ)/i.test(codigoLimpio);
 
     setCargandoDescripciones(prev => ({...prev, [index]: true}));
 
