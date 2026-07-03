@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="app-footer">
       <div className="footer-content">
         <p>
-            © {currentYear} Sistema de Registros Digitales - Todos los derechos reservados <strong>DHISVE - Analista de Transformación Digital</strong>
+            © {currentYear} Sistema de Registros Digitales - Todos los derechos reservados <strong>- Analista de Transformación Digital</strong>
         </p>
       </div>
     </footer>

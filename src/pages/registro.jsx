@@ -129,6 +129,7 @@ export default function Registro() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [msg, setMsg] = useState("");
   const [_loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [ops, setOps] = useState([]);
   const [integrantes, setIntegrantes] = useState([{ nombre: "", cargo: "" },]);
   const [etiquetas, setEtiqueta] = useState([{ descripcion_etiqueta:"", cantidad_etiqueta:"", observacion_etiqueta: "", entrega_etiqueta:"", recepcion_etiqueta:""},]);
@@ -1165,6 +1166,112 @@ useEffect(() => {
     return () => clearTimeout(t);
   }, [form.codigo_producto]);
 
+  const handleActualizar = async () => {
+    setRefreshing(true);
+
+    // Guardar snapshot de todo lo que el usuario ya llenó
+    const snapForm = { ...form };
+    const snapIntegrantes = integrantes.map(i => ({ ...i }));
+    const snapMaquinarias = maquinarias.map(m => ({ ...m, numero_maquinaria: [...(m.numero_maquinaria || [])] }));
+    const snapEtiquetas = etiquetas.map(e => ({ ...e }));
+    let snapInsumos = insumos.map(i => ({ ...i }));
+    const snapReposicion = reposicionNoConforme.map(r => ({ ...r }));
+    const snapActividadesIntegrantes = JSON.parse(JSON.stringify(actividadesIntegrantes));
+    const snapCantidadesActividades = { ...cantidadesActividades };
+    const snapActividadesConHoras = [...actividadesConHoras];
+    const snapManualHorasPersona = { ...manualHorasPersona };
+
+    try {
+      // Recargar lista de OPs
+      try {
+        const res = await api.get("/op/lista");
+        const opsArray = res.data.hojas
+          ? Object.values(res.data.hojas).flatMap(hoja =>
+              hoja.datos?.flatMap(d =>
+                Object.values(d.valores || {}).map(col => col?.valor).filter(v => v !== undefined && v !== null && v !== "")
+              ) || []
+            )
+          : [];
+        setOps(opsArray);
+      } catch (err) { console.error("Error recargando OPs:", err); }
+
+      // Recargar personal del módulo actual (sin resetear los valores del usuario)
+      const hoja = MODULO_TO_HOJA[snapForm.modulo];
+      if (hoja) {
+        try {
+          const { data } = await api.get("/modulos/personal", { params: { modulo: hoja } });
+          setListaSupervisores(Array.isArray(data.supervisores) ? data.supervisores : []);
+          setListaLideres(Array.isArray(data.lideres) ? data.lideres : []);
+          setListaIntegrantes(Array.isArray(data.integrantes) ? data.integrantes : []);
+        } catch (err) { console.error("Error recargando personal:", err); }
+      }
+
+      // Recargar insumos del producto actual (sin resetear entrega/recepcion del usuario)
+      if (snapForm.codigo_producto && snapForm.codigo_producto.trim().length >= 3) {
+        try {
+          const { data } = await api.get("/insumos/producto", {
+            params: { codigo: snapForm.codigo_producto.trim() },
+          });
+          let lista = [];
+          if (data && Array.isArray(data.insumos)) lista = data.insumos;
+          else if (Array.isArray(data)) lista = data;
+          setListaInsumos(lista);
+          setListaNoConforme(lista.map(insumo => ({ codigo: insumo.codigo || insumo, descripcion: insumo.descripcion || "" })));
+        } catch (err) { console.error("Error recargando insumos:", err); }
+
+        // Recargar actividades del producto (para que aparezcan las nuevas agregadas en OneDrive)
+        try {
+          const resProcesos = await api.get("/procesos/producto", {
+            params: { codigo: snapForm.codigo_producto.trim() },
+          });
+          if (resProcesos.data && resProcesos.data.detalles) {
+            snapForm.detalles_actividades = resProcesos.data.detalles;
+          }
+        } catch (err) { console.error("Error recargando actividades:", err); }
+
+        // Recargar lote del producto
+        try {
+          const { data } = await api.get("/lote/info", {
+            params: { codigo: snapForm.codigo_producto.trim() },
+          });
+          if (data && data.loteInfo !== undefined) {
+            snapForm.lotePrincipal = String(data.loteInfo).trim();
+          }
+        } catch (err) { console.error("Error recargando lote del producto:", err); }
+
+        // Recargar lotes de cada insumo (preservando entrega/recepcion del usuario)
+        snapInsumos = await Promise.all(snapInsumos.map(async (insumo) => {
+          const codigo = insumo.tipo_insumo?.trim();
+          if (!codigo) return insumo;
+          const isNoAplica = /^(CF|BCD|FPQ)/i.test(codigo);
+          if (isNoAplica) return { ...insumo, lote_insumo: "NO APLICA" };
+          try {
+            const { data } = await api.get("/insumos/lote", { params: { codigo } });
+            const lote = typeof data === "string" ? data : (data.lote || insumo.lote_insumo);
+            return { ...insumo, lote_insumo: lote };
+          } catch {
+            return insumo;
+          }
+        }));
+      }
+
+    } finally {
+      // Restaurar todos los datos que el usuario ya había ingresado
+      // (detalles_actividades ya viene actualizado desde el fetch de arriba)
+      setForm(snapForm);
+      setIntegrantes(snapIntegrantes);
+      setMaquinarias(snapMaquinarias);
+      setEtiqueta(snapEtiquetas);
+      setInsumos(snapInsumos);
+      setReposicionNoConforme(snapReposicion);
+      setActividadesIntegrantes(snapActividadesIntegrantes);
+      setCantidadesActividades(snapCantidadesActividades);
+      setActividadesConHoras(snapActividadesConHoras);
+      setManualHorasPersona(snapManualHorasPersona);
+      setRefreshing(false);
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     
@@ -1676,9 +1783,23 @@ const decimalParaHorasMinutos = (decimal) => {
         </div>
       </header>
 
-      <button className="btn" type="button" onClick={() => nav("/")}>
-        ⬅ Volver
-      </button>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "space-between" }}>
+        <button className="btn" type="button" onClick={() => nav("/")}>
+          ⬅ Volver
+        </button>
+        <button
+        className="btn-actualizar"
+          type="button"
+          disabled={refreshing}
+          onClick={handleActualizar}
+          title="Recarga los datos disponibles sin perder lo que ya llenaste"
+        >
+          {refreshing ? "⏳ Actualizando..." : "🔄 Actualizar"}
+        </button>
+      </div>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end", marginBottom: "auto" }}>
+        
+      </div>
 
       <form onSubmit={onSubmit}>
         {/* CABECERA */}
@@ -2677,6 +2798,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="M. TALADRO">M. TALADRO</option>
                     <option value="M. VERTICALES MANUALES">M. VERTICALES MANUALES</option>
                     <option value="M. ENROLLADORA DE WATTA">M. ENROLLADORA DE WATTA</option>
+                    <option value="M DE PRUEBA">MAQUINA DE PRUEBA</option>
                   </select>
                 </div>
                 <div className="maquinaria-field" style={{ maxWidth: "100%" }}>
