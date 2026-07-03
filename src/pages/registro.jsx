@@ -2798,7 +2798,6 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="M. TALADRO">M. TALADRO</option>
                     <option value="M. VERTICALES MANUALES">M. VERTICALES MANUALES</option>
                     <option value="M. ENROLLADORA DE WATTA">M. ENROLLADORA DE WATTA</option>
-                    <option value="M DE PRUEBA">MAQUINA DE PRUEBA</option>
                   </select>
                 </div>
                 <div className="maquinaria-field" style={{ maxWidth: "100%" }}>
