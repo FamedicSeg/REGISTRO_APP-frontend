@@ -579,7 +579,7 @@ const EstadisticaSemanal = () => {
                                                     </td>
                                                     <td>{formatNum(item.planificado)} unit.</td>
                                                     <td>{formatNum(item.elaborado)} unit.</td>
-                                                    <td style={{ color: sinPlanificacion ? '#6b7280' : (dif >= 0 ? '#10b981' : '#ef4444'), fontWeight: 'bold' }}>{sinPlanificacion ? '—' : (dif >= 0 ? `+${formatNum(dif)}` : formatNum(dif))}</td>
+                                                    <td style={{ color: dif >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{dif >= 0 ? `+${formatNum(dif)}` : formatNum(dif)}</td>
                                                     <td>{sinPlanificacion ? <span style={{ color: '#6b7280', fontWeight: 'bold' }}>—</span> : <span className="pct-badge" style={{ background: colorCumplimiento(pct) }}>{pct.toFixed(1)}%</span>}</td>
                                                     <td style={{ color: sinPlanificacion ? '#6b7280' : colorCumplimiento(pct) }}>{sinPlanificacion ? '—' : estadoCumplimiento(pct)}</td>
                                                 </tr>
