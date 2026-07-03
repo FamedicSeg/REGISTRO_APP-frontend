@@ -7,7 +7,7 @@ import ModalRechazo from "./ModalRechazo";
 
 export default function PanelRol() {
 
-  const [filtroTexto, _setFiltroTexto] = useState("");
+  const [filtroTexto, setFiltroTexto] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("todos");
   const [filtroTipoFecha, setFiltroTipoFecha] = useState("todos"); // "todos" | "dia" | "semana"
   const [filtroFechaSeleccionada, setFiltroFechaSeleccionada] = useState("");
@@ -307,7 +307,8 @@ export default function PanelRol() {
         
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
 
-          {/* ── Fila 1: buscador + filtro de estado (sin cambios) ── */}
+          {/* ── Fila 1: buscador + filtro de estado (oculto para ANALISTA) ── */}
+          {!esAnalista && (
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <div style={{
               display: "flex",
@@ -344,6 +345,44 @@ export default function PanelRol() {
               ))}
             </div>
           </div>
+          )}
+
+          {/* ── Filtro por texto (solo ANALISTA) ── */}
+          {esAnalista && (
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <span style={{ fontSize: "13px", color: "#555", fontWeight: "500" }}>🔍 Buscar:</span>
+            <input
+              type="text"
+              placeholder="Buscar por código, módulo, responsable..."
+              value={filtroTexto}
+              onChange={e => setFiltroTexto(e.target.value)}
+              style={{
+                padding: "8px 12px",
+                borderRadius: "6px",
+                border: "1px solid #ddd",
+                fontSize: "13px",
+                width: "280px",
+                outline: "none"
+              }}
+            />
+            {filtroTexto && (
+              <button
+                onClick={() => setFiltroTexto("")}
+                style={{
+                  padding: "7px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #ddd",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  color: "#666"
+                }}
+              >
+                ✕ Limpiar
+              </button>
+            )}
+          </div>
+          )}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
