@@ -308,7 +308,7 @@ export default function PanelRol() {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
 
           {/* ── Fila 1: buscador + filtro de estado (oculto para ANALISTA) ── */}
-          {!esAnalista && (
+          {(!esAnalista && !esSupervisor) && (
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <div style={{
               display: "flex",
@@ -348,7 +348,7 @@ export default function PanelRol() {
           )}
 
           {/* ── Filtro por texto (solo ANALISTA) ── */}
-          {esAnalista && (
+          {(esAnalista || esSupervisor) && (
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <span style={{ fontSize: "13px", color: "#555", fontWeight: "500" }}>🔍 Buscar:</span>
             <input
@@ -385,6 +385,7 @@ export default function PanelRol() {
           )}
         </div>
 
+        {!esLider && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1, minWidth: 0 }}>
           {/* ── Fila 2: filtro por fecha (nuevo) ── */}
           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
@@ -469,11 +470,13 @@ export default function PanelRol() {
           </div>
           </div>
         </div>
+        )}
         
         <button className="panel-btn panel-btn-logout" onClick={handleLogout}>
           Salir
         </button>
       </div>
+      
 
       {cargando ? (
         <div style={{ padding: 40, textAlign: "center", color: "#6b7280" }}>
