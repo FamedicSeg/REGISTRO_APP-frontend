@@ -1634,7 +1634,7 @@ useEffect(() => {
     
     console.log("DEBUG: form.modulo =", form.modulo, "form.turno =", form.turno, "listaLideres =", listaLideres);
     
-    if ((form.modulo === "BOTAS SIMPLES" || form.modulo === "MODULO 2" || form.modulo === "MODULO 10") && form.turno && listaLideres.length > 0) {
+    if ((form.modulo === "BOTAS SIMPLES" || form.modulo === "MODULO 2") && form.turno && listaLideres.length > 0) {
       // Configuración especial para GPA
       let liderFiltrado = [];
       
