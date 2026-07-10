@@ -7,10 +7,10 @@ import ModalRechazo from "./ModalRechazo";
 
 export default function PanelRol() {
 
-  const [filtroTexto, setFiltroTexto] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("todos");
-  const [filtroTipoFecha, setFiltroTipoFecha] = useState("todos"); // "todos" | "dia" | "semana"
-  const [filtroFechaSeleccionada, setFiltroFechaSeleccionada] = useState("");
+  const [filtroTexto, setFiltroTexto] = useState(() => sessionStorage.getItem("panelFiltroTexto") || "");
+  const [filtroEstado, setFiltroEstado] = useState(() => sessionStorage.getItem("panelFiltroEstado") || "todos");
+  const [filtroTipoFecha, setFiltroTipoFecha] = useState(() => sessionStorage.getItem("panelFiltroTipoFecha") || "todos"); // "todos" | "dia" | "semana"
+  const [filtroFechaSeleccionada, setFiltroFechaSeleccionada] = useState(() => sessionStorage.getItem("panelFiltroFecha") || "");
   const [registros, setRegistros] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [_aprobando, setAprobando] = useState(false);
@@ -89,6 +89,23 @@ export default function PanelRol() {
   useEffect(() => {
     cargarRegistros();
   }, [user]);
+
+  // Persistir filtros en sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem("panelFiltroTexto", filtroTexto);
+  }, [filtroTexto]);
+
+  useEffect(() => {
+    sessionStorage.setItem("panelFiltroEstado", filtroEstado);
+  }, [filtroEstado]);
+
+  useEffect(() => {
+    sessionStorage.setItem("panelFiltroTipoFecha", filtroTipoFecha);
+  }, [filtroTipoFecha]);
+
+  useEffect(() => {
+    sessionStorage.setItem("panelFiltroFecha", filtroFechaSeleccionada);
+  }, [filtroFechaSeleccionada]);
 
   // ===============================
   // ELIMINAR REGISTRO
