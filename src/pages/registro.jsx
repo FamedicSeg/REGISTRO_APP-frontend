@@ -1584,7 +1584,7 @@ useEffect(() => {
       setLoadingPersonal(true);
       try {
         const { data } = await api.get("/modulos/personal", {
-          params: { modulo: hoja },
+          params: { modulo: hoja, turno: form.turno },
         });
         
         setListaSupervisores(Array.isArray(data.supervisores) ? data.supervisores : []);
@@ -1626,7 +1626,7 @@ useEffect(() => {
     };
 
     cargarPersonal();
-  }, [form.modulo]);
+  }, [form.modulo, form.turno]);
 
   // Efecto para filtrar líderes según turno (especialmente para GPA)
   useEffect(() => {

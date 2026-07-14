@@ -255,7 +255,7 @@ export default function PanelRol() {
       } else {
         await cargarRegistros();
       }
-      alert("Registro aprobado correctamente");
+      //alert("Registro aprobado correctamente");
     } catch (err) {
       console.error("❌ Error:", err.response?.data || err);
       alert(err.response?.data?.error || "Error al aprobar");
@@ -308,6 +308,8 @@ export default function PanelRol() {
             onClick={() => nav("/estadistica-semanal")}
             style={{
               padding: "10px 20px",
+              width: "145px",
+              height: "60px",
               backgroundColor: "#4c9aaf",
               color: "white",
               border: "none",
@@ -318,7 +320,7 @@ export default function PanelRol() {
               marginRight: "10px"
             }}
           >
-            📊 Ver Estadística Semanal
+            📊 Estadística Semanal
           </button>
         )}
         
