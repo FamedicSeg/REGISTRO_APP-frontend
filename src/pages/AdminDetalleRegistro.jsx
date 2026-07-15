@@ -1738,7 +1738,7 @@ export default function AdminDetalleRegistro() {
               rawData = {};
             }
             
-            const listaIntegrantes = Object.values(rawData).filter(i => i && i.nombre);
+            const listaIntegrantes = Object.values(rawData).filter(i => i && (modoEdicion ? true : i.nombre));
             
             const agregarActividadAIntegrante = (integranteKey) => {
               const nuevaData = JSON.parse(JSON.stringify(rawData));
@@ -1785,14 +1785,32 @@ export default function AdminDetalleRegistro() {
                   
                   const actualizarNombreIntegrante = (nuevoNombre) => {
                     const nuevaData = JSON.parse(JSON.stringify(rawData));
+                    const nombreAnterior = (nuevaData[integranteKey].nombre || "").toUpperCase();
                     nuevaData[integranteKey].nombre = nuevoNombre.toUpperCase();
                     handleActividadesPorIntegranteChange(nuevaData);
+                    if (Array.isArray(form.integrantes)) {
+                      const actualizados = form.integrantes.map(ing =>
+                        (ing.nombre || "").toUpperCase() === nombreAnterior
+                          ? { ...ing, nombre: nuevoNombre.toUpperCase() }
+                          : ing
+                      );
+                      handleArrayChange("integrantes", actualizados);
+                    }
                   };
                   
                   const actualizarCargoIntegrante = (nuevoCargo) => {
                     const nuevaData = JSON.parse(JSON.stringify(rawData));
+                    const nombreIntegrante = (nuevaData[integranteKey].nombre || "").toUpperCase();
                     nuevaData[integranteKey].cargo = nuevoCargo.toUpperCase();
                     handleActividadesPorIntegranteChange(nuevaData);
+                    if (Array.isArray(form.integrantes)) {
+                      const actualizados = form.integrantes.map(ing =>
+                        (ing.nombre || "").toUpperCase() === nombreIntegrante
+                          ? { ...ing, cargo: nuevoCargo.toUpperCase() }
+                          : ing
+                      );
+                      handleArrayChange("integrantes", actualizados);
+                    }
                   };
                   
                   const eliminarIntegrante = () => {
