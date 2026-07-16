@@ -146,7 +146,7 @@ const ArrayItem = ({ item, index, camposEditables, onUpdate, onDelete, modoEdici
           return;
         }
       } catch (prodError) {
-        console.log("❌ No es producto, intentando como insumo...");
+        console.log("❌ No es producto, intentando como insumo...", prodError);
       }
 
       // Si no fue producto, intenta como insumo
@@ -586,7 +586,7 @@ export default function AdminDetalleRegistro() {
     }
   }, [rol]);
 
-  const puedeEditar = useMemo(() => rol === "LÍDER", [rol]);
+  const puedeEditar = useMemo(() => rol === "LÍDER" || rol === "SUPERVISOR", [rol]);
   const puedeEliminar = useMemo(() => rol === "LÍDER" || rol === "JEFE DE PRODUCCIÓN", [rol]);
   const isSupervisor = rol === "SUPERVISOR";
   const isAnalista = rol === "ANALISTA DE PRODUCCIÓN";
