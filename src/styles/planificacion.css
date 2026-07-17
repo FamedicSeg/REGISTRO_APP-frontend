@@ -1,0 +1,37 @@
+.tabla-hoja{
+    border: 1px solid #2e2e2e;
+    border-radius: 0 8px 8px 8px;
+    overflow: auto;
+    max-height: 75vh;
+}
+
+.tabla-planif{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+.tabla-planif th, .tabla-planif td{
+    border: 0.2px solid #121212;
+    padding: 8px;
+    text-align: left;
+    text-align: center;
+}
+
+.btn-volver-container5{
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.btn-volver5{
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    width: 250px;
+    height: 40px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
