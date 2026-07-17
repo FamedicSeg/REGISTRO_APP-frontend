@@ -139,7 +139,7 @@ export default function PanelRol() {
     ["ADMINISTRADOR","JEFE DE PRODUCCIÓN","ANALISTA DE PRODUCCIÓN","SUPERVISOR","LÍDER"].includes(rol)
       ? registros.filter((r) => {
           // ANALISTA DE PRODUCCIÓN, SUPERVISOR y LÍDER no ven registros Aprobados
-          if ((esLider || esSupervisor || esAnalista) && r.estado?.toLowerCase().includes("aprob")) {
+          if (( esSupervisor || esAnalista) && r.estado?.toLowerCase().includes("aprob")) {
             return false;
           }
 
