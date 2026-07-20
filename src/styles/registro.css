@@ -623,3 +623,9 @@ input, select, textarea {
   max-width: 100%;
   box-sizing: border-box;
 }
+
+.actividad-normal-cantidades{
+  display: grid;
+  grid-template-columns: 4fr 4fr;
+  gap: 20px;  
+}

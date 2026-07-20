@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { api } from "../services/api";
 import "../styles/registro.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import logo_safemed from "../assets/logo_safemed.jpg";
 import logo3 from "../assets/logo3.png";
@@ -32,6 +32,8 @@ const MODULO_TO_HOJA ={
 
 export default function Registro() {
   const nav = useNavigate();
+  const location = useLocation();
+  const yaAplicoCopia = useRef(false);
 
   const INITIAL_FORM = {
     fecha: "",
@@ -128,6 +130,7 @@ export default function Registro() {
 
   const [form, setForm] = useState(INITIAL_FORM);
   const [msg, setMsg] = useState("");
+  const [bannerCopia, setBannerCopia] = useState(false);
   const [_loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [ops, setOps] = useState([]);
@@ -335,6 +338,115 @@ export default function Registro() {
     const dd = String(hoy.getDate()).padStart(2, "0");
     setForm((p) => ({ ...p, fecha: `${yyyy}-${mm}-${dd}` }));
   }, []);
+
+  // Prellenar formulario si se está copiando un registro
+  useEffect(() => {
+    if (yaAplicoCopia.current) return;
+    const datosCopiados = location.state?.copiarDesde;
+    if (!datosCopiados) return;
+    yaAplicoCopia.current = true;
+
+    const parsear = (campo) => {
+      const val = datosCopiados[campo];
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      try { return JSON.parse(val); } catch { return []; }
+    };
+
+    const insumosCopiados = parsear('insumos');
+    const etiquetasCopiadas = parsear('etiquetas');
+    const integrantesCopiados = parsear('integrantes');
+    const maquinariasCopiadas = parsear('maquinarias');
+    const reposicionCopiada = parsear('reposicion_no_conforme');
+
+    let actividadesIntegrantesCopiadas = {};
+    const actPorInt = datosCopiados.actividades_por_integrante;
+    if (actPorInt) {
+      let parsed = actPorInt;
+      if (typeof actPorInt === 'string') {
+        try { parsed = JSON.parse(actPorInt); } catch { parsed = {}; }
+      }
+      if (typeof parsed === 'object' && !Array.isArray(parsed)) {
+        Object.keys(parsed).forEach(key => {
+          const idx = parseInt(key);
+          if (!isNaN(idx)) {
+            actividadesIntegrantesCopiadas[`integrante_${idx}`] = parsed[key];
+          } else if (key.startsWith('integrante_')) {
+            actividadesIntegrantesCopiadas[key] = parsed[key];
+          }
+        });
+      }
+    }
+
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    const fechaHoy = `${yyyy}-${mm}-${dd}`;
+
+    let actividadesTexto = datosCopiados.detalles_actividades || "";
+    if (Array.isArray(actividadesTexto)) {
+      actividadesTexto = actividadesTexto.join('\n');
+    }
+
+    setForm(prev => ({
+      ...prev,
+      responsable: datosCopiados.responsable || "",
+      supervisor: datosCopiados.supervisor || "",
+      op: datosCopiados.op || "",
+      turno: datosCopiados.turno || "",
+      modulo: datosCopiados.modulo || "",
+      codigo_producto: datosCopiados.codigo_producto || "",
+      descripcion: datosCopiados.descripcion || "",
+      area: datosCopiados.area || "",
+      confeccion: datosCopiados.confeccion || "",
+      automatica: datosCopiados.automatica || "",
+      personal_asignado: datosCopiados.personal_asignado || "",
+      personal_presente: datosCopiados.personal_presente || "",
+      personal_otro: datosCopiados.personal_otro || "",
+      cliente: datosCopiados.cliente || "",
+      lotePrincipal: datosCopiados.lotePrincipal || "",
+      loteSecundario: datosCopiados.loteSecundario || "",
+      cantidad_elaborado: datosCopiados.cantidad_elaborado || "",
+      cantidad_proceso: datosCopiados.cantidad_proceso || "",
+      cantidad_merma: datosCopiados.cantidad_merma || "",
+      hora_inicio: datosCopiados.hora_inicio || "",
+      hora_fin: datosCopiados.hora_fin || "",
+      hora_planificada: datosCopiados.hora_planificada || "0",
+      destino: datosCopiados.destino || "",
+      n_cliente: datosCopiados.n_cliente || "",
+      esteril: datosCopiados.esteril || "",
+      talla: datosCopiados.talla || "",
+      leyenda: datosCopiados.leyenda || "",
+      leyenda_si: datosCopiados.leyenda_si || "",
+      leyenda_otra: datosCopiados.leyenda_otra || "",
+      tipo: datosCopiados.tipo || "",
+      descripcion_lyda: datosCopiados.descripcion_lyda || "",
+      cantidad_planificada: datosCopiados.cantidad_planificada || "",
+      referencia: datosCopiados.referencia || "",
+      descripcion_referencia: datosCopiados.descripcion_referencia || "",
+      fecha_final_producto: datosCopiados.fecha_final_producto || "",
+      detalles_actividades: actividadesTexto,
+      cantidad_elaborada_detalles: datosCopiados.cantidad_elaborada_detalles || "",
+      observaciones: datosCopiados.observaciones || "",
+      fecha: fechaHoy,
+      aprobaciones: false,
+      uno: false,
+      dos: false,
+      tres: false,
+    }));
+
+    if (insumosCopiados.length > 0) setInsumos(insumosCopiados);
+    if (etiquetasCopiadas.length > 0) setEtiqueta(etiquetasCopiadas);
+    if (integrantesCopiados.length > 0) setIntegrantes(integrantesCopiados);
+    if (maquinariasCopiadas.length > 0) setMaquinarias(maquinariasCopiadas);
+    if (reposicionCopiada.length > 0) setReposicionNoConforme(reposicionCopiada);
+    if (Object.keys(actividadesIntegrantesCopiadas).length > 0) {
+      setActividadesIntegrantes(actividadesIntegrantesCopiadas);
+    }
+
+    setBannerCopia(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onChange = (e) => {
     const { name, value, type } = e.target;
@@ -1704,6 +1816,43 @@ const decimalParaHorasMinutos = (decimal) => {
       {msg && (
         <div className={`toast ${msg.toLowerCase().includes("error") ? "error" : "success"}`}>
           {msg}
+        </div>
+      )}
+
+      {bannerCopia && (
+        <div style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          backgroundColor: '#eff6ff',
+          border: '1px solid #3b82f6',
+          borderRadius: 8,
+          padding: '12px 18px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          boxShadow: '0 2px 8px rgba(59,130,246,0.15)'
+        }}>
+          <span style={{ color: '#1d4ed8', fontWeight: 600, fontSize: 14 }}>
+            📋 Registro copiado — revisa y modifica los datos antes de guardar
+          </span>
+          <button
+            type="button"
+            onClick={() => setBannerCopia(false)}
+            style={{
+              background: 'transparent',
+              border: '1px solid #3b82f6',
+              borderRadius: 6,
+              color: '#1d4ed8',
+              cursor: 'pointer',
+              fontSize: 13,
+              padding: '4px 10px'
+            }}
+          >
+            Entendido ✕
+          </button>
         </div>
       )}
       
@@ -3101,7 +3250,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 border: "1px solid #dee2e6", 
                 borderRadius: "8px",
                 backgroundColor: "#f8f9fa",
-                position: "relative"
+                position: "relative",
               }}>
                 <button
                   type="button"
@@ -3133,7 +3282,7 @@ const decimalParaHorasMinutos = (decimal) => {
                         value={totalPlanificado}
                         readOnly
                         style={
-                          { width: "100%", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" }}
+                          { width: "150px", padding: "10px", border: "1px solid #28a745", borderRadius: "4px", backgroundColor: "#e9ecef", fontSize: "12px", fontWeight: "bold", color: "#0f5132" }}
                       />
                     </div>
                     <div>
@@ -3143,7 +3292,7 @@ const decimalParaHorasMinutos = (decimal) => {
                         value={totalElaborado}
                         readOnly
                         style={
-                          { width: "100%", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }}
+                          { width: "150px", padding: "10px", border: `1px solid ${totalElaborado < totalPlanificado ? '#dc3545' : '#28a745'}`, borderRadius: "4px", backgroundColor: totalElaborado < totalPlanificado ? '#fff5f5' : '#e9ecef', fontSize: "12px", fontWeight: "bold", color: totalElaborado < totalPlanificado ? '#dc3545' : '#28a745' }}
                       />
                     </div>
                   </div>

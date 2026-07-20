@@ -221,6 +221,17 @@ export default function PanelRol() {
     nav(`/admin/registros/${id}`);
   };
 
+  const copiarRegistro = async (id) => {
+    try {
+      const res = await api.get(`/registros/${id}`);
+      const datosRegistro = res.data.registro || res.data;
+      nav("/registro", { state: { copiarDesde: datosRegistro } });
+    } catch (err) {
+      console.error("Error al copiar registro:", err);
+      alert("No se pudo cargar el registro para copiar");
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("user");
     nav("/login");
@@ -550,7 +561,7 @@ export default function PanelRol() {
                   <td>{r.loteUnido}</td>
                   {esAnalista && <td>{r.cantidad_planificada}</td>}
                   {esAnalista && <td>{r.cantidad_elaborado}</td>}
-                  <td>
+                  <td  className="estado-tb">
                     <span className={`panel-estado ${r.estado}`}>
                       {r.estado}
                     </span>
@@ -564,6 +575,25 @@ export default function PanelRol() {
                       >
                         Ver
                       </button>
+
+                      {/* COPIAR - Solo LÍDER y JEFE DE PRODUCCIÓN */}
+                      {(esLider || rol === "JEFE DE PRODUCCIÓN") && (
+                        <button
+                          style={{
+                            padding: "6px 12px",
+                            background: "#6366f1",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            fontSize: 13,
+                          }}
+                          onClick={() => copiarRegistro(r.id)}
+                        >
+                          📋 Copiar
+                        </button>
+                      )}
                       
                       {/* ELIMINAR - Solo LÍDER/JEFE en estado pendiente_SUPERVISOR */}
                       {puedeEliminar && esEstadoPendienteSupervisor(r.estado) && (
