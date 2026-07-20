@@ -34,6 +34,8 @@ export default function Registro() {
   const nav = useNavigate();
   const location = useLocation();
   const yaAplicoCopia = useRef(false);
+  const protegerActividadesCopia = useRef(false);
+  const protegerModuloCopia = useRef(false);
 
   const INITIAL_FORM = {
     fecha: "",
@@ -387,6 +389,11 @@ export default function Registro() {
     let actividadesTexto = datosCopiados.detalles_actividades || "";
     if (Array.isArray(actividadesTexto)) {
       actividadesTexto = actividadesTexto.join('\n');
+    } else if (typeof actividadesTexto === 'string' && actividadesTexto.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(actividadesTexto);
+        if (Array.isArray(parsed)) actividadesTexto = parsed.join('\n');
+      } catch { /* mantener como string */ }
     }
 
     setForm(prev => ({
@@ -443,6 +450,13 @@ export default function Registro() {
     if (reposicionCopiada.length > 0) setReposicionNoConforme(reposicionCopiada);
     if (Object.keys(actividadesIntegrantesCopiadas).length > 0) {
       setActividadesIntegrantes(actividadesIntegrantesCopiadas);
+    }
+    // Activar protecciones para que los useEffects reactivos no sobreescriban lo copiado
+    if (datosCopiados.codigo_producto) {
+      protegerActividadesCopia.current = true;
+    }
+    if (datosCopiados.modulo) {
+      protegerModuloCopia.current = true;
     }
 
     setBannerCopia(true);
@@ -512,7 +526,9 @@ export default function Registro() {
     
     if (!codigo_producto || codigo_producto.length < 3) {
       setListaInsumos([]);
-      setInsumos([]);
+      if (!protegerActividadesCopia.current) {
+        setInsumos([]);
+      }
       setListaNoConforme([]);
       return;
     }
@@ -568,10 +584,12 @@ useEffect(() => {
   const codigo_producto = form.codigo_producto?.trim() || "";
 
   if (!codigo_producto || codigo_producto.length < 3) {
-    setForm(prev => ({
-      ...prev,
-      detalles_actividades: "",
-    }));
+    if (!protegerActividadesCopia.current) {
+      setForm(prev => ({
+        ...prev,
+        detalles_actividades: "",
+      }));
+    }
     setMostrarCheckboxes(false);
     setListaActividadesEQE([]);
     setActividadesSeleccionadas({});
@@ -637,26 +655,35 @@ useEffect(() => {
         const resProcesos = await api.get("/procesos/producto", {
           params: { codigo: codigo_producto },
         });
-        
-        if (resProcesos.data && resProcesos.data.detalles) {
-          const actividadesTexto = resProcesos.data.detalles;
-          setForm(prev => ({
-            ...prev,
-            detalles_actividades: actividadesTexto,
-          }));
+
+        if (protegerActividadesCopia.current) {
+          // Venimos de una copia: no sobreescribir las actividades copiadas
+          protegerActividadesCopia.current = false;
+        } else {
+          if (resProcesos.data && resProcesos.data.detalles) {
+            const actividadesTexto = resProcesos.data.detalles;
+            setForm(prev => ({
+              ...prev,
+              detalles_actividades: actividadesTexto,
+            }));
+          } else {
+            setForm(prev => ({
+              ...prev,
+              detalles_actividades: "",
+            }));
+          }
+          setActividadesIntegrantes({});
+        }
+      } catch (err) {
+        console.error("Error cargando procesos del producto:", err);
+        if (protegerActividadesCopia.current) {
+          protegerActividadesCopia.current = false;
         } else {
           setForm(prev => ({
             ...prev,
             detalles_actividades: "",
           }));
         }
-        setActividadesIntegrantes({});
-      } catch (err) {
-        console.error("Error cargando procesos del producto:", err);
-        setForm(prev => ({
-          ...prev,
-          detalles_actividades: "",
-        }));
       }
     };
 
@@ -1683,6 +1710,7 @@ useEffect(() => {
     const hoja = MODULO_TO_HOJA[form.modulo];
     
     if (!hoja) {
+      if (protegerModuloCopia.current) return;
       setListaSupervisores([]);
       setListaIntegrantes([]);
       setListaLideres([]);
@@ -1711,18 +1739,23 @@ useEffect(() => {
           cargo: item.cargo || "",
         }));
 
-        setIntegrantes(nuevosIntegrantes);
-        
-        const primerLider = Array.isArray(data.lideres) && data.lideres.length > 0 ? data.lideres[0] : "";
-        const primerSupervisor = Array.isArray(data.supervisores) && data.supervisores.length > 0 ? data.supervisores[0] : "";
-        
-        setForm((p) => ({
-          ...p, 
-          responsable: primerLider,
-          supervisor: primerSupervisor
-        }));
+        if (protegerModuloCopia.current) {
+          // Venimos de una copia: no sobreescribir integrantes/actividades/responsable copiados
+          protegerModuloCopia.current = false;
+        } else {
+          setIntegrantes(nuevosIntegrantes);
 
-        setActividadesIntegrantes({});
+          const primerLider = Array.isArray(data.lideres) && data.lideres.length > 0 ? data.lideres[0] : "";
+          const primerSupervisor = Array.isArray(data.supervisores) && data.supervisores.length > 0 ? data.supervisores[0] : "";
+
+          setForm((p) => ({
+            ...p,
+            responsable: primerLider,
+            supervisor: primerSupervisor
+          }));
+
+          setActividadesIntegrantes({});
+        }
 
       } catch (err) {
         console.error("❌ Error cargando personal:", err);
