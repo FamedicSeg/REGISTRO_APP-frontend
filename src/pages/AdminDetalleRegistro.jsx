@@ -1970,7 +1970,28 @@ export default function AdminDetalleRegistro() {
                                    </td>
                                   <td style={{ padding: 10, textAlign: "center", fontSize: 13 }}>
                                     {modoEdicion && puedeEditar ? (
-                                      <input type="number" value={act.cantidad_elaborada || ""} onChange={(e) => actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', e.target.value)} style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }} />
+                                      <input
+                                        type="number"
+                                        value={act.cantidad_elaborada || ""}
+                                        onChange={(e) => {
+                                          const cantidadElaborada = e.target.value;
+                                          actualizarActividad(integranteKey, actIdx, 'cantidad_elaborada', cantidadElaborada);
+
+                                          // Si no hay cantidad planificada, calcular horas con la elaborada
+                                          const esManualHoras = manualHorasPersona[`${integranteKey}_${actIdx}`];
+                                          if (!act.cantidad_planificada && !esManualHoras && cantidadElaborada) {
+                                            const actividadBase = actividadesConHoras.find(a => a.actividad === act.actividad);
+                                            const cantidadBase = parseFloat(actividadBase?.cantidad_base);
+                                            if (cantidadBase) {
+                                              const horasPersona = decimalParaHorasMinutos(parseFloat(cantidadElaborada) / cantidadBase);
+                                              if (horasPersona) {
+                                                actualizarActividad(integranteKey, actIdx, 'horas_persona', horasPersona);
+                                              }
+                                            }
+                                          }
+                                        }}
+                                        style={{ width: 70, padding: "4px 6px", borderRadius: 4, border: "1px solid #d1d5db", fontSize: 12, textAlign: "center" }}
+                                      />
                                     ) : (
                                       act.cantidad_elaborada || ""
                                     )}

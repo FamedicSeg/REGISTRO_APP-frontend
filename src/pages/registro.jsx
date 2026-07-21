@@ -3590,7 +3590,23 @@ const decimalParaHorasMinutos = (decimal) => {
                         type="number"
                         min="0"
                         value={actividad.cantidad_elaborada || ''}
-                        onChange={(e) => actualizarActividadIntegrante(integranteIndex, actividadIndex, "cantidad_elaborada", e.target.value)}
+                        onChange={(e) => {
+                          const cantidadElaborada = e.target.value;
+                          actualizarActividadIntegrante(integranteIndex, actividadIndex, "cantidad_elaborada", cantidadElaborada);
+
+                          // Si no hay cantidad planificada, calcular horas con la elaborada
+                          const esManualHoras = manualHorasPersona[`${integranteIndex}_${actividadIndex}`];
+                          if (!actividad.cantidad_planificada && !esManualHoras && cantidadElaborada) {
+                            const actividadBase = actividadesConHoras.find(a => a.actividad === actividad.actividad);
+                            const cantidadBase = parseFloat(actividadBase?.cantidad_base);
+                            if (cantidadBase) {
+                              const horasPersona = decimalParaHorasMinutos(parseFloat(cantidadElaborada) / cantidadBase);
+                              if (horasPersona) {
+                                actualizarActividadIntegrante(integranteIndex, actividadIndex, "horas_persona", horasPersona);
+                              }
+                            }
+                          }
+                        }}
                         placeholder="CANT. ELABOR."
                         style={
                           { padding: "8px", border: "1px solid #ced4da", borderRadius: "4px", width: "100%", fontSize: "11px" }}
