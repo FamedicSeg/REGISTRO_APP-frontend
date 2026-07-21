@@ -20,6 +20,7 @@ const MODULO_TO_HOJA ={
     "MODULO 10":"MODULO 10",
     "VARIOS 1":"VARIOS 1",
     "VARIOS 2":"VARIOS 2",
+    "VARIOS 3": "VARIOS 3",
     "ESTAMPADO":"ESTAMPADO",
     "BOTAS SIMPLES":"BOTAS SIMPLES",
     "SPA":"SPA",
@@ -1779,7 +1780,7 @@ useEffect(() => {
     
     console.log("DEBUG: form.modulo =", form.modulo, "form.turno =", form.turno, "listaLideres =", listaLideres);
     
-    if ((form.modulo === "BOTAS SIMPLES" || form.modulo === "MODULO 2" || form.modulo === "MODULO 3" || form.modulo === "SELLADO") && form.turno && listaLideres.length > 0) {
+    if ((form.modulo === "BOTAS SIMPLES" || form.modulo === "MODULO 1" || form.modulo === "MODULO 4" || form.modulo === "SELLADO" || form.modulo === "VARIOS 1") && form.turno && listaLideres.length > 0) {
       // Configuración especial para GPA
       let liderFiltrado = [];
       
@@ -2064,6 +2065,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 <option value="MODULO 10">MÓDULO 10</option>
                 <option value="VARIOS 1">VARIOS 1</option>
                 <option value="VARIOS 2">VARIOS 2</option>
+                <option value="VARIOS 3">VARIOS 3</option>
                 <option value="ESTAMPADO">ESTAMPADO</option>
                 <option value="BOTAS SIMPLES">BOTAS SIMPLES</option>
                 <option value="SPA">SPA</option>
