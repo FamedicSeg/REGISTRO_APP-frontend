@@ -37,6 +37,7 @@ export default function Registro() {
   const yaAplicoCopia = useRef(false);
   const protegerActividadesCopia = useRef(false);
   const protegerModuloCopia = useRef(false);
+  const protegerInsumosCopia = useRef(false);
 
   const INITIAL_FORM = {
     fecha: "",
@@ -444,7 +445,10 @@ export default function Registro() {
       tres: false,
     }));
 
-    if (insumosCopiados.length > 0) setInsumos(insumosCopiados);
+    if (insumosCopiados.length > 0) {
+      setInsumos(insumosCopiados);
+      protegerInsumosCopia.current = true;
+    }
     if (etiquetasCopiadas.length > 0) setEtiqueta(etiquetasCopiadas);
     if (integrantesCopiados.length > 0) setIntegrantes(integrantesCopiados);
     if (maquinariasCopiadas.length > 0) setMaquinarias(maquinariasCopiadas);
@@ -548,6 +552,16 @@ export default function Registro() {
           lista = data;
         }
         setListaInsumos(lista);
+
+        if (protegerInsumosCopia.current) {
+          protegerInsumosCopia.current = false;
+          const opciones = lista.map((insumo) => ({
+            codigo: insumo.codigo || insumo,
+            descripcion: insumo.descripcion || "",
+          }));
+          setListaNoConforme(opciones);
+          return;
+        }
         
         const nuevosInsumos = lista.map((insumo, index) => ({
           id: Date.now() + index,
