@@ -659,7 +659,7 @@ export default function AdminDetalleRegistro() {
       position -= pageHeight;
     }
     
-    pdf.save(`registro_${registro.op || registro.id}_${registro.modulo}.pdf`);
+    pdf.save(`registro_${registro.op || registro.id}_${(registro.modulo || '').replace(/\s+/g, '_')}.pdf`);
     
     toast.textContent = '✅ PDF generado correctamente';
     toast.style.background = '#27ae60';
