@@ -148,11 +148,12 @@ export default function Registro() {
   const [_listaInsumos, setListaInsumos] = useState([]);
   const [loadingInsumos, setLoadingInsumos] = useState(false);
   const [_cargandoDescripciones, setCargandoDescripciones] = useState(false);
-  const [_listaSupervisores, setListaSupervisores] = useState([]);
+  const [listaSupervisores, setListaSupervisores] = useState([]);
   const [_listaLideres, setListaLideres] = useState([]);
   const [_listaIntegrantes, setListaIntegrantes] = useState([]);
   const [_loadingPersonal, setLoadingPersonal] = useState(false);
   const [lideresFilterados, setLideresFilterados] = useState([]);
+  const [supervisoresFilterados, setSupervisoresFilterados] = useState([]);
   const [cantidadesActividades, setCantidadesActividades] = useState({});
   const [actividadesIntegrantes, setActividadesIntegrantes] = useState({});
   const [nuevoDetalleActividad, setNuevoDetalleActividad] = useState("");
@@ -1794,7 +1795,7 @@ useEffect(() => {
     
     console.log("DEBUG: form.modulo =", form.modulo, "form.turno =", form.turno, "listaLideres =", listaLideres);
     
-    if ((form.modulo === "BOTAS SIMPLES" || form.modulo === "MODULO 1" || form.modulo === "MODULO 4" || form.modulo === "SELLADO" || form.modulo === "VARIOS 1") && form.turno && listaLideres.length > 0) {
+    if ((form.modulo === "BOTAS SIMPLES" || form.modulo === "MODULO 1" || form.modulo === "MODULO 3" || form.modulo === "SELLADO" || form.modulo === "MODULO 10" || form.modulo === "GPA") && form.turno && listaLideres.length > 0) {
       // Configuración especial para GPA
       let liderFiltrado = [];
       
@@ -1844,6 +1845,63 @@ useEffect(() => {
       console.log("DEBUG: No es GPA o turno vacío - mostrando todos los líderes");
     }
   }, [form.modulo, form.turno, _listaLideres]);
+
+  // Efecto para filtrar supervisor según turno (especialmente para GPA)
+  useEffect(() => {
+    const _supervisores = Array.isArray(listaSupervisores) ? listaSupervisores : [];
+    
+    console.log("DEBUG: form.modulo =", form.modulo, "form.turno =", form.turno, "listaSupervisores =", _supervisores);
+    
+    if ((form.modulo === "MODULO 1" || form.modulo === "MODULO 3") && form.turno && _supervisores.length > 0) {
+      // Configuración especial para GPA
+      let supervisorFiltrado = [];
+      
+      if (form.turno === "1") {
+        // Turno 1: Primer supervisor o búsqueda por keywords
+        supervisorFiltrado = _supervisores.filter(supervisor => 
+          supervisor.toLowerCase().includes("llumiquinga") || 
+          supervisor.toLowerCase().includes("silvia") ||
+          supervisor.toLowerCase().includes("dolores")
+        );
+        // Si no encuentra por keywords, usar el primer supervisor
+        if (supervisorFiltrado.length === 0 && _supervisores.length >= 1) {
+          supervisorFiltrado = [_supervisores[0]];
+          console.log("DEBUG: Turno 1 - usando primer supervisor por defecto:", supervisorFiltrado[0]);
+        } else {
+          console.log("DEBUG: Turno 1 - encontrado por keywords:", supervisorFiltrado[0]);
+        }
+      } else if (form.turno === "2") {
+        // Turno 2: Segundo supervisor o búsqueda por keywords
+        supervisorFiltrado = _supervisores.filter(supervisor => 
+          supervisor.toLowerCase().includes("de la cruz") || 
+          supervisor.toLowerCase().includes("nancy") ||
+          supervisor.toLowerCase().includes("lucía")
+        );
+        // Si no encuentra por keywords, usar el segundo supervisor
+        if (supervisorFiltrado.length === 0 && _supervisores.length >= 2) {
+          supervisorFiltrado = [_supervisores[1]];
+          console.log("DEBUG: Turno 2 - usando segundo supervisor por defecto:", supervisorFiltrado[0]);
+        } else if (supervisorFiltrado.length === 0 && _supervisores.length === 1) {
+          supervisorFiltrado = [_supervisores[0]];
+          console.log("DEBUG: Turno 2 - solo hay 1 supervisor disponible:", supervisorFiltrado[0]);
+        } else {
+          console.log("DEBUG: Turno 2 - encontrado por keywords:", supervisorFiltrado[0]);
+        }
+      }
+      
+      console.log("DEBUG: supervisorFiltrado final =", supervisorFiltrado);
+      setSupervisoresFilterados(supervisorFiltrado);
+      
+      // Seleccionar automáticamente el supervisor del turno
+      if (supervisorFiltrado.length > 0) {
+        setForm(prev => ({ ...prev, supervisor: supervisorFiltrado[0] }));
+      }
+    } else {
+      // Para otros módulos, mostrar todos los supervisores
+      setSupervisoresFilterados(_supervisores);
+      console.log("DEBUG: No es GPA o turno vacío - mostrando todos los supervisores");
+    }
+  }, [form.modulo, form.turno, listaSupervisores]);
 
   // Agrega esta función ANTES del return
 const decimalParaHorasMinutos = (decimal) => {
@@ -2123,15 +2181,28 @@ const decimalParaHorasMinutos = (decimal) => {
 
               <div className="form-group">
                 <label htmlFor="supervisor">SUPERVISOR@:</label>
-                <input
-                  placeholder="SELECCIONA PRIMERO EL MÓDULO..."
-                  type="text"
-                  id="supervisor" 
+                <select
+                  id="supervisor"
                   name="supervisor"
                   value={form.supervisor || ""}
+                  onChange={onChange}
                   disabled={!form.modulo}
-                  style={{ backgroundColor: !form.modulo ? "#f3f4f6" : "#e9ecef", cursor: "not-allowed", fontSize: "12px" }}
-                />
+                  style={{
+                    backgroundColor: !form.modulo ? "#f3f4f6" : "#ffffff",
+                    cursor: !form.modulo ? "not-allowed" : "pointer",
+                    fontSize: "12px",
+                    padding: "8px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px"
+                  }}
+                >
+                  <option value="">SELECCIONA EL SUPERVISOR...</option>
+                  {supervisoresFilterados.map((supervisor, idx) => (
+                    <option key={idx} value={supervisor}>
+                      {supervisor}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
