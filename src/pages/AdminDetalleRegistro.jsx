@@ -481,6 +481,7 @@ export default function AdminDetalleRegistro() {
                "MODULO 10",
                 "VARIOS 1",
                 "VARIOS 2",
+                "VARIOS 3",
                 "ESTAMPADO",
                 "BOTAS SIMPLES",
                 "SPA",
