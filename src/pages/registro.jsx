@@ -1859,10 +1859,7 @@ useEffect(() => {
       if (form.turno === "1") {
         // Turno 1: Primer supervisor o búsqueda por keywords
         supervisorFiltrado = _supervisores.filter(supervisor => 
-          supervisor.toLowerCase().includes("ango") || 
-          supervisor.toLowerCase().includes("ana") ||
-          supervisor.toLowerCase().includes("lorena") ||
-          supervisor.toLowerCase().includes("sofia") 
+          supervisor.toLowerCase().includes("sofia")
         );
         // Si no encuentra por keywords, usar el primer supervisor
         if (supervisorFiltrado.length === 0 && _supervisores.length >= 1) {
@@ -1874,8 +1871,6 @@ useEffect(() => {
       } else if (form.turno === "2") {
         // Turno 2: Segundo supervisor o búsqueda por keywords
         supervisorFiltrado = _supervisores.filter(supervisor => 
-          supervisor.toLowerCase().includes("ana") || 
-          supervisor.toLowerCase().includes("lorena") ||
           supervisor.toLowerCase().includes("sofia")
         );
         // Si no encuentra por keywords, usar el segundo supervisor
