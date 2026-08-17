@@ -1795,7 +1795,7 @@ useEffect(() => {
     
     console.log("DEBUG: form.modulo =", form.modulo, "form.turno =", form.turno, "listaLideres =", listaLideres);
     
-    if ((form.modulo === "MODULO 1" || form.modulo === "MODULO 2" || form.modulo === "MODULO 3" || form.modulo === "SELLADO" || form.modulo === "MODULO 10" || form.modulo === "BOTAS SIMPLES"|| form.modulo === "GPA" || form.modulo === "MODULO 7") && form.turno && listaLideres.length > 0) {
+    if ((form.modulo === "MODULO 1" || form.modulo === "MODULO 2" || form.modulo === "MODULO 3" || form.modulo === "SELLADO" || form.modulo === "MODULO 10" || form.modulo === "BOTAS SIMPLES"|| form.modulo === "GPA" || form.modulo === "MODULO 7"|| form.modulo === "VARIOS 1") && form.turno && listaLideres.length > 0) {
       // Configuración especial para GPA
       let liderFiltrado = [];
       
