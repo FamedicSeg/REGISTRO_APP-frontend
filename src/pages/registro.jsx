@@ -1861,6 +1861,7 @@ useEffect(() => {
         supervisorFiltrado = _supervisores.filter(supervisor => 
           supervisor.toLowerCase().includes("ango") || 
           supervisor.toLowerCase().includes("nancy") ||
+          supervisor.toLowerCase().includes("silvia") ||
           supervisor.toLowerCase().includes("dolores")
         );
         // Si no encuentra por keywords, usar el primer supervisor
