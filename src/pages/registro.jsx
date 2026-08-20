@@ -2912,7 +2912,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="fecha_final_producto" >FECHA FINAL DE PRODUCTO TERMINADO:</label>
-                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={{fontSize:"14px"}, {fontSize:"14px", padding:"12px"}} />
+                  <input type="date" id="fecha_final_producto" name="fecha_final_producto" value={form.fecha_final_producto} onChange={onChange} style={{fontSize:"14px", padding:"12px"}} />
                 </div>
               </div>
             </div>
@@ -3043,6 +3043,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="SELLADORAS">SELLADORAS</option>
                     <option value="M. SELLADORA NEUMÁTICA">M. SELLADORA NEUMÁTICA</option>
                     <option value="MÁQUINA DE BOLSOS O FUNDA">MÁQUINA DE BOLSOS O FUNDA</option>
+                    <option value="MÁQUINA ENROLLADORA DE GASAS">MÁQUINA ENROLLADORA DE GASAS</option>
                     <option value="VIDEO JET">VIDEO JET</option>
                     <option value="GORROS TIPO ARCODEÓN">GORROS TIPO ARCODEÓN</option>
                     <option value="ESTAMPADO">ESTAMPADO</option>
