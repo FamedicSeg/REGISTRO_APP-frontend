@@ -314,7 +314,7 @@ export default function PanelRol() {
         </div>
         
         {/* 🆕 BOTÓN PARA ESTADÍSTICAS SEMANALES - Solo JEFE DE PRODUCCIÓN */}
-        {(rol === "JEFE DE PRODUCCIÓN") && (
+        {(rol === "JEFE DE PRODUCCIÓN" || esLider) && (
           <button
             onClick={() => nav("/estadistica-semanal")}
             style={{
@@ -577,7 +577,7 @@ export default function PanelRol() {
                       </button>
 
                       {/* COPIAR - Solo LÍDER y JEFE DE PRODUCCIÓN */}
-                      {(esLider || rol === "JEFE DE PRODUCCIÓN") && (
+                      {(esLider) && (
                         <button
                           style={{
                             padding: "6px 12px",
