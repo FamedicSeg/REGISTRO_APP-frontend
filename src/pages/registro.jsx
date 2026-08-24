@@ -1802,7 +1802,7 @@ useEffect(() => {
       if (form.turno === "1") {
         // Turno 1: Primer líder o búsqueda por keywords
         liderFiltrado = listaLideres.filter(lider => 
-          lider.toLowerCase().includes("so")
+          lider.toLowerCase().includes("vb")
         );
         // Si no encuentra por keywords, usar el primer líder
         if (liderFiltrado.length === 0 && listaLideres.length >= 1) {
@@ -1814,7 +1814,7 @@ useEffect(() => {
       } else if (form.turno === "2") {
         // Turno 2: Segundo líder o búsqueda por keywords
         liderFiltrado = listaLideres.filter(lider => 
-          lider.toLowerCase().includes("al")
+          lider.toLowerCase().includes("mn")
         );
         // Si no encuentra por keywords, usar el segundo líder
         if (liderFiltrado.length === 0 && listaLideres.length >= 2) {
