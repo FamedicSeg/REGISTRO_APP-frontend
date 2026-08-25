@@ -796,7 +796,7 @@ useEffect(() => {
   
     try {
       const { data } = await api.get("/insumos/lote", {
-        params: { codigo: codigoLimpio },
+        params: { codigo: codigoLimpio, fecha: form.fecha },
       });
       
       if (data.error) {
@@ -1295,7 +1295,7 @@ useEffect(() => {
     const t = setTimeout(async () => {
       try {
         const { data } = await api.get("/lote/info", {
-          params: { codigo },
+          params: { codigo, fecha: form.fecha },
         });
 
         if (data && data.loteInfo !== undefined) {
@@ -1319,7 +1319,7 @@ useEffect(() => {
     }, 400);
 
     return () => clearTimeout(t);
-  }, [form.codigo_producto]);
+  }, [form.codigo_producto, form.fecha]);
 
   const handleActualizar = async () => {
     setRefreshing(true);
@@ -1354,7 +1354,9 @@ useEffect(() => {
       const hoja = MODULO_TO_HOJA[snapForm.modulo];
       if (hoja) {
         try {
-          const { data } = await api.get("/modulos/personal", { params: { modulo: hoja } });
+          const { data } = await api.get("/modulos/personal", {
+            params: { modulo: hoja, turno: snapForm.turno, fecha: snapForm.fecha }
+          });
           setListaSupervisores(Array.isArray(data.supervisores) ? data.supervisores : []);
           setListaLideres(Array.isArray(data.lideres) ? data.lideres : []);
           setListaIntegrantes(Array.isArray(data.integrantes) ? data.integrantes : []);
@@ -1387,7 +1389,7 @@ useEffect(() => {
         // Recargar lote del producto
         try {
           const { data } = await api.get("/lote/info", {
-            params: { codigo: snapForm.codigo_producto.trim() },
+            params: { codigo: snapForm.codigo_producto.trim(), fecha: snapForm.fecha },
           });
           if (data && data.loteInfo !== undefined) {
             snapForm.lotePrincipal = String(data.loteInfo).trim();
@@ -1401,7 +1403,9 @@ useEffect(() => {
           const isNoAplica = /^(CF|BCD|FPQ)/i.test(codigo);
           if (isNoAplica) return { ...insumo, lote_insumo: "NO APLICA" };
           try {
-            const { data } = await api.get("/insumos/lote", { params: { codigo } });
+            const { data } = await api.get("/insumos/lote", {
+              params: { codigo, fecha: snapForm.fecha }
+            });
             const lote = typeof data === "string" ? data : (data.lote || insumo.lote_insumo);
             return { ...insumo, lote_insumo: lote };
           } catch {
@@ -1740,7 +1744,7 @@ useEffect(() => {
       setLoadingPersonal(true);
       try {
         const { data } = await api.get("/modulos/personal", {
-          params: { modulo: hoja, turno: form.turno },
+          params: { modulo: hoja, turno: form.turno, fecha: form.fecha },
         });
         
         setListaSupervisores(Array.isArray(data.supervisores) ? data.supervisores : []);
@@ -1787,7 +1791,7 @@ useEffect(() => {
     };
 
     cargarPersonal();
-  }, [form.modulo, form.turno]);
+  }, [form.modulo, form.turno, form.fecha]);
 
   // Efecto para filtrar líderes según turno (especialmente para GPA)
   useEffect(() => {

@@ -3,6 +3,7 @@ import { api } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "../styles/panelRol.css";
 import AdminUsuarios from "./AdminUsuarios";
+import AdminCatalogoSemanal from "./AdminCatalogoSemanal";
 import ModalRechazo from "./ModalRechazo";
 
 export default function PanelRol() {
@@ -300,6 +301,7 @@ export default function PanelRol() {
             Salir
           </button>
         </div>
+        <AdminCatalogoSemanal />
         <AdminUsuarios />
       </div>
     );

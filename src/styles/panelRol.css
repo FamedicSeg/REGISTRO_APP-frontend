@@ -85,6 +85,167 @@ body {
   gap: 10px;
 }
 
+.admin-catalogo-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-catalogo-header h2 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.admin-catalogo-header p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.admin-catalogo-form {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.admin-catalogo-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-catalogo-form input {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font: inherit;
+  padding: 9px 10px;
+}
+
+.admin-btn-catalogo {
+  background: var(--secondary-color);
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.admin-btn-catalogo:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-catalogo-mensaje {
+  font-size: 13px;
+  margin-top: 14px;
+}
+
+.admin-catalogo-mensaje.exito {
+  color: var(--success-color);
+}
+
+.admin-catalogo-mensaje.error {
+  color: var(--danger-color);
+}
+
+.admin-catalogo-lista,
+.admin-catalogo-detalle {
+  border-top: 1px solid var(--border-color);
+  margin-top: 20px;
+  padding-top: 18px;
+}
+
+.admin-catalogo-lista h3,
+.admin-catalogo-detalle h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.admin-catalogo-periodos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-catalogo-periodo {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  color: #1e40af;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 9px 12px;
+  text-align: left;
+}
+
+.admin-catalogo-periodo:hover {
+  background: #dbeafe;
+}
+
+.admin-catalogo-periodo span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.admin-catalogo-vacio {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.admin-catalogo-archivo {
+  margin-top: 18px;
+}
+
+.admin-catalogo-archivo h4 {
+  color: var(--secondary-color);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.admin-catalogo-archivo h5 {
+  font-size: 13px;
+  margin: 12px 0 6px;
+}
+
+.admin-catalogo-tabla-scroll {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.admin-catalogo-tabla {
+  border-collapse: collapse;
+  font-size: 11px;
+  min-width: 700px;
+  width: 100%;
+}
+
+.admin-catalogo-tabla th,
+.admin-catalogo-tabla td {
+  border: 1px solid var(--border-color);
+  padding: 7px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-catalogo-tabla th {
+  background: #f1f5f9;
+  color: var(--text-main);
+  position: sticky;
+  top: 0;
+}
+
 /* ============================================
    BOTONES ERP
    ============================================ */
