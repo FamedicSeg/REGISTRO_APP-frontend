@@ -21,6 +21,7 @@ const MODULO_TO_HOJA ={
     "VARIOS 1":"VARIOS 1",
     "VARIOS 2":"VARIOS 2",
     "VARIOS 3": "VARIOS 3",
+    "PECHERAS":"PECHERAS",
     "ESTAMPADO":"ESTAMPADO",
     "BOTAS SIMPLES":"BOTAS SIMPLES",
     "SPA":"SPA",
@@ -2134,6 +2135,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 <option value="VARIOS 1">VARIOS 1</option>
                 <option value="VARIOS 2">VARIOS 2</option>
                 <option value="VARIOS 3">VARIOS 3</option>
+                <option value="PECHERAS">PECHERAS</option>
                 <option value="ESTAMPADO">ESTAMPADO</option>
                 <option value="BOTAS SIMPLES">BOTAS SIMPLES</option>
                 <option value="SPA">SPA</option>
