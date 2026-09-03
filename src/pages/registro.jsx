@@ -440,7 +440,7 @@ export default function Registro() {
       detalles_actividades: actividadesTexto,
       cantidad_elaborada_detalles: datosCopiados.cantidad_elaborada_detalles || "",
       observaciones: datosCopiados.observaciones || "",
-      fecha: fechaHoy,
+      fecha: datosCopiados.fecha || fechaHoy,
       aprobaciones: false,
       uno: false,
       dos: false,
