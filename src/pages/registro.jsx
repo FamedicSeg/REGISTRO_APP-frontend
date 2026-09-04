@@ -849,6 +849,8 @@ useEffect(() => {
       nombre: "",
       cargo: "COSTURERA/O" 
     };
+    // Integrante agregado manualmente: proteger la lista de sobreescrituras al cambiar fecha/turno
+    protegerModuloCopia.current = true;
     setIntegrantes((prev) => [...prev, nuevoIntegrante]);
   };
 
@@ -1046,6 +1048,7 @@ useEffect(() => {
   };
 
   const eliminarIntegrante = (index) => {
+    protegerModuloCopia.current = true;
     setIntegrantes((prev) => prev.filter((_, idx) => idx !== index));
     
     setActividadesIntegrantes(prev => {
@@ -1761,8 +1764,8 @@ useEffect(() => {
         }));
 
         if (protegerModuloCopia.current) {
-          // Venimos de una copia: no sobreescribir integrantes/actividades/responsable copiados
-          protegerModuloCopia.current = false;
+          // Hay integrantes copiados o agregados manualmente: no sobreescribirlos
+          // al cambiar fecha/turno (la protección se mantiene, no se consume una sola vez)
         } else {
           setIntegrantes(nuevosIntegrantes);
 
@@ -3496,6 +3499,8 @@ const decimalParaHorasMinutos = (decimal) => {
                         ...nuevosIntegrantes[integranteIndex],
                         nombre: valorEnMayusculas
                       };
+                      // Nombre editado manualmente: proteger de sobreescrituras al cambiar fecha/turno
+                      protegerModuloCopia.current = true;
                       setIntegrantes(nuevosIntegrantes);
                       setActividadesIntegrantes(prev => {
                         const key = `integrante_${integranteIndex}`;
