@@ -2941,6 +2941,7 @@ const decimalParaHorasMinutos = (decimal) => {
                     <option value="M. PUÑOS">M. PUÑOS</option>
                     <option value="M. TALADRO">M. TALADRO</option>
                     <option value="M. VERTICALES MANUALES">M. VERTICALES MANUALES</option>
+                    <option value="M. QUIRÚRGICA DE TIRAS">M. QUIRÚRGICA DE TIRAS</option>
                     <option value="M. ENROLLADORA DE WATTA">M. ENROLLADORA DE WATTA</option>
                     <option value="M. DE CORTE 2">M. DE CORTE 2</option>
                   </select>
