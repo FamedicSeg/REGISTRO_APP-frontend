@@ -1345,6 +1345,14 @@ useEffect(() => {
     }
   };
 
+  // Previene que Enter dispare el submit del formulario en inputs normales
+  // Pero permite que los campos con onKeyPress específico funcionen normalmente
+  const preventEnterSubmit = (e) => {
+    if (e.key === 'Enter' && !e.target.hasAttribute('data-allow-enter')) {
+      e.preventDefault();
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     
@@ -1929,13 +1937,13 @@ const decimalParaHorasMinutos = (decimal) => {
         
       </div>
 
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} onKeyDown={preventEnterSubmit}>
         {/* CABECERA */}
         <div className="card">
           <div className="grid4">
             <div className="form-group">
               <label htmlFor="fecha">FECHA:</label>
-              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange}
+              <input type="date" id="fecha" name="fecha" value={form.fecha} onChange={onChange} onKeyDown={preventEnterSubmit}
               style={{ fontSize: "12px" }} />
             </div>
             
@@ -1948,6 +1956,7 @@ const decimalParaHorasMinutos = (decimal) => {
                 name="op"
                 value={form.op}
                 onChange={onChange}
+                onKeyDown={preventEnterSubmit}
                 placeholder="SELECCIONA O ESCRIBE LA ORDEN DE PRODUCCIÓN..."
                 autoComplete="off"
                 style={{ fontSize: "12px" }}
@@ -3002,6 +3011,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   type="text"
                   id="nuevaActividadManual"
                   placeholder="Escribe una nueva actividad y presiona Agregar..."
+                  data-allow-enter="true"
                   style={
             { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #90caf9", fontSize: "12px", fontWeight: "500", backgroundColor: "white" }}
                   onKeyPress={(e) => {
@@ -3325,6 +3335,7 @@ const decimalParaHorasMinutos = (decimal) => {
                   value={nuevoDetalleActividad}
                   onChange={(e) => setNuevoDetalleActividad(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && agregarDetalleActividad()}
+                  data-allow-enter="true"
                   placeholder="Escribe una nueva actividad y presiona Enter o haz clic en Agregar..."
                   style={
             { width: "100%", padding: "10px 12px", borderRadius: "6px", border: "1px solid #d1d5db", fontSize: "12px", fontWeight: "500" }}
