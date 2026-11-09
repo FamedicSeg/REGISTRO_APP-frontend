@@ -32,13 +32,13 @@ export const UPPERCASE_FIELDS = [
   'destino', 'n_cliente', 'esteril', 'talla', 'leyenda', 'leyenda_si', 'leyenda_otra',
   
   // Integrantes
-  'nombre', 'cargo', 'cargoOtro',
+  'nombre', 'cargo', 'cargoOtro', 'observaciones_integrante',
   
   // Maquinarias
   'maquinaria',
   
   // Observaciones
-  'observaciones'
+  //'observaciones'
 ];
 
 /**
