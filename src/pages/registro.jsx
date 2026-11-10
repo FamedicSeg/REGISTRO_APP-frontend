@@ -1154,16 +1154,15 @@ useEffect(() => {
   };
  
   useEffect(() => {
-    api.get("/op/lista")
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    const fecha = `${yyyy}-${mm}-${dd}`;
+
+    api.get(`/op/lista?fecha=${fecha}`)
       .then(res => {
-        const opsArray = res.data.hojas 
-          ? Object.values(res.data.hojas).flatMap(hoja => 
-              hoja.datos?.flatMap(d => 
-                Object.values(d.valores || {}).map(col => col?.valor).filter(v => v !== undefined && v !== null && v !== "")
-              ) || []
-            )
-          : [];
-        setOps(opsArray);
+        setOps(res.data);  // ✅ Ya es un array directo
       })
       .catch(err => console.error("No se pudo cargar OP", err));
   }, []);
@@ -1253,16 +1252,11 @@ useEffect(() => {
     try {
       // Recargar lista de OPs
       try {
-        const res = await api.get("/op/lista");
-        const opsArray = res.data.hojas
-          ? Object.values(res.data.hojas).flatMap(hoja =>
-              hoja.datos?.flatMap(d =>
-                Object.values(d.valores || {}).map(col => col?.valor).filter(v => v !== undefined && v !== null && v !== "")
-              ) || []
-            )
-          : [];
-        setOps(opsArray);
-      } catch (err) { console.error("Error recargando OPs:", err); }
+        const res = await api.get(`/op/lista?fecha=${snapForm.fecha}`);
+        setOps(res.data);
+      } catch (err) {
+        console.error("Error recargando OPs:", err);
+      }
 
       // Recargar personal del módulo actual (sin resetear los valores del usuario)
       const hoja = MODULO_TO_HOJA[snapForm.modulo];
